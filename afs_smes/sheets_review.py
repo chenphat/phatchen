@@ -108,64 +108,80 @@ def build_analysis(book, ws):
 
 
 CHECKLIST = [
-    ("3", "Statement of explicit and unreserved compliance with the IFRS for SMEs Accounting Standard", "basis"),
-    ("3", "Going concern assessment; material uncertainties disclosed where they exist", "basis"),
-    ("3", "Complete set of statements, each clearly identified: entity name, period, presentation currency, level of rounding", "SoFP, SoCI, SoCE, SoCF"),
-    ("3", "Comparative information for all amounts, and for narrative where relevant", "All statements"),
-    ("3", "Domicile, legal form, registered office, nature of operations and principal activities", "general"),
-    ("4", "Minimum line items on the face of the SoFP; current/non-current distinction", "SoFP"),
-    ("4", "Sub-classifications of line items (PPE classes, receivables, inventories, payables, provisions, equity)", "ppe, tor, inv, top, prov, equity"),
-    ("4", "Share capital: shares issued, par value, reconciliation of the number of shares, rights and restrictions; description of each reserve", "equity"),
-    ("5", "Total comprehensive income presented in one (or two) statement(s) with the minimum line items; items of OCI by nature", "SoCI"),
-    ("5", "Analysis of expenses by nature or by function", "expenses"),
-    ("6", "Reconciliation of each component of equity: profit or loss, OCI, transactions with owners; effects of retrospective adjustments", "SoCE"),
-    ("7", "Cash flows classified as operating, investing and financing; interest, dividends and income tax shown separately", "SoCF"),
-    ("7", "Components of cash and cash equivalents reconciled to the SoFP; restricted balances; non-cash transactions", "cash"),
-    ("7", "Reconciliation of changes in liabilities arising from financing activities", "borr"),
-    ("7", "Supplier finance arrangements", "top"),
-    ("8", "Notes presented systematically and cross-referenced; basis of preparation; material accounting policy information", "basis, policies"),
-    ("8", "Judgements in applying accounting policies and key sources of estimation uncertainty", "judgements"),
-    ("10", "Changes in accounting policies, changes in estimates and corrections of prior period errors", "basis, SoCE"),
-    ("11", "Financial instruments: carrying amounts by category; terms of borrowings; collateral; defaults; income, expense, gains and losses", "fininst, borr, finance, tor"),
-    ("12", "Fair value measurement: techniques and inputs for items measured at fair value", "fininst, ppe"),
-    ("13", "Inventories: policy and cost formula, carrying amounts by class, amount expensed, write-downs, pledges", "inv, policies"),
-    ("14-15", "Investments in associates and jointly controlled entities: policy, carrying amounts, share of results", "invassoc"),
-    ("16", "Investment property: measurement basis, valuation methods, reconciliation", "invprop"),
-    ("17", "PPE: measurement bases, depreciation methods and rates, reconciliation of carrying amounts, pledges, commitments, revaluation disclosures", "ppe, policies"),
-    ("18", "Intangible assets: useful lives, amortisation method, reconciliation, line item containing amortisation, R&D expensed", "intang, pbt"),
-    ("20", "Leases: future minimum lease payments by maturity band, lease expense, description of significant arrangements", "commitments"),
-    ("21", "Provisions: reconciliation, nature, timing and uncertainties; contingent liabilities and contingent assets", "prov, contingencies"),
-    ("22", "Equity and liabilities: classification of instruments issued; distributions to owners", "equity, dividends"),
-    ("23", "Revenue: disaggregation, contract balances, promises (performance obligations), significant judgements", "revenue"),
-    ("24", "Government grants: nature and amounts recognised, unfulfilled conditions", "N/A unless grants received"),
-    ("25", "Borrowing costs: finance costs recognised (all expensed)", "finance"),
-    ("27", "Impairment of assets: losses and reversals by class of asset and line item", "tor, inv, ppe"),
-    ("28", "Employee benefits: short-term benefits, post-employment plans, other long-term and termination benefits", "pbt, ebo"),
-    ("29", "Income tax: components of tax expense, tax on OCI items, reconciliation to accounting profit, deferred tax balances and movements", "tax, dtax"),
-    ("30", "Foreign currency: exchange differences in profit or loss, functional and presentation currency", "pbt, basis"),
-    ("32", "Events after the reporting period: date of authorisation and who authorised; non-adjusting events", "events, approval"),
-    ("33", "Related parties: parent and controlling party, key management personnel compensation, transactions and balances", "related"),
-    ("35 / App. A", "Transition to the third edition (or first-time adoption): explanation and reconciliations", "basis"),
+    # (paragraphs, requirement, where addressed)
+    ("3.3", "Explicit and unreserved statement of compliance with the IFRS for SMEs Accounting Standard", "basis"),
+    ("3.8-3.9", "Going concern assessment; material uncertainties, or the basis used if not a going concern", "basis"),
+    ("3.14, 3.20", "Comparative information for all amounts, and for narrative where relevant", "All statements"),
+    ("3.17", "Complete set: SoFP, SoCI (one or two statements), SoCE, SoCF and notes", "SoFP, SoCI, SoCE, SoCF"),
+    ("3.23", "Each statement identified: entity name, individual or group, reporting date and period, presentation currency, rounding", "All statements"),
+    ("3.24", "Domicile, legal form, country of incorporation, registered office; nature of operations and principal activities", "general"),
+    ("4.2-4.3", "Minimum line items on the face of the SoFP; additional line items, headings and subtotals where relevant", "SoFP"),
+    ("4.4-4.8", "Current and non-current assets and liabilities presented as separate classifications", "SoFP"),
+    ("4.11", "Sub-classifications: PPE classes; receivables (related parties / others); inventories; payables (trade, related parties, deferred income, accruals); provisions; classes of equity", "ppe, tor, inv, top, prov, equity"),
+    ("4.12", "Share capital: shares authorised, issued and fully paid, par value, reconciliation of shares outstanding, rights and restrictions; description of each reserve", "equity"),
+    ("4.14", "Binding sale agreement for a major disposal of assets", "N/A unless applicable"),
+    ("5.2, 5.5", "Total comprehensive income in one or two statements with the minimum line items; OCI items by nature, grouped by whether reclassified", "SoCI"),
+    ("5.11", "Analysis of expenses by nature or by function (cost of sales shown separately under the function method)", "SoCI, expenses"),
+    ("6.3", "SoCE: total comprehensive income; retrospective adjustments; reconciliation of each component of equity (profit, OCI, share issues, dividends)", "SoCE"),
+    ("6.6", "Dividends proposed or declared before authorisation but not recognised, and amount per share", "dividends"),
+    ("7.3, 7.7", "Cash flows classified as operating, investing and financing; operating cash flows by the indirect or direct method", "SoCF"),
+    ("7.14-7.17", "Interest and dividends received and paid, and income tax cash flows, presented separately and classified consistently", "SoCF"),
+    ("7.18", "Non-cash investing and financing transactions excluded from the SoCF and disclosed", "cash"),
+    ("7.19A", "Reconciliation of opening and closing liabilities arising from financing activities", "borr"),
+    ("7.19C", "Supplier finance arrangements: terms, carrying amounts, amounts already paid to suppliers, range of due dates", "top"),
+    ("7.20-7.21", "Components of cash and cash equivalents reconciled to the SoFP; balances not available for use", "cash"),
+    ("8.2-8.4", "Notes presented systematically, cross-referenced to the statements, in the normal order", "Notes"),
+    ("8.5", "Material accounting policy information", "policies"),
+    ("8.6-8.7", "Judgements in applying accounting policies; key sources of estimation uncertainty with the carrying amounts affected", "judgements"),
+    ("10.13-10.14, 10.18, 10.23", "Changes in accounting policies, changes in accounting estimates and corrections of prior period errors", "basis, SoCE"),
+    ("A1-A3", "Early application of the third edition disclosed; transition applied retrospectively with the permitted reliefs", "basis"),
+    ("11.40-11.41", "Financial instruments: measurement bases; carrying amounts by category", "policies, fininst"),
+    ("11.42, 11.46-11.47", "Terms and conditions of long-term debt; financial assets pledged as collateral; defaults and breaches on loans payable", "borr"),
+    ("11.43, 11.43B", "Analysis of the age of trade receivables by reference to due date: gross amount and impairment", "tor"),
+    ("11.43A", "Maturity analysis of financial liabilities: remaining contractual undiscounted cash flows", "fininst"),
+    ("11.48", "Income, expense, gains and losses by category; total interest income and expense; impairment loss by class of financial asset", "finance, tor"),
+    ("12.28-12.31", "Fair value measurement: carrying amounts, level in the fair value hierarchy, valuation techniques and inputs", "ppe, fininst"),
+    ("13.22", "Inventories: policy and cost formula, carrying amounts by class, amount expensed, impairment losses, pledges", "inv, policies"),
+    ("14.12, 15.19", "Investments in associates and jointly controlled entities: policy, carrying amounts, fair value where quoted", "invassoc"),
+    ("16.10-16.11", "Investment property at fair value: valuer involvement, restrictions, obligations, reconciliation", "invprop"),
+    ("17.31", "PPE by class: measurement bases, depreciation methods and rates, gross amount and accumulated depreciation, reconciliation of the carrying amount", "ppe, policies"),
+    ("17.32-17.33", "PPE pledged as security; commitments to acquire PPE; revalued assets: date, valuer, cost-model carrying amount, revaluation surplus", "ppe, commitments, equity"),
+    ("18.27-18.29", "Intangible assets: useful lives, amortisation method, gross amount, line item containing amortisation, reconciliation; R&D expensed", "intang, pbt"),
+    ("20.13, 20.16", "Lessee: future minimum lease payments by time band, lease expense, description of significant leasing arrangements", "commitments"),
+    ("21.14", "Provisions by class: reconciliation, nature, expected timing, uncertainties, expected reimbursements", "prov"),
+    ("21.15-21.16", "Contingent liabilities and contingent assets", "contingencies"),
+    ("23.82", "Revenue disaggregated into categories relevant to the entity's financial performance", "revenue"),
+    ("23.83-23.84", "Opening and closing trade receivables, contract assets and contract liabilities; revenue recognised from opening contract liabilities", "revenue, tor"),
+    ("23.85-23.87", "Promises in contracts with customers: when fulfilled, payment terms, nature of goods or services, returns and warranties; progress measurement; judgements", "revenue"),
+    ("24.6", "Government grants: nature and amounts, unfulfilled conditions, other government assistance", "N/A unless grants received"),
+    ("25.3", "Finance costs and total interest expense (no further disclosure required)", "finance"),
+    ("27.32-27.33", "Impairment losses and reversals by class of asset, and the line items in which they are included", "inv, ppe, intang"),
+    ("28.40-28.43", "Employee benefits: defined contribution expense; defined benefit plans; other long-term and termination benefits", "pbt, ebo"),
+    ("29.38-29.40", "Income tax: major components of tax expense; tax on OCI items; reconciliation to accounting profit at the applicable rate; deferred tax by type of temporary difference", "tax, dtax"),
+    ("30.25-30.26", "Exchange differences recognised in profit or loss; presentation and functional currency", "pbt, basis"),
+    ("32.9-32.10", "Date of authorisation for issue and who authorised; non-adjusting events after the reporting period", "events, approval"),
+    ("33.5, 33.7", "Name of the parent and ultimate controlling party; key management personnel compensation in total", "related"),
+    ("33.9-33.10", "Related party transactions by category: amounts, outstanding balances, terms, allowances and expense for uncollectable balances", "related"),
+    ("35.12", "First-time adoption: explanation of the transition and reconciliations", "N/A unless first-time adopter"),
 ]
 
 
 def build_checklist(book, ws):
     sheet_title(ws, "Disclosure checklist - IFRS for SMEs Accounting Standard (third edition)",
-                "Summary by Section. Complete the status column; confirm detailed paragraph requirements against the Standard itself.")
-    widths(ws, [11, 96, 30, 12, 40])
-    header_row(ws, 5, ["Section", "Requirement (summary)", "Where addressed", "Status", "Reviewer comment"], height=20)
+                "Paragraph references are to the third edition (February 2025). Requirements are summarised: read the paragraph itself before marking a row Complete.")
+    widths(ws, [16, 96, 30, 12, 40])
+    header_row(ws, 5, ["Paragraph", "Requirement (summary)", "Where addressed", "Status", "Reviewer comment"], height=20)
     r = 5
     for sec, req, where in CHECKLIST:
         r += 1
         keys = [k.strip() for k in where.split(",")]
-        if all(k in book.notes for k in keys):
-            where_txt, status = "Note " + ", ".join(str(book.notes[k]) for k in keys), "Drafted"
-        elif any(k in book.notes for k in keys):
-            where_txt, status = "Note " + ", ".join(str(book.notes[k]) for k in keys if k in book.notes), "Drafted"
-        elif where[0].isupper() and not where.startswith("N/A"):
-            where_txt, status = where, "Drafted"
+        if where.startswith("N/A"):
+            where_txt, status = where, "N/A"
         else:
-            where_txt, status = "Not applicable - no balances" if not where.startswith("N/A") else where, "N/A"
+            stmts = [k for k in keys if k[0].isupper()]
+            nums = sorted(book.notes[k] for k in keys if k in book.notes)
+            parts = stmts + (["Note " + ", ".join(map(str, nums))] if nums else [])
+            where_txt, status = ("; ".join(parts), "Drafted") if parts else ("Not applicable - no balances", "N/A")
         put(ws, f"A{r}", sec, align=CENTER)
         put(ws, f"B{r}", req, align=WRAP)
         put(ws, f"C{r}", where_txt, align=WRAP)

@@ -63,7 +63,8 @@ accounts). The prior-year files are optional; without them comparatives are blan
 | Checks | Live reconciliations (SoFP balances, SoCE and SoCF tie to the SoFP, notes tie to the statements, GL ties to TB …) |
 | DQ_Log | Source-data checks and the cleaning log |
 | SoFP, SoCI, SoCE, SoCF | Primary statements with comparatives and note references |
-| Notes | General information, basis of preparation, material accounting policy information, judgements and estimates, and supporting notes (revenue, expenses by nature, tax reconciliation, PPE and intangibles roll-forwards, receivables, cash, equity, borrowings and financing-liabilities reconciliation, payables, provisions, deferred tax, financial instruments, commitments, contingencies, related parties, events after the reporting period, approval) |
+| SoCI_Nature | Alternative SoCI with expenses classified by nature (paragraph 5.11(a)); issue one format only |
+| Notes | General information, basis of preparation, material accounting policy information, judgements and estimates, and supporting notes (revenue, expenses by nature, tax reconciliation, PPE and intangibles roll-forwards, receivables with age analysis, cash, equity, borrowings and financing-liabilities reconciliation, payables, provisions, deferred tax, financial instruments with maturity analysis, commitments, contingencies, related parties, events after the reporting period, approval) |
 | Analysis, Checklist | Ratios and year-on-year variances; disclosure checklist by Section |
 | Mapping, Lead, TB, AJE, GL, Lists | Working papers: mapping, lead schedule, adjusted TB, adjusting journals, cleaned GL |
 
@@ -75,9 +76,13 @@ debit +, credit −.
 
 * Single entity only: no consolidation, non-controlling interests, discontinued operations or
   foreign-operation translation.
-* The accounting-policy wording and the disclosure checklist are drafting templates written at Section
-  level. The text of the Standard could not be accessed while building this tool, so confirm them
-  (and paragraph-level requirements) against the IFRS for SMEs Accounting Standard, third edition.
+* The statement structures, note list, policy wording and the disclosure checklist were checked against the
+  IFRS for SMEs Accounting Standard, third edition (February 2025) and its Illustrative Financial Statements.
+  The checklist cites paragraph numbers but summarises each requirement: read the paragraph before sign-off.
+  Policy wording is a template to tailor to the entity. Not covered: consolidation (Section 9), business
+  combinations (19), share-based payment (26), hyperinflation (31), specialised activities (34), hedge accounting.
+* The age analysis of receivables, the maturity analysis of borrowings and lease commitments cannot be derived
+  from a GL/TB: they are input tables (`notes_inputs` in the config, or typed into the yellow cells).
 * Narrative in yellow cells is entity-specific and must be completed by the preparer.
 * Movement types are inferred; review GL column L where a roll-forward shows "other movements".
 * Adding accounts or journals requires a re-run; changing a mapping or posting an AJE does not.

@@ -313,8 +313,17 @@ def generate(out_dir, cy=2025, dirty=True, seed=7):
         "shares_issued_cy": 450000, "shares_issued_py": 400000, "par_value": 1.0,
         "employees_cy": 24, "employees_py": 22,
         "early_application": True,
-        "notes_inputs": {"tax_nondeductible_cy": round(entertainment * TAX_RATE, 2),
-                         "tax_nondeductible_py": round(L_py.bal["6130"] * TAX_RATE, 2)},
+        "shares_authorised": 600000, "dividend_proposed": 0,
+        "notes_inputs": {
+            "tax_nondeductible_cy": round(entertainment * TAX_RATE, 2),
+            "tax_nondeductible_py": round(L_py.bal["6130"] * TAX_RATE, 2),
+            # illustrative: overdue bands [gross CY, allowance CY, gross PY, allowance PY]
+            "ageing": [[round(r * p), round(r * p * a), round(q * p), round(q * p * a)]
+                       for r, q in [(L_cy.bal["1100"], L_py.bal["1100"])]
+                       for p, a in [(0.08, 0.0), (0.04, 0.1), (0.02, 0.5), (0.01, 1.0)]],
+            # illustrative: contractual undiscounted loan cash flows incl. interest [CY, PY] per time band
+            "maturity_borrowings": [[80800, 56000], [240000, 185600], [0, 0]],
+        },
         "dayfirst": True,
         "account_classes": {"1": "A", "2": "L", "3": "E", "4": "I", "5": "C", "6": "X", "7": "X", "8": "T"},
     }

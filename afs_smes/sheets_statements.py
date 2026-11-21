@@ -1,5 +1,6 @@
 """Primary statements: SoFP, SoCI, SoCE, SoCF. Every amount is a formula on Lead / TB / GL."""
-from .taxonomy import (BORR, CASH_LEAVES, FACE, FACES, PPE_COST, PPE_DEP, SECTION_TITLES, leaves_of)
+from .taxonomy import (BORR, CASH_LEAVES, EXPENSE_FUNCTIONS, FACE, FACES, NATURES, PPE_COST, PPE_DEP, SECTION_TITLES,
+                       leaves_of)
 from .xl import (B_BOTTOM, B_TOP, B_TOTAL, CENTER, CY, F_BOLD, F_GREY, F_INPUT, F_ITALIC, F_NORMAL, F_SUB, F_TITLE, NUM, PY,
                  RIGHT, face, glm, lead, nat, put, widths)
 
@@ -254,10 +255,10 @@ def build_socf(book, ws):
                  f"{{c}}{pbt}+SUM({{c}}{a1}:{{c}}{a2})", bold=True, border=B_TOP)
     w1 = ln("INV", "(Increase)/decrease in inventories", lambda fy: "-" + M(fy, leaves_of("INV")))
     ln("REC", "(Increase)/decrease in trade and other receivables",
-       lambda fy: "-" + M(fy, ["TOR.TRADE", "TOR.ALLOW", "TOR.OTHER", "TOR.PREPAY"]))
+       lambda fy: "-" + M(fy, ["TOR.TRADE", "TOR.ALLOW", "TOR.RP", "TOR.OTHER", "TOR.PREPAY"]))
     ln("CONTA", "(Increase)/decrease in contract assets", lambda fy: "-" + M(fy, ["CONTA"]), hidden=not has("CONTA"))
     ln("PAY", "Increase/(decrease) in trade and other payables",
-       lambda fy: "-" + M(fy, ["TOP.TRADE", "TOP.ACCR", "TOP.OTHER"]))
+       lambda fy: "-" + M(fy, ["TOP.TRADE", "TOP.RP", "TOP.ACCR", "TOP.OTHER"]))
     w2 = ln("CONTL", "Increase/(decrease) in contract liabilities", lambda fy: "-" + M(fy, ["CONTL"]),
             hidden=not has("CONTL"))
     cgo = s.calc("CGO", "Cash generated from operations", f"{{c}}{sub}+SUM({{c}}{w1}:{{c}}{w2})", bold=True, border=B_TOP)
@@ -300,4 +301,44 @@ def build_socf(book, ws):
     for fy in (CY, PY):
         book.check(f"SoCF {fy}: closing cash per cash flow statement = cash and cash equivalents per ledger (net of overdrafts)",
                    f"{book.cell('SoCF', 'CLOSE', fy)}-{lead('close', fy, CASH_LEAVES)}")
+    ws.freeze_panes = "A6"
+
+
+def build_soci_nature(book, ws):
+    """Alternative format: expenses classified by nature. Same profit as the SoCI (by function)."""
+    _heading(book, ws, "Statement of comprehensive income - expenses classified by nature (alternative format)", _for_year(book))
+    widths(ws, [66, 7, 16, 16])
+    _year_heads(book, ws, 5)
+    s = Stmt(book, ws, "SoCI_Nature")
+    act = book.active_faces
+    rev = s.line("REV", "Revenue", "-" + face("close", CY, "REV"), "-" + face("close", PY, "REV"), note="revenue")
+    s.line("OI", "Other income", "-" + face("close", CY, "OI"), "-" + face("close", PY, "OI"), note="otherinc",
+           hidden="OI" not in act)
+    first = s.r
+    for code, caption in NATURES:
+        if code == "OTHER":
+            continue
+        s.line("N_" + code, caption, "-" + nat(CY, [code], EXPENSE_FUNCTIONS), "-" + nat(PY, [code], EXPENSE_FUNCTIONS),
+               hidden=code not in book.active_natures)
+    last = s.r - 1
+    tot = lambda fy: "+".join(face("close", fy, f) for f in EXPENSE_FUNCTIONS)
+    oth = s.line("N_OTHER", "Other expenses", f"-({tot(CY)})-SUM(C{first}:C{last})", f"-({tot(PY)})-SUM(D{first}:D{last})")
+    op = s.calc("OP", "Operating profit", f"SUM({{c}}{rev}:{{c}}{oth})", bold=True, border=B_TOP)
+    f1 = s.line("FININC", "Finance income", "-" + face("close", CY, "FININC"), "-" + face("close", PY, "FININC"),
+                note="finance", hidden="FININC" not in act)
+    s.line("FINCOST", "Finance costs", "-" + face("close", CY, "FINCOST"), "-" + face("close", PY, "FINCOST"), note="finance")
+    f2 = s.line("SHAREASSOC", FACE["SHAREASSOC"][1], "-" + face("close", CY, "SHAREASSOC"),
+                "-" + face("close", PY, "SHAREASSOC"), hidden="SHAREASSOC" not in act)
+    pbt = s.calc("PBT", "Profit before tax", f"{{c}}{op}+SUM({{c}}{f1}:{{c}}{f2})", bold=True, border=B_TOP)
+    tax = s.line("TAX", "Income tax expense", "-" + face("close", CY, "TAX"), "-" + face("close", PY, "TAX"), note="tax")
+    profit = s.calc("PROFIT", "Profit for the year", f"{{c}}{pbt}+{{c}}{tax}", bold=True, border=B_TOTAL)
+    oci = s.line("OCI", "Other comprehensive income for the year, net of tax (see SoCI)", book.cell("SoCI", "OCI", CY),
+                 book.cell("SoCI", "OCI", PY))
+    s.calc("TCI", "Total comprehensive income for the year", f"{{c}}{profit}+{{c}}{oci}", bold=True, border=B_TOTAL)
+    s.gap()
+    put(ws, f"A{s.r}", "An entity presents ONE analysis of expenses - by nature or by function, whichever is reliable and more relevant. "
+                       "Issue either this sheet or SoCI, not both.", F_GREY)
+    for fy in (CY, PY):
+        book.check(f"SoCI by nature {fy}: profit for the year equals the SoCI by function",
+                   f"{book.cell('SoCI_Nature', 'PROFIT', fy)}-{book.cell('SoCI', 'PROFIT', fy)}")
     ws.freeze_panes = "A6"

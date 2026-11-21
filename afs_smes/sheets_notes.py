@@ -199,8 +199,10 @@ class Notes:
                   "the International Accounting Standards Board. They comply with all the requirements of that Standard.")
         if self.cfg.get("early_application"):
             self.para("The third edition of the Standard is effective for annual periods beginning on or after 1 January 2027. The Company has "
-                      "applied it before that date, as permitted. [Describe the transition: the requirements applied retrospectively, any "
-                      "transition reliefs used and the effect on the comparative information.]")
+                      "applied it before that date, as permitted, and discloses that fact as required. The amended and revised sections have been applied "
+                      "retrospectively in accordance with Section 10, subject to the specific transition provisions of the Standard. "
+                      "[Describe the nature of the changes in accounting policy, the transition provisions applied, whether "
+                      "comparative information has been restated, and the adjustments to the line items affected.]")
         self.para(f'="The financial statements are presented in "&{E["currency"]}&", which is the Company\'s functional currency, and are '
                   f'prepared on the historical cost basis except for land, which is measured at a revalued amount. They comprise the statement of '
                   f'financial position, the statement of comprehensive income, the statement of changes in equity, the statement of cash flows and '
@@ -409,7 +411,8 @@ class Notes:
                 f"ABS(Notes!{tot}{c1}-{b.cell('SoFP', 'PPE', CY)})+ABS(Notes!{tot}{c0}-{b.cell('SoFP', 'PPE', PY)})")
         b.check(f"Note {b.notes['ppe']}: depreciation charge agrees to the expense in profit or loss",
                 f"Notes!{tot}{ch}-{nat(CY, ['DEP'])}")
-        self.para("[Land was revalued on (date) by (name), an independent valuer, by reference to (method and significant assumptions). "
+        self.para("[Land was revalued on (date); (name), an independent valuer, was involved. The fair value measurement is categorised in "
+                  "Level (2/3) of the fair value hierarchy; the valuation technique was (technique) and the inputs were (inputs). "
                   "Had land been carried under the cost model its carrying amount would have been (amount). State the carrying amount of "
                   "any assets pledged as security for liabilities and any contractual commitments to acquire property, plant and equipment.]")
 
@@ -461,6 +464,65 @@ class Notes:
                   [f"-{lead('close', CY, ['TOR.ALLOW'])}-SUM(C{f}:C{f + 1})", f"-{lead('close', PY, ['TOR.ALLOW'])}-SUM(D{f}:D{f + 1})"])
         self.total("At 31 December", f, f + 2)
         self.r += 1
+        self._ageing()
+
+    def _ageing(self):
+        """Age analysis of trade receivables by reference to due date; 'not yet due' is the balancing band."""
+        b = self.book
+        ni = self.cfg.get("notes_inputs", {})
+        self.sub("Analysis of the age of trade receivables by reference to due date")
+        self.heads(["Gross amount", "Impairment allowance", "Gross amount", "Impairment allowance"])
+        for i, f in enumerate([b.year(CY), b.year(CY), b.year(PY), b.year(PY)]):
+            put(self.ws, f"{chr(ord('C') + i)}{self.r}", f, F_BOLD, "0", RIGHT)
+        self.r += 1
+        bands = ["Past due not later than one month", "Past due later than one month and not later than three months",
+                 "Past due later than three months and not later than one year", "Past due later than one year"]
+        nd = self.r
+        self.r += 1
+        first = self.r
+        vals = ni.get("ageing", [])
+        for i, cap in enumerate(bands):
+            v = [float(x) for x in (vals[i] if i < len(vals) else [0, 0, 0, 0])]
+            r = self.line(cap, v)
+            for col in "CDEF":
+                self.ws[f"{col}{r}"].fill = FILL_INPUT
+        last = self.r - 1
+        tot = [lead("close", CY, ["TOR.TRADE"]), "-" + lead("close", CY, ["TOR.ALLOW"]),
+               lead("close", PY, ["TOR.TRADE"]), "-" + lead("close", PY, ["TOR.ALLOW"])]
+        t = self.line("Total trade receivables", tot, bold=True, border=B_TOTAL)
+        save, self.r = self.r, nd
+        self.line("Not yet due (balancing amount)", [f"{c}{t}-SUM({c}{first}:{c}{last})" for c in "CDEF"])
+        self.r = save + 1
+        b.check(f"Note {b.notes['tor']}: age analysis - overdue bands do not exceed the ledger balance of trade receivables",
+                "+".join(f"MIN(0,Notes!{c}{nd})" for c in "CDEF"))
+
+    def _maturity(self):
+        """Maturity analysis of financial liabilities: remaining contractual undiscounted cash flows."""
+        b = self.book
+        ni = self.cfg.get("notes_inputs", {})
+        pay = ["TOP.TRADE", "TOP.RP", "TOP.ACCR", "TOP.INT", "TOP.DIV"]
+        self.sub("Maturity analysis of financial liabilities (contractual undiscounted cash flows)")
+        self.heads(["Trade and other payables", "Borrowings", "Total", "Trade and other payables", "Borrowings", "Total"])
+        for i, f in enumerate([b.year(CY)] * 3 + [b.year(PY)] * 3):
+            put(self.ws, f"{chr(ord('C') + i)}{self.r}", f, F_BOLD, "0", RIGHT)
+        self.r += 1
+        bands = ["Not later than one year", "Later than one year and not later than five years", "Later than five years"]
+        vals = ni.get("maturity_borrowings", [])
+        first = self.r
+        for i, cap in enumerate(bands):
+            r = self.r
+            bor = [float(x) for x in (vals[i] if i < len(vals) else [0, 0])]
+            self.line(cap, ["-" + lead("close", CY, pay) if i == 0 else 0, bor[0], f"C{r}+D{r}",
+                            "-" + lead("close", PY, pay) if i == 0 else 0, bor[1], f"F{r}+G{r}"])
+            for col in "DG":
+                self.ws[f"{col}{r}"].fill = FILL_INPUT
+            for col in "CF":
+                self.ws[f"{col}{r}"].font = F_INPUT
+        self.total("Total contractual undiscounted cash flows", first, self.r - 1, ncols=6)
+        self.r += 1
+        self.para("Trade and other payables are due within one year at their carrying amounts. Borrowings are shown at the contractual "
+                  "amounts payable, including future interest, so the total differs from the carrying amount in the statement of "
+                  "financial position.", inp=True, placeholder=False)
 
     def n_cash(self):
         b = self.book
@@ -485,11 +547,18 @@ class Notes:
         E = self.E
         self.title("equity", "Share capital and reserves")
         self.heads(None, years=True)
+        self.line("Number of ordinary shares authorised", [E["shares_authorised"], E["shares_authorised"]], fmt="#,##0")
         self.line("Number of ordinary shares issued and fully paid", [E["shares_issued_cy"], E["shares_issued_py"]], fmt="#,##0")
         self.line("Par value per share", [E["par_value"], E["par_value"]], fmt="#,##0.00")
         self.line("Share capital", ["-" + lead("close", CY, ["SC"]), "-" + lead("close", PY, ["SC"])])
         self.line("Share premium", ["-" + lead("close", CY, ["SP"]), "-" + lead("close", PY, ["SP"])])
-        self.line("Number of shares issued during the year", [f"{E['shares_issued_cy']}-{E['shares_issued_py']}", None], fmt="#,##0")
+        self.r += 1
+        self.sub("Reconciliation of the number of shares outstanding")
+        self.heads([self.book.year(CY)])
+        self.ws[f"C{self.r - 1}"].number_format = "0"
+        self.line("Shares outstanding at 1 January", [E["shares_issued_py"]], fmt="#,##0")
+        self.line("Shares issued during the year", [f"{E['shares_issued_cy']}-{E['shares_issued_py']}"], fmt="#,##0")
+        self.line("Shares outstanding at 31 December", [E["shares_issued_cy"]], bold=True, border=B_TOTAL, fmt="#,##0")
         self.r += 1
         self.para("All shares are ordinary shares carrying one vote each and equal rights to dividends and to the repayment of capital. "
                   "[Describe rights, preferences and restrictions, shares reserved for issue and any shares held by the entity.]", inp=True, placeholder=False)
@@ -563,14 +632,15 @@ class Notes:
     def n_fininst(self):
         self.title("fininst", "Financial instruments - carrying amounts by category")
         self.heads(None, years=True)
-        fa = ["TOR.TRADE", "TOR.ALLOW", "TOR.OTHER", "TOR.INT", "CASH.HAND", "CASH.BANK", "CASH.DEP", "OFA_NC", "OFA_C"]
-        fl = ["TOP.TRADE", "TOP.ACCR", "TOP.INT", "TOP.DIV"] + BORR + ["BORR_C.OD"]
+        fa = ["TOR.TRADE", "TOR.ALLOW", "TOR.RP", "TOR.OTHER", "TOR.INT", "CASH.HAND", "CASH.BANK", "CASH.DEP", "OFA_NC", "OFA_C"]
+        fl = ["TOP.TRADE", "TOP.RP", "TOP.ACCR", "TOP.INT", "TOP.DIV"] + BORR + ["BORR_C.OD"]
         self.line("Financial assets measured at amortised cost", [lead("close", CY, fa), lead("close", PY, fa)])
         self.line("Financial liabilities measured at amortised cost", ["-" + lead("close", CY, fl), "-" + lead("close", PY, fl)])
         self.r += 1
         self.para("The Company holds no financial instruments measured at fair value through profit or loss. Land is the only item measured "
                   "at fair value; the valuation technique and inputs are described in the property, plant and equipment note. "
                   "[Add fair value measurement disclosures required by Section 12 for any other item measured at fair value.]", inp=True, placeholder=False)
+        self._maturity()
 
     def n_dividends(self):
         E = self.E
@@ -581,6 +651,8 @@ class Notes:
         self.line("Dividend per share", [f"IF({E['shares_issued_cy']}=0,0,C{d}/{E['shares_issued_cy']})",
                                          f"IF({E['shares_issued_py']}=0,0,D{d}/{E['shares_issued_py']})"], fmt="#,##0.000")
         self.line("Dividends payable at year end", ["-" + lead("close", CY, ["TOP.DIV"]), "-" + lead("close", PY, ["TOP.DIV"])])
+        p = self.line("Dividends proposed or declared after the reporting date, not recognised as a distribution", [E["dividend_proposed"], None])
+        self.line("Per share", [f"IF({E['shares_issued_cy']}=0,0,C{p}/{E['shares_issued_cy']})", None], fmt="#,##0.000")
         self.r += 1
 
     def n_commitments(self):

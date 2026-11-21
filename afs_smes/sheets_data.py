@@ -68,9 +68,9 @@ def build_guide(book, ws):
         "Rows for line items with no balance are hidden, not deleted: unhide them if an account is remapped. "
         "If you add accounts or journals, re-run the tool so every sheet is rebuilt.",
         "Statements are displayed to the nearest currency unit; underlying figures keep their cents, so a total may differ by 1 from the sum of displayed lines.",
-        "Section references are to the IFRS for SMEs Accounting Standard, third edition (issued February 2025, effective for periods "
-        "beginning on or after 1 January 2027, early application permitted). Accounting-policy wording is a drafting template: "
-        "confirm it, and the disclosure checklist, against the Standard and the entity's facts before issue.",
+        "Paragraph references are to the IFRS for SMEs Accounting Standard, third edition (issued February 2025, effective for annual "
+        "periods beginning on or after 1 January 2027, earlier application permitted - paragraph A1). Accounting-policy wording is a "
+        "drafting template: tailor it to the entity's facts before issue.",
     ]
     for t in notes:
         r += 1
@@ -93,6 +93,8 @@ ENTITY_FIELDS = [
     ("tax_rate", "Applicable income tax rate", 0.2, "0.0%"),
     ("authorised_date", "Date financial statements authorised for issue", None, DATE),
     ("authorised_by", "Authorised for issue by", "[the Board of Directors]", None),
+    ("dividend_proposed", "Dividend proposed/declared after the reporting date, not recognised (total)", 0, "#,##0"),
+    ("shares_authorised", "Number of shares authorised", 0, "#,##0"),
     ("shares_issued_cy", "Number of shares issued and fully paid - current year", 0, "#,##0"),
     ("shares_issued_py", "Number of shares issued and fully paid - prior year", 0, "#,##0"),
     ("par_value", "Par value per share", 0, "#,##0.00"),

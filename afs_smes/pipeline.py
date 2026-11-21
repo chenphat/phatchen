@@ -17,14 +17,14 @@ from .sheets_data import (build_aje, build_dq_log, build_entity, build_gl, build
                           build_mapping as sheet_mapping, build_tb)
 from .sheets_notes import Notes, plan_notes
 from .sheets_review import build_analysis, build_checklist, build_checks
-from .sheets_statements import build_soce, build_socf, build_soci, build_sofp
+from .sheets_statements import build_soce, build_socf, build_soci, build_soci_nature, build_sofp
 from .taxonomy import LEAF
 from .xl import Book
 
-SHEETS = ["Guide", "Entity", "Checks", "DQ_Log", "SoFP", "SoCI", "SoCE", "SoCF", "Notes", "Analysis", "Checklist",
+SHEETS = ["Guide", "Entity", "Checks", "DQ_Log", "SoFP", "SoCI", "SoCE", "SoCF", "Notes", "SoCI_Nature", "Analysis", "Checklist",
           "Mapping", "Lead", "TB", "AJE", "GL", "Lists"]
 TAB = {"Guide": "7F7F7F", "Entity": "FFC000", "Checks": "C00000", "DQ_Log": "C00000", "SoFP": "1F3864",
-       "SoCI": "1F3864", "SoCE": "1F3864", "SoCF": "1F3864", "Notes": "1F3864", "Analysis": "548235",
+       "SoCI": "1F3864", "SoCE": "1F3864", "SoCF": "1F3864", "Notes": "1F3864", "SoCI_Nature": "8EA9DB", "Analysis": "548235",
        "Checklist": "548235", "Mapping": "FFC000", "AJE": "FFC000"}
 
 
@@ -66,6 +66,7 @@ def run(tb_cy, out, tb_py=None, gl_cy=None, gl_py=None, config=None, mapping_fil
     bal = bal[(bal[["opening", "debit", "credit", "closing"]].abs().sum(axis=1) > 0)]
     book.active = {leaf_of[a] for a in bal["account"] if leaf_of.get(a) in LEAF}
     book.active_faces = {LEAF[l][2] for l in book.active}
+    book.active_natures = set(mapping.loc[mapping["account"].isin(bal["account"]), "nature"]) - {""}
 
     wb = book.wb
     wb.remove(wb.active)
@@ -82,6 +83,7 @@ def run(tb_cy, out, tb_py=None, gl_cy=None, gl_py=None, config=None, mapping_fil
     build_gl(book, ws["GL"], [("PY", g_py), ("CY", g_cy)])
     plan_notes(book)
     build_soci(book, ws["SoCI"])
+    build_soci_nature(book, ws["SoCI_Nature"])
     build_sofp(book, ws["SoFP"])
     build_soce(book, ws["SoCE"])
     build_socf(book, ws["SoCF"])

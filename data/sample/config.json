@@ -15,9 +15,51 @@
   "employees_cy": 24,
   "employees_py": 22,
   "early_application": true,
+  "shares_authorised": 600000,
+  "dividend_proposed": 0,
   "notes_inputs": {
     "tax_nondeductible_cy": 960.0,
-    "tax_nondeductible_py": 960.0
+    "tax_nondeductible_py": 960.0,
+    "ageing": [
+      [
+        14084,
+        0,
+        11718,
+        0
+      ],
+      [
+        7042,
+        704,
+        5859,
+        586
+      ],
+      [
+        3521,
+        1761,
+        2929,
+        1465
+      ],
+      [
+        1761,
+        1761,
+        1465,
+        1465
+      ]
+    ],
+    "maturity_borrowings": [
+      [
+        80800,
+        56000
+      ],
+      [
+        240000,
+        185600
+      ],
+      [
+        0,
+        0
+      ]
+    ]
   },
   "dayfirst": true,
   "account_classes": {
