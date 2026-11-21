@@ -1,0 +1,33 @@
+{
+  "entity_name": "Mekong Trading Co., Ltd.",
+  "legal_form": "private limited liability company",
+  "country": "[Country of incorporation]",
+  "registered_office": "[Registered office address]",
+  "principal_activities": "the wholesale distribution of consumer goods and related after-sales services",
+  "reporting_date": "2025-12-31",
+  "currency": "USD",
+  "tax_rate": 0.2,
+  "authorised_date": "2026-03-25",
+  "authorised_by": "the Board of Directors",
+  "shares_issued_cy": 450000,
+  "shares_issued_py": 400000,
+  "par_value": 1.0,
+  "employees_cy": 24,
+  "employees_py": 22,
+  "early_application": true,
+  "notes_inputs": {
+    "tax_nondeductible_cy": 960.0,
+    "tax_nondeductible_py": 960.0
+  },
+  "dayfirst": true,
+  "account_classes": {
+    "1": "A",
+    "2": "L",
+    "3": "E",
+    "4": "I",
+    "5": "C",
+    "6": "X",
+    "7": "X",
+    "8": "T"
+  }
+}

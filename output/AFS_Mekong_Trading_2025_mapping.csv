@@ -1,0 +1,63 @@
+account,account_name,afs_code,nature,basis
+1010,Cash on hand,CASH.HAND,,Keyword rule: 'cash on hand'
+1020,Bank - current account,CASH.BANK,,Keyword rule: 'bank'
+1030,Short-term bank deposits,CASH.DEP,,Keyword rule: 'short-term bank deposit'
+1100,Trade receivables,TOR.TRADE,,Keyword rule: 'trade receivable'
+1110,Allowance for impairment of trade receivables,TOR.ALLOW,,Keyword rule: 'allowance for impair'
+1130,Prepayments,TOR.PREPAY,,Keyword rule: 'prepay'
+1140,Interest receivable,TOR.INT,,Keyword rule: 'interest receivable'
+1200,Inventories - merchandise,INV.FG,,Keyword rule: 'inventor'
+1500,Land,PPE.LB.C,,Keyword rule: 'land'
+1510,Buildings,PPE.LB.C,,Keyword rule: 'building'
+1515,Accumulated depreciation - buildings,PPE.LB.D,,Keyword rule: 'accumulated depreciation - build'
+1520,Warehouse equipment,PPE.PM.C,,Keyword rule: 'warehouse equip'
+1525,Accumulated depreciation - warehouse equipment,PPE.PM.D,,Keyword rule: 'accumulated depreciation - warehouse'
+1530,Motor vehicles,PPE.MV.C,,Keyword rule: 'motor'
+1535,Accumulated depreciation - motor vehicles,PPE.MV.D,,Keyword rule: 'accumulated depreciation - motor vehicle'
+1540,Furniture and office equipment,PPE.FE.C,,Keyword rule: 'furniture'
+1545,Accumulated depreciation - furniture and office equipment,PPE.FE.D,,Keyword rule: 'accumulated depr'
+1600,Computer software,INTANG.C,,Keyword rule: 'software'
+1605,Accumulated amortisation - software,INTANG.D,,Keyword rule: 'accumulated amortisation - software'
+2010,Trade payables,TOP.TRADE,,Keyword rule: 'trade payable'
+2020,Accrued expenses,TOP.ACCR,,Keyword rule: 'accru'
+2030,VAT and other taxes payable,TOP.OTHER,,Fallback - review
+2040,Interest payable,TOP.INT,,Keyword rule: 'interest payable'
+2050,Dividends payable,TOP.DIV,,Keyword rule: 'dividend'
+2060,Customer advances,CONTL,,Keyword rule: 'customer advance'
+2100,Income tax payable,CTL,,Keyword rule: 'income tax'
+2200,Bank loan - current portion,BORR_C.LOAN,,Keyword rule: 'loan'
+2210,Provision for warranties,PROV_C,,Keyword rule: 'provision'
+2500,Bank loan - non-current portion,BORR_NC.LOAN,,Keyword rule: 'loan - non-current'
+2600,Deferred tax liability,DTL,,Keyword rule: 'deferred tax'
+3010,Share capital,SC,,Keyword rule: 'share capital'
+3020,Share premium,SP,,Keyword rule: 'share premium'
+3100,Revaluation reserve,RESV.REVAL,,Keyword rule: 'revaluation'
+3200,Retained earnings,RE,,Keyword rule: 'retained'
+3300,Dividends declared,RE.DIV,,Keyword rule: 'dividend'
+4010,Sales of goods,REV.GOODS,,Keyword rule: 'sale'
+4020,Service revenue,REV.SERV,,Keyword rule: 'service'
+4100,Other income,OI.OTHER,,Fallback - review
+4110,"Gain on disposal of property, plant and equipment",OI.DISP,,Keyword rule: 'gain on disposal'
+4200,Interest income,FININC,,Keyword rule: 'interest'
+5010,Cost of goods sold,COS,INVX,Account class default
+5020,Freight inwards,COS,TRANSP,Account class default
+5030,Depreciation - warehouse,COS,DEP,Account class default
+6010,Salaries and wages - administrative,ADMIN,EMP,Account class default
+6020,Salaries - sales staff,DIST,EMP,Keyword rule: 'sales'
+6030,Office rent,ADMIN,RENT,Account class default
+6040,Utilities,ADMIN,UTIL,Account class default
+6050,Advertising and promotion,DIST,ADV,Keyword rule: 'advertis'
+6060,Delivery expenses,DIST,TRANSP,Keyword rule: 'delivery'
+6070,Professional fees,ADMIN,PROF,Account class default
+6080,Depreciation - administrative,ADMIN,DEP,Account class default
+6085,Depreciation - distribution vehicles,DIST,DEP,Keyword rule: 'distribution'
+6090,Amortisation of software,ADMIN,AMORT,Account class default
+6100,Impairment loss on trade receivables,ADMIN,IMPAIR,Account class default
+6110,Warranty expense,DIST,WARR,Keyword rule: 'warrant'
+6120,Repairs and maintenance,ADMIN,REPAIR,Account class default
+6130,Entertainment,ADMIN,OTHER,Account class default
+6140,Bank charges,ADMIN,OTHER,Account class default
+6150,Foreign exchange loss,ADMIN,FX,Account class default
+7010,Interest expense on bank loans,FINCOST,,Keyword rule: 'interest expense'
+8010,Income tax expense - current,TAX.CUR,,Keyword rule: 'income tax'
+8020,Deferred tax expense,TAX.DEF,,Keyword rule: 'deferred tax'
