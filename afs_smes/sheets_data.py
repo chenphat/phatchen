@@ -38,7 +38,8 @@ def build_guide(book, ws):
                    "Review the blue cells; rows marked REVIEW were mapped by fallback."),
         ("5  Adjust", "AJE: post closing/audit adjustments and reclassifications by account. They flow into TB column O."),
         ("6  Draft", "SoFP, SoCI, SoCE, SoCF and Notes are formulas on Lead/TB/GL. Nothing is typed into the statements."),
-        ("7  Review", "Analysis (ratios and year-on-year variances) and Checklist (disclosure checklist by Section)."),
+        ("7  Judge", "Materiality: thresholds and line-by-line assessment. Policies: select each accounting policy; material policies flow into Note 3."),
+        ("8  Review", "Dashboard, Findings (action tracker), Analysis (two-year comparison) and Checklist (disclosures by paragraph)."),
     ]
     for k, v in steps:
         r += 1
@@ -89,7 +90,22 @@ ENTITY_FIELDS = [
     ("principal_activities", "Principal activities", "[principal activities]", None),
     ("reporting_date", "Reporting date (end of current year)", None, DATE),
     ("prior_date", "End of comparative year", None, DATE),
-    ("currency", "Presentation and functional currency", "USD", None),
+    ("currency", "Functional currency", "USD", None),
+    ("pres_currency", "Presentation currency", None, None),
+    ("pres_scale", "Presentation currency amounts are shown in units of", 1, "#,##0"),
+    ("pres_label", "Presentation currency label used in headings", None, None),
+    ("pres_reason", "Reason for using a presentation currency different from the functional currency",
+     "[state the reason, e.g. a requirement of local law or regulation]", None),
+    ("fx_close_cy", "Exchange rate - closing, current year end (presentation currency per 1 unit of functional currency)", 1, "#,##0.00"),
+    ("fx_avg_cy", "Exchange rate - average for the current year", 1, "#,##0.00"),
+    ("fx_close_py", "Exchange rate - closing, prior year end", 1, "#,##0.00"),
+    ("fx_avg_py", "Exchange rate - average for the prior year", 1, "#,##0.00"),
+    ("fx_close_ppy", "Exchange rate - closing, at the beginning of the prior year", 1, "#,##0.00"),
+    ("fx_hist_capital", "Historical rate - share capital and share premium at the beginning of the prior year", 1, "#,##0.00"),
+    ("fx_hist_re", "Historical (blended) rate - retained earnings and reserves at the beginning of the prior year", 1, "#,##0.00"),
+    ("registration_no", "Company registration number", "[registration number]", None),
+    ("directors", "Directors who served during the year and to the date of the report", "[names and positions of directors]", None),
+    ("auditors", "Auditors", "[name of audit firm]", None),
     ("tax_rate", "Applicable income tax rate", 0.2, "0.0%"),
     ("authorised_date", "Date financial statements authorised for issue", None, DATE),
     ("authorised_by", "Authorised for issue by", "[the Board of Directors]", None),
@@ -118,9 +134,14 @@ def build_entity(book, ws, cfg):
             val = datetime.strptime(val, "%Y-%m-%d").date()
         if key == "prior_date":
             val = f"=EDATE({book.ent['reporting_date']},-12)"
+        if key == "pres_currency" and val is None:
+            val = cfg.get("currency", "USD")
+        if key == "pres_label":
+            val = (f'={book.ent["pres_currency"]}&IF({book.ent["pres_scale"]}=1000,"\'000",'
+                   f'IF({book.ent["pres_scale"]}=1000000," million",""))')
         if key == "authorised_date" and val is None:
             val = "[date]"
-        c = put(ws, f"C{r}", val, F_NORMAL if key == "prior_date" else F_INPUT, fmt,
+        c = put(ws, f"C{r}", val, F_NORMAL if key in ("prior_date", "pres_label") else F_INPUT, fmt,
                 align=Alignment(horizontal="left", wrap_text=True, vertical="top"))
         if isinstance(val, str) and val.startswith("["):
             c.fill = FILL_INPUT
@@ -174,7 +195,7 @@ def build_lead(book, ws):
         put(ws, f"D{r}", FACE[fc][1])
         put(ws, f"E{r}", FACE[fc][2])
         for col, tbcol in (("F", "O"), ("G", "I"), ("H", "J"), ("I", "F")):
-            put(ws, f"{col}{r}", f"=SUMIFS(TB!${tbcol}:${tbcol},TB!$D:$D,$A{r})", F_LINK, NUM2)
+            put(ws, f"{col}{r}", f"=SUMIFS(ATB!${tbcol}:${tbcol},ATB!$D:$D,$A{r})", F_LINK, NUM2)
         put(ws, f"J{r}", f"=F{r}-H{r}", fmt=NUM2)
         put(ws, f"K{r}", f"=G{r}-I{r}", fmt=NUM2)
     last = FIRST + len(LEAVES) - 1
@@ -215,8 +236,8 @@ def build_mapping(book, ws, mapping):
         for col, src in (("E", "B"), ("G", "D"), ("H", "E")):
             put(ws, f"{col}{r}", f'=IFERROR(INDEX(Lead!${src}:${src},MATCH($D{r},Lead!$A:$A,0)),"")', F_LINK)
         put(ws, f"I{r}", m.basis, F_GREY)
-        put(ws, f"J{r}", f"=SUMIFS(TB!$O:$O,TB!$A:$A,$A{r})", F_LINK, NUM2)
-        put(ws, f"K{r}", f"=SUMIFS(TB!$I:$I,TB!$A:$A,$A{r})", F_LINK, NUM2)
+        put(ws, f"J{r}", f"=SUMIFS(ATB!$O:$O,ATB!$A:$A,$A{r})", F_LINK, NUM2)
+        put(ws, f"K{r}", f"=SUMIFS(ATB!$I:$I,ATB!$A:$A,$A{r})", F_LINK, NUM2)
         put(ws, f"L{r}", f'=IF(ISNUMBER(MATCH($D{r},Lead!$A:$A,0)),IF(ISNUMBER(SEARCH("review",$I{r})),"REVIEW","OK"),"UNMAPPED")',
             align=CENTER)
     last = FIRST + n - 1
@@ -233,16 +254,14 @@ def build_mapping(book, ws, mapping):
     book.map_last = last
 
 
-def build_tb(book, ws, mapping, tb_cy, tb_py):
-    sheet_title(ws, "Trial balance - cleaned, mapped and adjusted (debit +, credit -)",
-                "Columns F-M are the cleaned source balances. O = unadjusted closing + adjustments from AJE. P-U are control columns and must be zero.")
+def build_atb(book, ws, mapping):
+    sheet_title(ws, "Adjusted trial balance (ATB) - mapped, in functional currency (debit +, credit -)",
+                "Columns F-M are linked to the unadjusted TB sheet. O = unadjusted closing + adjustments from AJE. P-U are control columns and must be zero.")
     widths(ws, [11, 44, 7, 13, 9] + [15] * 10 + [11, 11, 15, 11, 15, 11])
     header_row(ws, 5, ["Account", "Account name", "Class", "AFS code", "Nature", "PY opening", "PY debits", "PY credits",
                        "PY closing", "CY opening", "CY debits", "CY credits", "CY closing (unadjusted)",
-                       "Adjustments (AJE)", "CY closing (final)", "CY cast check", "PY cast check",
+                       "Adjustments (AJE)", "CY closing (adjusted)", "CY cast check", "PY cast check",
                        "CY GL movement", "CY TB v GL", "PY GL movement", "PY TB v GL"], height=42)
-    cy = tb_cy.groupby("account")[["opening", "debit", "credit", "closing"]].sum()
-    py = tb_py.groupby("account")[["opening", "debit", "credit", "closing"]].sum() if tb_py is not None else None
     for i, m in enumerate(mapping.itertuples()):
         r = FIRST + i
         put(ws, f"A{r}", m.account)
@@ -250,10 +269,9 @@ def build_tb(book, ws, mapping, tb_cy, tb_py):
         put(ws, f"C{r}", m.cls, align=CENTER)
         put(ws, f"D{r}", f'=IFERROR(INDEX(Mapping!$D:$D,MATCH($A{r},Mapping!$A:$A,0)),"UNMAPPED")', F_LINK)
         put(ws, f"E{r}", f'=IFERROR(INDEX(Mapping!$F:$F,MATCH($A{r},Mapping!$A:$A,0))&"","")', F_LINK, align=CENTER)
-        for cols, frame in (("FGHI", py), ("JKLM", cy)):
-            vals = frame.loc[m.account].tolist() if frame is not None and m.account in frame.index else [0, 0, 0, 0]
-            for col, v in zip(cols, vals):
-                put(ws, f"{col}{r}", round(float(v), 2), F_INPUT, NUM2)
+        for col, f in zip("FGHIJKLM", [f"=TB!C{r}-TB!D{r}", f"=TB!E{r}", f"=TB!F{r}", f"=TB!G{r}-TB!H{r}",
+                                       f"=TB!I{r}-TB!J{r}", f"=TB!K{r}", f"=TB!L{r}", f"=TB!M{r}-TB!N{r}"]):
+            put(ws, f"{col}{r}", f, F_LINK, NUM2)
         put(ws, f"N{r}", f"=SUMIFS(AJE!$E:$E,AJE!$B:$B,$A{r})-SUMIFS(AJE!$F:$F,AJE!$B:$B,$A{r})", F_LINK, NUM2)
         put(ws, f"O{r}", f"=M{r}+N{r}", F_BOLD, NUM2)
         put(ws, f"P{r}", f"=ROUND(J{r}+K{r}-L{r}-M{r},2)", fmt=NUM2)
@@ -271,10 +289,42 @@ def build_tb(book, ws, mapping, tb_cy, tb_py):
     book.tb_last = last
 
 
-def build_aje(book, ws, rows=60):
+def build_tb(book, ws, mapping, tb_cy, tb_py):
+    """Unadjusted trial balance as cleaned from the source files, in debit / credit columns."""
+    sheet_title(ws, "Trial balance (TB) - unadjusted, as extracted and cleaned, in functional currency",
+                "Source balances in debit and credit columns for both years. Adjustments are posted on AJE and carried to the ATB sheet.")
+    widths(ws, [11, 46] + [15] * 12)
+    for col, lab in (("C", "Prior year"), ("I", "Current year")):
+        put(ws, f"{col}4", lab, F_BOLD)
+    header_row(ws, 5, ["Account", "Account name"] + ["Opening Dr", "Opening Cr", "Movement Dr", "Movement Cr", "Closing Dr",
+                                                    "Closing Cr"] * 2)
+    cy = tb_cy.groupby("account")[["opening", "debit", "credit", "closing"]].sum()
+    py = tb_py.groupby("account")[["opening", "debit", "credit", "closing"]].sum() if tb_py is not None else None
+    for i, m in enumerate(mapping.itertuples()):
+        r = FIRST + i
+        put(ws, f"A{r}", m.account)
+        put(ws, f"B{r}", m.account_name)
+        for cols, frame in (("CDEFGH", py), ("IJKLMN", cy)):
+            o, d, c, cl = (float(v) for v in (frame.loc[m.account].tolist()
+                                              if frame is not None and m.account in frame.index else [0, 0, 0, 0]))
+            vals = [max(o, 0), max(-o, 0), d, c, max(cl, 0), max(-cl, 0)]
+            for col, v in zip(cols, vals):
+                put(ws, f"{col}{r}", round(v, 2), F_INPUT, NUM2)
+    last = FIRST + len(mapping) - 1
+    put(ws, f"B{last + 1}", "Total", F_BOLD)
+    for col in "CDEFGHIJKLMN":
+        put(ws, f"{col}{last + 1}", f"=SUM({col}{FIRST}:{col}{last})", F_BOLD, NUM2, border=B_BOTTOM)
+    put(ws, f"B{last + 2}", "Difference (debits less credits) - must be zero", F_GREY)
+    for a_, b_ in (("C", "D"), ("E", "F"), ("G", "H"), ("I", "J"), ("K", "L"), ("M", "N")):
+        put(ws, f"{b_}{last + 2}", f"={a_}{last + 1}-{b_}{last + 1}", F_GREY, NUM2)
+    ws.freeze_panes = "C6"
+    ws.auto_filter.ref = f"A5:N{last}"
+
+
+def build_aje(book, ws, adjustments=(), rows=60):
     sheet_title(ws, "Adjusting and reclassification journal entries (current year)",
-                "Enter the account code, description and amount in the blue area. Each journal must balance; adjustments flow to TB column N. "
-                "Example: AJE 1 | 2500 | Reclassify loan instalments due within 12 months | Dr 40,000, then AJE 1 | 2200 | same | Cr 40,000.")
+                "Enter the account code, description and amount (functional currency) in the blue area, one line per account. "
+                "Each journal must balance; adjustments flow to ATB column N and from there to every statement and note.")
     widths(ws, [9, 12, 46, 60, 16, 16])
     put(ws, "D3", "Total debits / credits (difference must be zero)", F_BOLD)
     put(ws, "E3", f"=SUM(E{FIRST}:E{FIRST + rows - 1})", F_BOLD, NUM2)
@@ -289,6 +339,10 @@ def build_aje(book, ws, rows=60):
             if col == "B":
                 c.number_format = "@"
         put(ws, f"C{r}", f'=IF($B{r}="","",IFERROR(INDEX(Mapping!$B:$B,MATCH($B{r}&"",Mapping!$A:$A,0)),"ACCOUNT NOT IN TB"))', F_LINK)
+    for i, a in enumerate(adjustments):
+        r = FIRST + i
+        ws[f"A{r}"].value, ws[f"B{r}"].value, ws[f"D{r}"].value = a.get("no"), str(a["account"]), a.get("description", "")
+        ws[f"E{r}"].value, ws[f"F{r}"].value = a.get("debit") or None, a.get("credit") or None
     ws.freeze_panes = "A6"
 
 

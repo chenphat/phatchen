@@ -9,24 +9,28 @@ from .xl import (B_BOTTOM, CENTER, CY, F_BOLD, F_GREY, F_HEAD, F_INPUT, F_NORMAL
 
 
 def build_checks(book, ws):
-    sheet_title(ws, "Checks - live reconciliations", "Each difference must be within the tolerance set on the Entity sheet. Recalculates with the workbook.")
+    sheet_title(ws, "Checks - live reconciliations", "Each difference must be within the tolerance on the Entity sheet. Statement-to-note checks are in the presentation currency.")
     widths(ws, [5, 100, 18, 10])
     t, m, g = book.tb_last, book.map_last, book.gl_last
     base = [
-        ("TB CY: final closing balances sum to zero (debits = credits)", f"SUM(TB!O{FIRST}:O{t})"),
-        ("TB CY: opening balances sum to zero", f"SUM(TB!J{FIRST}:J{t})"),
-        ("TB PY: closing balances sum to zero", f"SUM(TB!I{FIRST}:I{t})"),
-        ("TB CY: opening + debits - credits = closing for every account", f"SUMPRODUCT(ABS(TB!P{FIRST}:P{t}))"),
-        ("TB PY: opening + debits - credits = closing for every account", f"SUMPRODUCT(ABS(TB!Q{FIRST}:Q{t}))"),
-        ("GL to TB CY: GL net movement = TB movement for every account", f"SUMPRODUCT(ABS(TB!S{FIRST}:S{t}))"),
-        ("GL to TB PY: GL net movement = TB movement for every account", f"SUMPRODUCT(ABS(TB!U{FIRST}:U{t}))"),
+        ("TB CY: unadjusted trial balance - total debits = total credits (opening, movement, closing)",
+         f"ABS(TB!J{t + 2})+ABS(TB!L{t + 2})+ABS(TB!N{t + 2})"),
+        ("TB PY: trial balance - total debits = total credits (opening, movement, closing)",
+         f"ABS(TB!D{t + 2})+ABS(TB!F{t + 2})+ABS(TB!H{t + 2})"),
+        ("ATB CY: adjusted closing balances sum to zero (debits = credits)", f"SUM(ATB!O{FIRST}:O{t})"),
+        ("ATB CY: opening balances sum to zero", f"SUM(ATB!J{FIRST}:J{t})"),
+        ("ATB PY: closing balances sum to zero", f"SUM(ATB!I{FIRST}:I{t})"),
+        ("ATB CY: opening + debits - credits = closing for every account", f"SUMPRODUCT(ABS(ATB!P{FIRST}:P{t}))"),
+        ("ATB PY: opening + debits - credits = closing for every account", f"SUMPRODUCT(ABS(ATB!Q{FIRST}:Q{t}))"),
+        ("GL to TB CY: GL net movement = TB movement for every account", f"SUMPRODUCT(ABS(ATB!S{FIRST}:S{t}))"),
+        ("GL to TB PY: GL net movement = TB movement for every account", f"SUMPRODUCT(ABS(ATB!U{FIRST}:U{t}))"),
         ("GL: total debits = total credits (both years)", f"SUM(GL!H{FIRST}:H{g})-SUM(GL!I{FIRST}:I{g})"),
         ("GL: every line belongs to a mapped account (count of unmapped lines)", f'COUNTIF(GL!K{FIRST}:K{g},"UNMAPPED")'),
         ("Mapping: every account has a valid AFS code (count of unmapped accounts)", f'COUNTIF(Mapping!L{FIRST}:L{m},"UNMAPPED")'),
         ("AJE: adjusting journals balance", "AJE!E3-AJE!F3"),
         ("AJE: every adjustment uses an account in the trial balance (count of unknown accounts)",
          f'COUNTIF(AJE!C{FIRST}:C{FIRST + 59},"ACCOUNT NOT IN TB")'),
-        ("Lead: all mapped balances are carried to the lead schedule (CY)", f"SUM(Lead!F{FIRST}:F{book.lead_last})-SUM(TB!O{FIRST}:O{t})"),
+        ("Lead: all mapped balances are carried to the lead schedule (CY)", f"SUM(Lead!F{FIRST}:F{book.lead_last})-SUM(ATB!O{FIRST}:O{t})"),
     ]
     put(ws, "B3", "Overall result", F_BOLD)
     header_row(ws, 5, ["#", "Check", "Difference / count", "Status"], height=20)
@@ -47,12 +51,14 @@ def build_checks(book, ws):
 
 
 def build_analysis(book, ws):
-    sheet_title(ws, "Analytical review", "Ratios and year-on-year movements, calculated from the statements. Explain flagged movements before finalising.")
-    widths(ws, [62, 16, 16, 16, 12, 10])
+    sheet_title(ws, "Comparative analysis - two years",
+                "Ratios (functional currency) and year-on-year movements with common-size percentages (presentation currency). "
+                "Explain flagged movements before finalising.")
+    widths(ws, [62, 17, 17, 17, 11, 10, 11, 11])
     E = book.ent
     c = lambda sheet, key, fy: book.cell(sheet, key, fy)
     put(ws, "A4", "Key ratios", F_SUB)
-    header_row(ws, 5, ["Ratio", "CY", "PY", "Change", "", ""], height=20)
+    header_row(ws, 5, ["Ratio", "CY", "PY", "Change"], height=20)
     put(ws, "B5", book.year(CY), F_HEAD, "0")
     put(ws, "C5", book.year(PY), F_HEAD, "0")
     inv = lambda fy: c("SoFP", "INV", fy)
@@ -77,33 +83,49 @@ def build_analysis(book, ws):
          lambda fy: f"IF({c('SoCI','PROFIT',fy)}=0,0,{c('SoCF','OPER',fy)}/{c('SoCI','PROFIT',fy)})", "0.00"),
     ]
     r = 5
+    book.ratio_rows = []
     for cap, fn, fmt in ratios:
         r += 1
         put(ws, f"A{r}", cap)
         put(ws, f"B{r}", "=" + fn(CY), fmt=fmt)
         put(ws, f"C{r}", "=" + fn(PY), fmt=fmt)
         put(ws, f"D{r}", f"=B{r}-C{r}", fmt=fmt)
+        book.ratio_rows.append((r, fmt))
     r += 2
-    put(ws, f"A{r}", "Year-on-year movement by line item", F_SUB)
+    put(ws, f"A{r}", f'="Year-on-year movement by line item - "&{E["pres_label"]}', F_SUB)
     r += 1
-    header_row(ws, r, ["Line item", "CY", "PY", "Change", "% change", "Flag"], height=20)
+    header_row(ws, r, ["Line item", "CY", "PY", "Change", "% change", "Flag", "Common size CY", "Common size PY"], height=30)
+    put(ws, f"B{r}", book.year(CY), F_HEAD, "0")
+    put(ws, f"C{r}", book.year(PY), F_HEAD, "0")
     start = r + 1
-    for code, caption, stmt, sec in FACES:
-        if code not in book.active_faces:
-            continue
+    P = lambda sheet, key, fy: book.cell(sheet, key, fy, "P")
+    lines = [(code, caption, stmt, sec) for code, caption, stmt, sec in FACES if code in book.active_faces or code == "RE"]
+    extra = {"CA": ("TA", "Total assets", "SoFP"), "EQ": ("T_EQ", "Total equity", "SoFP"), "CL": ("TL", "Total liabilities", "SoFP"),
+             "PL": ("PROFIT", "Profit for the year", "SoCI")}
+    out, prev = [], None
+    for code, caption, stmt, sec in lines:
+        if prev and sec != prev and prev in extra:
+            out.append(extra[prev] + (True,))
+        out.append((code, f"{caption} ({stmt}{'' if stmt == 'SoCI' else ', ' + sec})", stmt, False))
+        if code == "RESV":
+            out.append(("TR", "Foreign currency translation reserve (SoFP, EQ)", "SoFP", False))
+        prev = sec
+    out.append(extra["PL"] + (True,))
+    for key, caption, stmt, bold in out:
         r += 1
-        sign = "" if sec in ("NCA", "CA") else "-"
-        put(ws, f"A{r}", f"{caption} ({stmt}{'' if stmt == 'SoCI' else ', ' + sec})")
-        if code == "RE":
-            put(ws, f"B{r}", "=" + c("SoFP", "RE", CY), fmt=NUM)
-            put(ws, f"C{r}", "=" + c("SoFP", "RE", PY), fmt=NUM)
-        else:
-            put(ws, f"B{r}", "=" + sign + face("close", CY, code), fmt=NUM)
-            put(ws, f"C{r}", "=" + sign + face("close", PY, code), fmt=NUM)
-        put(ws, f"D{r}", f"=B{r}-C{r}", fmt=NUM)
-        put(ws, f"E{r}", f"=IF(C{r}=0,0,D{r}/ABS(C{r}))", fmt=PCT)
-        put(ws, f"F{r}", f'=IF(AND(ABS(D{r})>={E["materiality"]},OR(C{r}=0,ABS(E{r})>={E["threshold"]})),"REVIEW","")', F_BOLD, align=CENTER)
+        font = F_BOLD if bold else F_NORMAL
+        base = "TA" if stmt == "SoFP" else "REV"
+        put(ws, f"A{r}", caption, font)
+        put(ws, f"B{r}", "=" + P(stmt, key, CY), font, NUM)
+        put(ws, f"C{r}", "=" + P(stmt, key, PY), font, NUM)
+        put(ws, f"D{r}", f"=B{r}-C{r}", font, NUM)
+        put(ws, f"E{r}", f"=IF(C{r}=0,0,D{r}/ABS(C{r}))", font, PCT)
+        put(ws, f"F{r}", f'=IF(AND(ABS(D{r})>={book.mat["perf"]},OR(C{r}=0,ABS(E{r})>={E["threshold"]})),"REVIEW","")', F_BOLD, align=CENTER)
+        put(ws, f"G{r}", f"=IF({P(stmt, base, CY)}=0,0,B{r}/{P(stmt, base, CY)})", font, PCT)
+        put(ws, f"H{r}", f"=IF({P(stmt, base, PY)}=0,0,C{r}/{P(stmt, base, PY)})", font, PCT)
     ws.conditional_formatting.add(f"F{start}:F{r}", CellIsRule(operator="equal", formula=['"REVIEW"'], fill=AMBER))
+    put(ws, f"A{r + 2}", "Flag: change of at least performance materiality (Materiality sheet) and at least the % threshold on the Entity "
+                         "sheet. Common size: % of total assets (SoFP lines) or of revenue (SoCI lines).", F_GREY)
     ws.freeze_panes = "B6"
 
 

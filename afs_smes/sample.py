@@ -53,7 +53,7 @@ PL_ACCOUNTS = [a for a in COA if a[0] in "45678"]
 
 class Ledger:
     def __init__(self, year, opening):
-        self.year, self.lines, self.n = year, [], 0
+        self.year, self.lines, self.n, self.ajes = year, [], 0, []
         self.bal = dict(opening)
 
     def post(self, d, desc, entries, ref=""):
@@ -67,6 +67,16 @@ class Ledger:
                                "ref": ref, "debit": v if v > 0 else 0.0, "credit": -v if v < 0 else 0.0})
             self.bal[a] = round(self.bal.get(a, 0.0) + v, 2)
         return jno
+
+    def adjust(self, desc, entries, ref=""):
+        """Year-end adjustment kept out of the ledger: it is delivered as an adjusting journal entry (AJE)."""
+        self.aje_no = getattr(self, "aje_no", 0) + 1
+        for a, v in entries:
+            v = round(v, 2)
+            if v:
+                self.ajes.append({"no": self.aje_no, "account": a, "description": desc,
+                                  "debit": v if v > 0 else 0, "credit": -v if v < 0 else 0})
+                self.bal[a] = round(self.bal.get(a, 0.0) + v, 2)
 
     def movement(self, account):
         return round(sum(l["debit"] - l["credit"] for l in self.lines if l["account"] == account), 2)
@@ -188,15 +198,16 @@ def build_year(year, opening, rng, current):
 
     # ---- year-end adjustments ----
     ye = date(year, 12, 31)
+    adj = L.adjust if current else L.post     # current year: closing adjustments are proposed as AJEs, not yet in the ledger
     next_cur = 60000 if current else 40000
     L.post(ye, "Reclassification of loan instalments due within 12 months", [("2500", next_cur), ("2200", -next_cur)], "GJ")
     L.post(ye, "Rent paid in advance for next year", [("1130", 7000 * g), ("1020", -7000 * g)], "PV")
-    L.post(ye, "Accrual of bonuses and professional fees", [("6010", 9500 * g), ("6070", 4000), ("2020", -9500 * g - 4000)], "GJ")
+    adj(*([ye] if not current else []), "Accrual of bonuses and professional fees", [("6010", 9500 * g), ("6070", 4000), ("2020", -9500 * g - 4000)], "GJ")
     L.post(ye, "Payroll taxes withheld, payable next month", [("6010", 8500 * g), ("2030", -8500 * g)], "GJ")
     L.post(ye, "Advances received from customers for January deliveries", [("1020", 9000 * g), ("2060", -9000 * g)], "RV")
     L.post(ye, "Write-off of irrecoverable receivable", [("1110", 2000), ("1100", -2000)], "GJ")
     target = round(L.bal["1100"] * 0.05, 2)
-    L.post(ye, "Impairment allowance adjusted to 5% of receivables", [("6100", target + L.bal["1110"]), ("1110", -(target + L.bal["1110"]))], "GJ")
+    adj(*([ye] if not current else []), "Impairment allowance adjusted to 5% of receivables", [("6100", target + L.bal["1110"]), ("1110", -(target + L.bal["1110"]))], "GJ")
     L.post(ye, "Warranty provision for the year's sales", [("6110", 6000 * g), ("2210", -6000 * g)], "GJ")
     dep_int = round(L.bal.get("1030", 0) * 0.04 * (10 / 12 if not current else 1), 2)
     L.post(ye, "Interest accrued on short-term deposits", [("1140", dep_int), ("4200", -dep_int)], "GJ")
@@ -205,8 +216,8 @@ def build_year(year, opening, rng, current):
     pbt = -sum(L.bal.get(a, 0) for a in PL_ACCOUNTS)
     entertainment, temp_diff = L.bal["6130"], 5000
     current_tax = round(TAX_RATE * (pbt + entertainment - temp_diff), 2)
-    L.post(ye, "Current income tax for the year", [("8010", current_tax), ("2100", -current_tax)], "GJ")
-    L.post(ye, "Deferred tax on accelerated tax depreciation", [("8020", TAX_RATE * temp_diff), ("2600", -TAX_RATE * temp_diff)], "GJ")
+    adj(*([ye] if not current else []), "Current income tax for the year", [("8010", current_tax), ("2100", -current_tax)], "GJ")
+    adj(*([ye] if not current else []), "Deferred tax on accelerated tax depreciation", [("8020", TAX_RATE * temp_diff), ("2600", -TAX_RATE * temp_diff)], "GJ")
     return L, entertainment
 
 
@@ -248,7 +259,7 @@ def _write_tb(path, entity, year, opening, L, rng, dirty):
     wb.save(path)
 
 
-def _write_gl(path, entity, year, L, rng, dirty):
+def _write_gl(path, entity, year, L, rng, dirty, cut=False):
     wb = Workbook()
     ws = wb.active
     ws.title = "GL"
@@ -270,7 +281,7 @@ def _write_gl(path, entity, year, L, rng, dirty):
                 dr, cr = (f"{dr:,.2f}" if dr else "", f"{cr:,.2f}" if cr else "")
             if i == neg_at:
                 dr, cr = -cr, None                             # credit keyed as a negative debit
-            if l["journal"] == cut_j and year % 2 == 1:
+            if l["journal"] == cut_j and cut:
                 d = date(year + 1, 1, 2)                       # cut-off: dated after year end
         row = [d, l["journal"], int(l["account"]), name, l["desc"], l["ref"], dr or None, cr or None]
         ws.append(row)
@@ -285,7 +296,7 @@ def _write_gl(path, entity, year, L, rng, dirty):
     wb.save(path)
 
 
-def generate(out_dir, cy=2025, dirty=True, seed=7):
+def generate(out_dir, cy=2026, dirty=True, seed=7):
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     rng = random.Random(seed)
@@ -298,15 +309,23 @@ def generate(out_dir, cy=2025, dirty=True, seed=7):
     _write_tb(out / f"TB_{cy - 1}.xlsx", entity, cy - 1, open_py, L_py, rng, dirty)
     _write_tb(out / f"TB_{cy}.xlsx", entity, cy, open_cy, L_cy, rng, dirty)
     _write_gl(out / f"GL_{cy - 1}.xlsx", entity, cy - 1, L_py, rng, dirty)
-    _write_gl(out / f"GL_{cy}.xlsx", entity, cy, L_cy, rng, dirty)
+    _write_gl(out / f"GL_{cy}.xlsx", entity, cy, L_cy, rng, dirty, cut=True)
     config = {
         "entity_name": entity,
         "legal_form": "private limited liability company",
-        "country": "[Country of incorporation]",
+        "country": "the Kingdom of Cambodia",
+        "registration_no": "[registration number]",
+        "directors": "[names and positions of the directors]",
+        "auditors": "[name of audit firm]",
         "registered_office": "[Registered office address]",
         "principal_activities": "the wholesale distribution of consumer goods and related after-sales services",
         "reporting_date": f"{cy}-12-31",
         "currency": "USD",
+        "pres_currency": "KHR", "pres_scale": 1000,
+        "pres_reason": "presentation in Khmer Riel is required for statutory reporting purposes in Cambodia",
+        # ILLUSTRATIVE exchange rates (KHR per USD) - replace with the official published rates
+        "fx_close_cy": 4005, "fx_avg_cy": 4012, "fx_close_py": 4010, "fx_avg_py": 4018, "fx_close_ppy": 4025,
+        "fx_hist_capital": 4000, "fx_hist_re": 4060,
         "tax_rate": TAX_RATE,
         "authorised_date": f"{cy + 1}-03-25",
         "authorised_by": "the Board of Directors",
@@ -324,6 +343,7 @@ def generate(out_dir, cy=2025, dirty=True, seed=7):
             # illustrative: contractual undiscounted loan cash flows incl. interest [CY, PY] per time band
             "maturity_borrowings": [[80800, 56000], [240000, 185600], [0, 0]],
         },
+        "adjustments": L_cy.ajes,
         "dayfirst": True,
         "account_classes": {"1": "A", "2": "L", "3": "E", "4": "I", "5": "C", "6": "X", "7": "X", "8": "T"},
     }

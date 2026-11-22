@@ -80,7 +80,8 @@ POLICIES = [
     ("Foreign currency translation",
      "Transactions in currencies other than the functional currency are recorded at the spot exchange rate at the date of the transaction. "
      "Monetary items denominated in foreign currencies are retranslated at the closing rate at each reporting date. Exchange differences are "
-     "recognised in profit or loss in the period in which they arise."),
+     "recognised in profit or loss in the period in which they arise. The translation of the financial statements from the functional "
+     "currency into the presentation currency is described in the basis of preparation note."),
     ("Dividends", "Dividends to the Company's shareholders are recognised as a liability in the period in which they are declared."),
 ]
 
@@ -133,13 +134,23 @@ class Notes:
             self.ws.row_dimensions[self.r].height = 42
         self.r += 1
 
-    def line(self, caption, formulas, bold=False, border=None, fmt=NUM, start="C", inp=False, key=None):
+    def chk(self, description, formula):
+        """Register a check; ledger terms are translated so they compare with presentation-currency note cells."""
+        self.book.check(description, self.book.to_pres(formula))
+
+    def usd(self, value, kind, fy):
+        """A functional-currency input amount translated at the given rate (formula text)."""
+        return f"{float(value)}{self.book.conv(kind, fy)}"
+
+    def line(self, caption, formulas, bold=False, border=None, fmt=NUM, start="C", inp=False, key=None, rate=None):
         font = F_BOLD if bold else F_NORMAL
         put(self.ws, f"B{self.r}", caption, font)
         for i, f in enumerate(formulas):
             if f is None:
                 continue
             is_f = isinstance(f, str)
+            if is_f:
+                f = self.book.to_pres(f, force=rate)
             put(self.ws, f"{chr(ord(start) + i)}{self.r}", ("=" + f) if is_f else f,
                 F_INPUT if (inp or not is_f) else font, fmt, border=border)
         if key:
@@ -162,13 +173,13 @@ class Notes:
         t = self.total(total_caption, first, self.r - 1, key=key)
         tot_face = lambda fy: "+".join(f"{face('close', fy, f)}" for f in faces)
         for fy, col in ((CY, "C"), (PY, "D")):
-            self.book.check(f"Note {self.book.notes[key]} {fy}: '{total_caption}' agrees to the statement of financial position",
+            self.chk(f"Note {self.book.notes[key]} {fy}: '{total_caption}' agrees to the statement of financial position",
                             f"Notes!{col}{t}-({sign}({tot_face(fy)}))")
         self.r += 1
         return t
 
     def ref(self, key, fy):
-        return self.book.cell("Notes", key, fy)
+        return self.book.cell("Notes", key, fy, "P")
 
     # ---- the notes ----
     def build(self):
@@ -176,7 +187,7 @@ class Notes:
         put(ws, "A1", f"={E['entity_name']}", F_TITLE)
         put(ws, "A2", "Notes to the financial statements", F_SUB)
         put(ws, "A3", f'="For the year ended "&TEXT({E["reporting_date"]},"d mmmm yyyy")')
-        put(ws, "A4", f'="Expressed in "&{E["currency"]}&". Blue text and yellow cells are entity-specific narrative to be completed or confirmed."', F_GREY)
+        put(ws, "A4", f'="Amounts in "&{E["pres_label"]}&" unless otherwise stated. Blue text and yellow cells are entity-specific narrative to be completed or confirmed."', F_GREY)
         widths(ws, [5, 60, 16, 16, 16, 16, 16, 16])
         ws.sheet_view.showGridLines = False
         for key, _ in NOTE_PLAN:
@@ -203,10 +214,28 @@ class Notes:
                       "retrospectively in accordance with Section 10, subject to the specific transition provisions of the Standard. "
                       "[Describe the nature of the changes in accounting policy, the transition provisions applied, whether "
                       "comparative information has been restated, and the adjustments to the line items affected.]")
-        self.para(f'="The financial statements are presented in "&{E["currency"]}&", which is the Company\'s functional currency, and are '
-                  f'prepared on the historical cost basis except for land, which is measured at a revalued amount. They comprise the statement of '
-                  f'financial position, the statement of comprehensive income, the statement of changes in equity, the statement of cash flows and '
-                  f'these notes, with comparative information for the preceding year."', placeholder=False)
+        self.para("The financial statements are prepared on the historical cost basis except for land, which is measured at a revalued "
+                  "amount. They comprise the statement of financial position, the statement of comprehensive income, the statement of "
+                  "changes in equity, the statement of cash flows and these notes, with comparative information for the preceding year.")
+        self.sub("Functional and presentation currency")
+        self.para(f'="The functional currency of the Company is "&{E["currency"]}&", the currency of the primary economic environment in which '
+                  f'it operates. The financial statements are presented in "&{E["pres_currency"]}&", which differs from the functional currency, '
+                  f'because "&{E["pres_reason"]}&". Amounts are rounded to the nearest "&TEXT({E["pres_scale"]},"#,##0")&" "&{E["pres_currency"]}'
+                  f'&" unless otherwise stated."', placeholder=False)
+        self.para("The results and financial position are translated into the presentation currency as follows: (a) assets and liabilities "
+                  "for each statement of financial position presented are translated at the closing rate at the date of that statement; (b) "
+                  "income and expenses, and cash flows, are translated at the average rate for the year, which approximates the exchange rates "
+                  "at the dates of the transactions; (c) share capital, share premium and reserves are carried at historical rates; and (d) all "
+                  "resulting exchange differences are recognised in other comprehensive income and accumulated in the foreign currency "
+                  "translation reserve, a separate component of equity. They are not subsequently reclassified to profit or loss.")
+        self.heads(None, years=True)
+        self.line("Closing rate at 31 December", [E["fx_close_cy"], E["fx_close_py"]], fmt="#,##0.00")
+        self.line("Average rate for the year", [E["fx_avg_cy"], E["fx_avg_py"]], fmt="#,##0.00")
+        self.line("Exchange differences recognised in other comprehensive income",
+                  [self.book.cell("SoCI", "OCI_FX", CY, "P"), self.book.cell("SoCI", "OCI_FX", PY, "P")])
+        self.line("Foreign currency translation reserve at 31 December",
+                  [self.book.cell("SoFP", "TR", CY, "P"), self.book.cell("SoFP", "TR", PY, "P")])
+        self.r += 1
         self.para("Going concern: management has assessed the Company's ability to continue as a going concern, taking into account all available "
                   "information about the future covering at least twelve months from the reporting date, and has not identified any material "
                   "uncertainty that may cast significant doubt upon it. The financial statements are therefore prepared on the going concern basis.")
@@ -215,9 +244,16 @@ class Notes:
         self.title("policies", "Material accounting policy information")
         self.para("The accounting policies set out below have been applied consistently to all periods presented.")
         n = self.book.notes["policies"]
+        self.para("Accounting policy information is disclosed where it is material (paragraph 8.5). The selection of each policy and "
+                  "the materiality assessment are documented in the Policies and Materiality working papers.", inp=True, placeholder=False)
         for i, (head, text) in enumerate(POLICIES, start=1):
-            self.sub(f"{n}.{i}  {head}")
-            self.para(text, inp="[" in text, placeholder=False)
+            pr = self.book.policy_rows[head]
+            put(self.ws, f"B{self.r}", f'="{n}.{i}  "&Policies!$B${pr}', F_BOLD)
+            self.r += 1
+            self.ws.merge_cells(f"B{self.r}:H{self.r}")
+            put(self.ws, f"B{self.r}", f"=Policies!$I${pr}", F_NORMAL, align=Alignment(wrap_text=True, vertical="top"))
+            self.ws.row_dimensions[self.r].height = 14.5 * max(1, -(-len(text) // 150)) + 3
+            self.r += 2
 
     def n_judgements(self):
         self.title("judgements", "Significant judgements and key sources of estimation uncertainty")
@@ -242,8 +278,8 @@ class Notes:
             self.line(LEAF[l][1] + timing, ["-" + lead("close", CY, [l]), "-" + lead("close", PY, [l])])
         t = self.total("Total revenue", first, self.r - 1, key="REV_T")
         for fy, col in ((CY, "C"), (PY, "D")):
-            b.check(f"Note {b.notes['revenue']} {fy}: revenue agrees to the statement of comprehensive income",
-                    f"Notes!{col}{t}-{b.cell('SoCI', 'REV', fy)}")
+            self.chk(f"Note {b.notes['revenue']} {fy}: revenue agrees to the statement of comprehensive income",
+                    f"Notes!{col}{t}-{b.cell('SoCI', 'REV', fy, 'P')}")
         self.r += 1
         self.sub("Contract balances")
         self.heads(None, years=True)
@@ -253,7 +289,7 @@ class Notes:
             self.line("Contract assets", [lead("close", CY, ["CONTA"]), lead("close", PY, ["CONTA"])])
         self.line("Contract liabilities (advances from customers)", ["-" + lead("close", CY, ["CONTL"]), "-" + lead("close", PY, ["CONTL"])])
         self.line("Revenue recognised from opening contract liabilities",
-                  ["-" + lead("open", CY, ["CONTL"]), "-" + lead("open", PY, ["CONTL"])], inp=False)
+                  ["-" + lead("open", CY, ["CONTL"]), "-" + lead("open", PY, ["CONTL"])], rate="A")
         self.r += 1
         self.para("[Describe the nature of the goods and services promised, when promises are typically satisfied, significant payment terms, "
                   "obligations for returns, refunds and warranties, and confirm that opening contract liabilities were recognised as revenue in the year.]")
@@ -289,10 +325,10 @@ class Notes:
                   + [f"SUM(C{r}:F{r})", "+".join(face("close", PY, f) for f in funcs) + f"-SUM(H{first}:H{r - 1})"])
         t = self.total("Total cost of sales, distribution, administrative and other expenses", first, r, ncols=6, key="EXP_T")
         b.reg("Notes", "EXP_FIRST", first)
-        b.check(f"Note {b.notes['expenses']} CY: expenses by nature agree to the expenses by function in the SoCI",
-                f"Notes!G{t}+" + "+".join(b.cell("SoCI", f, CY) for f in funcs))
-        b.check(f"Note {b.notes['expenses']} PY: expenses by nature agree to the expenses by function in the SoCI",
-                f"Notes!H{t}+" + "+".join(b.cell("SoCI", f, PY) for f in funcs))
+        self.chk(f"Note {b.notes['expenses']} CY: expenses by nature agree to the expenses by function in the SoCI",
+                f"Notes!G{t}+" + "+".join(b.cell("SoCI", f, CY, 'P') for f in funcs))
+        self.chk(f"Note {b.notes['expenses']} PY: expenses by nature agree to the expenses by function in the SoCI",
+                f"Notes!H{t}+" + "+".join(b.cell("SoCI", f, PY, 'P') for f in funcs))
 
     def n_finance(self):
         self.title("finance", "Finance income and finance costs")
@@ -335,12 +371,12 @@ class Notes:
         self.r += 1
         self.sub("Reconciliation of income tax expense to accounting profit")
         self.heads(None, years=True)
-        p = self.line("Profit before tax", [b.cell("SoCI", "PBT", CY), b.cell("SoCI", "PBT", PY)])
+        p = self.line("Profit before tax", [b.cell("SoCI", "PBT", CY, 'P'), b.cell("SoCI", "PBT", PY, 'P')])
         self.line("Applicable tax rate", [E["tax_rate"], E["tax_rate"]], fmt=PCT)
         a = self.line("Tax at the applicable rate", [f"C{p}*{E['tax_rate']}", f"D{p}*{E['tax_rate']}"])
         ni = self.cfg.get("notes_inputs", {})
         self.line("Tax effect of expenses not deductible for tax purposes",
-                  [float(ni.get("tax_nondeductible_cy", 0)), float(ni.get("tax_nondeductible_py", 0))])
+                  [self.usd(ni.get("tax_nondeductible_cy", 0), "A", CY), self.usd(ni.get("tax_nondeductible_py", 0), "A", PY)], inp=True)
         self.line("Tax effect of income not taxable", [0, 0])
         o = self.line("Other differences (balancing figure - investigate if significant)",
                       [f"C{t}-SUM(C{a}:C{a + 2})", f"D{t}-SUM(D{a}:D{a + 2})"])
@@ -351,8 +387,8 @@ class Notes:
         self.heads(None, years=True)
         self.line("Current tax liabilities/(assets), net", ["-" + lead("close", CY, ["CTL", "CTA"]), "-" + lead("close", PY, ["CTL", "CTA"])])
         for fy, col in ((CY, "C"), (PY, "D")):
-            b.check(f"Note {b.notes['tax']} {fy}: income tax expense agrees to the statement of comprehensive income",
-                    f"Notes!{col}{t}+{b.cell('SoCI', 'TAX', fy)}")
+            self.chk(f"Note {b.notes['tax']} {fy}: income tax expense agrees to the statement of comprehensive income",
+                    f"Notes!{col}{t}+{b.cell('SoCI', 'TAX', fy, 'P')}")
 
     def _rollforward(self, classes, cost, dep, charge_caption, dep_caption, key, reval=True):
         """Cost / accumulated depreciation reconciliation for the current year (comparatives not required)."""
@@ -376,7 +412,7 @@ class Notes:
         if reval:
             row("Revaluation recognised in other comprehensive income", lambda i: glm(CY, [cost[i]], ["REVAL"]))
         last = self.r - 1
-        oth = row("Other movements (unclassified GL movements - investigate)",
+        oth = row("Exchange differences on translation (and any unclassified movements)",
                   lambda i: f"{lead('close', CY, [cost[i]])}-SUM({cols[i]}{o}:{cols[i]}{last})")
         cc = row(None, lambda i: f"SUM({cols[i]}{o}:{cols[i]}{oth})", bold=True, border=B_TOP)
         put(self.ws, f"B{cc}", yr1, F_BOLD)
@@ -387,7 +423,7 @@ class Notes:
         ch = row(charge_caption, lambda i: "-" + glm(CY, [dep[i]], ["DEP"]), k=key + "_CHARGE")
         row("Eliminated on disposals", lambda i: "-" + glm(CY, [dep[i]], ["DISP"]))
         last = self.r - 1
-        oth2 = row("Other movements (unclassified GL movements - investigate)",
+        oth2 = row("Exchange differences on translation (and any unclassified movements)",
                    lambda i: f"-{lead('close', CY, [dep[i]])}-SUM({cols[i]}{o2}:{cols[i]}{last})")
         cd = row(None, lambda i: f"SUM({cols[i]}{o2}:{cols[i]}{oth2})", bold=True, border=B_TOP)
         put(self.ws, f"B{cd}", yr1, F_BOLD)
@@ -398,8 +434,10 @@ class Notes:
         c0 = row(None, lambda i: f"{cols[i]}{o}-{cols[i]}{o2}", bold=True)
         put(self.ws, f"B{c0}", yr0, F_BOLD)
         self.r += 1
-        b.check(f"Note {b.notes[key]}: unclassified movements in the roll-forward are nil",
-                f"ABS(Notes!{tot}{oth})+ABS(Notes!{tot}{oth2})")
+        types_c = ["ADD", "ADD_NC", "DISP"] + (["REVAL"] if reval else [])
+        b.check(f"Note {b.notes[key]}: every ledger movement in the roll-forward is classified (functional currency)",
+                "+".join(f"ABS({lead('mvt', CY, [c])}-{glm(CY, [c], types_c)})" for c in cost) + "+"
+                + "+".join(f"ABS({lead('mvt', CY, [d])}-{glm(CY, [d], ['DEP', 'DISP'])})" for d in dep))
         return tot, c1, c0, ch
 
     def n_ppe(self):
@@ -407,9 +445,9 @@ class Notes:
         self.title("ppe", "Property, plant and equipment")
         tot, c1, c0, ch = self._rollforward([c for _, c in PPE_CLASSES], PPE_COST, PPE_DEP, "Depreciation charge for the year",
                                             "Accumulated depreciation and impairment", "ppe")
-        b.check(f"Note {b.notes['ppe']}: carrying amount agrees to the SoFP (CY and PY)",
-                f"ABS(Notes!{tot}{c1}-{b.cell('SoFP', 'PPE', CY)})+ABS(Notes!{tot}{c0}-{b.cell('SoFP', 'PPE', PY)})")
-        b.check(f"Note {b.notes['ppe']}: depreciation charge agrees to the expense in profit or loss",
+        self.chk(f"Note {b.notes['ppe']}: carrying amount agrees to the SoFP (CY and PY)",
+                f"ABS(Notes!{tot}{c1}-{b.cell('SoFP', 'PPE', CY, 'P')})+ABS(Notes!{tot}{c0}-{b.cell('SoFP', 'PPE', PY, 'P')})")
+        self.chk(f"Note {b.notes['ppe']}: depreciation charge agrees to the expense in profit or loss",
                 f"Notes!{tot}{ch}-{nat(CY, ['DEP'])}")
         self.para("[Land was revalued on (date); (name), an independent valuer, was involved. The fair value measurement is categorised in "
                   "Level (2/3) of the fair value hierarchy; the valuation technique was (technique) and the inputs were (inputs). "
@@ -421,8 +459,8 @@ class Notes:
         self.title("intang", "Intangible assets")
         tot, c1, c0, ch = self._rollforward(["Computer software"], ["INTANG.C"], ["INTANG.D"], "Amortisation charge for the year",
                                             "Accumulated amortisation and impairment", "intang", reval=False)
-        b.check(f"Note {b.notes['intang']}: carrying amount agrees to the SoFP (CY and PY)",
-                f"ABS(Notes!{tot}{c1}-{b.cell('SoFP', 'INTANG', CY)})+ABS(Notes!{tot}{c0}-{b.cell('SoFP', 'INTANG', PY)})")
+        self.chk(f"Note {b.notes['intang']}: carrying amount agrees to the SoFP (CY and PY)",
+                f"ABS(Notes!{tot}{c1}-{b.cell('SoFP', 'INTANG', CY, 'P')})+ABS(Notes!{tot}{c0}-{b.cell('SoFP', 'INTANG', PY, 'P')})")
         self.para("Amortisation is included in administrative expenses in the statement of comprehensive income.", inp=True)
 
     def n_invprop(self):
@@ -460,7 +498,7 @@ class Notes:
         f = self.r
         self.line("At 1 January", ["-" + lead("open", CY, ["TOR.ALLOW"]), "-" + lead("open", PY, ["TOR.ALLOW"])])
         self.line("Impairment loss recognised in profit or loss", [nat(CY, ["IMPAIR"]), nat(PY, ["IMPAIR"])])
-        self.line("Amounts written off as uncollectible and other movements",
+        self.line("Amounts written off, exchange differences and other movements",
                   [f"-{lead('close', CY, ['TOR.ALLOW'])}-SUM(C{f}:C{f + 1})", f"-{lead('close', PY, ['TOR.ALLOW'])}-SUM(D{f}:D{f + 1})"])
         self.total("At 31 December", f, f + 2)
         self.r += 1
@@ -478,12 +516,13 @@ class Notes:
         bands = ["Past due not later than one month", "Past due later than one month and not later than three months",
                  "Past due later than three months and not later than one year", "Past due later than one year"]
         nd = self.r
+        b.reg("Notes", "AGE_ND", nd)
         self.r += 1
         first = self.r
         vals = ni.get("ageing", [])
         for i, cap in enumerate(bands):
             v = [float(x) for x in (vals[i] if i < len(vals) else [0, 0, 0, 0])]
-            r = self.line(cap, v)
+            r = self.line(cap, [self.usd(x, "C", fy) for x, fy in zip(v, (CY, CY, PY, PY))], inp=True)
             for col in "CDEF":
                 self.ws[f"{col}{r}"].fill = FILL_INPUT
         last = self.r - 1
@@ -493,7 +532,7 @@ class Notes:
         save, self.r = self.r, nd
         self.line("Not yet due (balancing amount)", [f"{c}{t}-SUM({c}{first}:{c}{last})" for c in "CDEF"])
         self.r = save + 1
-        b.check(f"Note {b.notes['tor']}: age analysis - overdue bands do not exceed the ledger balance of trade receivables",
+        self.chk(f"Note {b.notes['tor']}: age analysis - overdue bands do not exceed the ledger balance of trade receivables",
                 "+".join(f"MIN(0,Notes!{c}{nd})" for c in "CDEF"))
 
     def _maturity(self):
@@ -512,8 +551,8 @@ class Notes:
         for i, cap in enumerate(bands):
             r = self.r
             bor = [float(x) for x in (vals[i] if i < len(vals) else [0, 0])]
-            self.line(cap, ["-" + lead("close", CY, pay) if i == 0 else 0, bor[0], f"C{r}+D{r}",
-                            "-" + lead("close", PY, pay) if i == 0 else 0, bor[1], f"F{r}+G{r}"])
+            self.line(cap, ["-" + lead("close", CY, pay) if i == 0 else 0, self.usd(bor[0], "C", CY), f"C{r}+D{r}",
+                            "-" + lead("close", PY, pay) if i == 0 else 0, self.usd(bor[1], "C", PY), f"F{r}+G{r}"])
             for col in "DG":
                 self.ws[f"{col}{r}"].fill = FILL_INPUT
             for col in "CF":
@@ -537,8 +576,8 @@ class Notes:
         c = self.line("Cash and cash equivalents in the statement of cash flows", [f"C{t}+C{od}", f"D{t}+D{od}"], bold=True,
                       border=B_TOTAL)
         for fy, col in ((CY, "C"), (PY, "D")):
-            b.check(f"Note {b.notes['cash']} {fy}: cash and cash equivalents agree to the SoFP and to the SoCF",
-                    f"ABS(Notes!{col}{t}-{b.cell('SoFP', 'CASH', fy)})+ABS(Notes!{col}{c}-{b.cell('SoCF', 'CLOSE', fy)})")
+            self.chk(f"Note {b.notes['cash']} {fy}: cash and cash equivalents agree to the SoFP and to the SoCF",
+                    f"ABS(Notes!{col}{t}-{b.cell('SoFP', 'CASH', fy, 'P')})+ABS(Notes!{col}{c}-{b.cell('SoCF', 'CLOSE', fy, 'P')})")
         self.r += 1
         self.para("[Disclose any significant cash and cash equivalent balances that are not available for use by the Company, and any "
                   "significant non-cash investing and financing transactions.]")
@@ -549,9 +588,10 @@ class Notes:
         self.heads(None, years=True)
         self.line("Number of ordinary shares authorised", [E["shares_authorised"], E["shares_authorised"]], fmt="#,##0")
         self.line("Number of ordinary shares issued and fully paid", [E["shares_issued_cy"], E["shares_issued_py"]], fmt="#,##0")
-        self.line("Par value per share", [E["par_value"], E["par_value"]], fmt="#,##0.00")
-        self.line("Share capital", ["-" + lead("close", CY, ["SC"]), "-" + lead("close", PY, ["SC"])])
-        self.line("Share premium", ["-" + lead("close", CY, ["SP"]), "-" + lead("close", PY, ["SP"])])
+        self.line(f"Par value per share (functional currency)", [E["par_value"], E["par_value"]], fmt="#,##0.00")
+        for k, cap in (("SC", "Share capital"), ("SP", "Share premium"), ("RESV", "Revaluation and other reserves"),
+                       ("TR", "Foreign currency translation reserve")):
+            self.line(cap, [self.book.cell("SoFP", k, CY, "P"), self.book.cell("SoFP", k, PY, "P")])
         self.r += 1
         self.sub("Reconciliation of the number of shares outstanding")
         self.heads([self.book.year(CY)])
@@ -564,7 +604,9 @@ class Notes:
                   "[Describe rights, preferences and restrictions, shares reserved for issue and any shares held by the entity.]", inp=True, placeholder=False)
         self.sub("Reserves")
         self.para("Share premium records the amount received in excess of the par value of shares issued. The revaluation reserve records "
-                  "revaluation increases on land, net of the related deferred tax; it is not available for distribution until realised.", inp=True, placeholder=False)
+                  "revaluation increases on land, net of the related deferred tax; it is not available for distribution until realised. The foreign currency translation reserve records the exchange "
+                  "differences arising on translating the financial statements from the functional currency into the presentation "
+                  "currency; it is not distributable.", inp=True, placeholder=False)
 
     def n_borr(self):
         b = self.book
@@ -578,7 +620,7 @@ class Notes:
         self.line("At 1 January", ["-" + lead("open", CY, BORR), "-" + lead("open", PY, BORR)])
         self.line("Cash flows: proceeds from borrowings", ["-" + glm(CY, BORR, ["PROCEEDS"]), "-" + glm(PY, BORR, ["PROCEEDS"])])
         self.line("Cash flows: repayment of borrowings", ["-" + glm(CY, BORR, ["REPAY"]), "-" + glm(PY, BORR, ["REPAY"])])
-        self.line("Non-cash changes (new finance leases and other)",
+        self.line("Effect of changes in foreign exchange rates and other non-cash changes",
                   [f"-{lead('close', CY, BORR)}-SUM(C{f}:C{f + 2})", f"-{lead('close', PY, BORR)}-SUM(D{f}:D{f + 2})"])
         self.total("At 31 December (excluding bank overdrafts)", f, f + 3)
         self.r += 1
@@ -600,12 +642,13 @@ class Notes:
         self.line("Additional provisions recognised in the year", ["-" + glm(CY, P, ["ADD"])])
         self.line("Amounts used during the year", ["-" + glm(CY, P, ["USED"])])
         self.line("Unused amounts reversed", ["-" + glm(CY, P, ["REVERSED"])])
-        o = self.line("Other movements (unclassified GL movements - investigate)", [f"-{lead('close', CY, P)}-SUM(C{f}:C{f + 3})"])
+        o = self.line("Exchange differences on translation (and any unclassified movements)", [f"-{lead('close', CY, P)}-SUM(C{f}:C{f + 3})"])
         t = self.total("At 31 December", f, o, ncols=1)
         self.line("Of which: current", ["-" + lead("close", CY, ["PROV_C"])])
         self.line("Of which: non-current", ["-" + lead("close", CY, ["PROV_NC"])])
         self.r += 1
-        b.check(f"Note {b.notes['prov']}: unclassified movements in provisions are nil", f"Notes!C{o}")
+        b.check(f"Note {b.notes['prov']}: every ledger movement in provisions is classified (functional currency)",
+                f"{lead('mvt', CY, P)}-{glm(CY, P, ['ADD', 'USED', 'REVERSED'])}")
         self.para("[Describe the nature of each obligation, the expected amount and timing of payments, and the uncertainties about them.]")
 
     def n_ebo(self):
@@ -623,9 +666,11 @@ class Notes:
         self.line("At 1 January", ["-" + lead("open", CY, DT), "-" + lead("open", PY, DT)])
         self.line("Charged/(credited) to profit or loss", [lead("close", CY, ["TAX.DEF"]), lead("close", PY, ["TAX.DEF"])])
         self.line("Charged/(credited) to other comprehensive income", ["-" + glm(CY, DT, ["OCI"]), "-" + glm(PY, DT, ["OCI"])])
-        t = self.total("At 31 December - net deferred tax liability/(asset)", f, f + 2)
+        self.line("Exchange differences on translation", [f"-{lead('close', CY, DT)}-SUM(C{f}:C{f + 2})",
+                                                          f"-{lead('close', PY, DT)}-SUM(D{f}:D{f + 2})"])
+        t = self.total("At 31 December - net deferred tax liability/(asset)", f, f + 3)
         for fy, col in ((CY, "C"), (PY, "D")):
-            b.check(f"Note {b.notes['dtax']} {fy}: deferred tax roll-forward agrees to the SoFP",
+            self.chk(f"Note {b.notes['dtax']} {fy}: deferred tax roll-forward agrees to the SoFP",
                     f"Notes!{col}{t}+{lead('close', fy, DT)}")
         self.r += 1
 
@@ -648,11 +693,12 @@ class Notes:
         self.heads(None, years=True)
         d = self.line("Dividends declared during the year", [f"{lead('close', CY, ['RE.DIV'])}+{glm(CY, ['RE'], ['DIVIDEND'])}",
                                                              f"{lead('close', PY, ['RE.DIV'])}+{glm(PY, ['RE'], ['DIVIDEND'])}"])
-        self.line("Dividend per share", [f"IF({E['shares_issued_cy']}=0,0,C{d}/{E['shares_issued_cy']})",
-                                         f"IF({E['shares_issued_py']}=0,0,D{d}/{E['shares_issued_py']})"], fmt="#,##0.000")
+        self.line("Dividend per share (single currency units)", [f"IF({E['shares_issued_cy']}=0,0,C{d}*{E['pres_scale']}/{E['shares_issued_cy']})",
+                                         f"IF({E['shares_issued_py']}=0,0,D{d}*{E['pres_scale']}/{E['shares_issued_py']})"], fmt="#,##0.000")
         self.line("Dividends payable at year end", ["-" + lead("close", CY, ["TOP.DIV"]), "-" + lead("close", PY, ["TOP.DIV"])])
-        p = self.line("Dividends proposed or declared after the reporting date, not recognised as a distribution", [E["dividend_proposed"], None])
-        self.line("Per share", [f"IF({E['shares_issued_cy']}=0,0,C{p}/{E['shares_issued_cy']})", None], fmt="#,##0.000")
+        p = self.line("Dividends proposed or declared after the reporting date, not recognised as a distribution",
+                      [f"{E['dividend_proposed']}{self.book.conv('C', CY)}", None])
+        self.line("Per share (single currency units)", [f"IF({E['shares_issued_cy']}=0,0,C{p}*{E['pres_scale']}/{E['shares_issued_cy']})", None], fmt="#,##0.000")
         self.r += 1
 
     def n_commitments(self):

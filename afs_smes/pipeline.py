@@ -13,19 +13,23 @@ from . import checks as chk
 from .ingest import Log, harmonise_names, read_gl, read_tb
 from .mapping import build_mapping, load_user_mapping
 from .movements import classify
-from .sheets_data import (build_aje, build_dq_log, build_entity, build_gl, build_guide, build_lead, build_lists,
+from .sheets_data import (build_aje, build_atb, build_dq_log, build_entity, build_gl, build_guide, build_lead, build_lists,
                           build_mapping as sheet_mapping, build_tb)
+from .sheets_extra import (build_dash_data, build_dashboard, build_directors_report, build_findings, build_materiality,
+                           build_policies)
 from .sheets_notes import Notes, plan_notes
 from .sheets_review import build_analysis, build_checklist, build_checks
 from .sheets_statements import build_soce, build_socf, build_soci, build_soci_nature, build_sofp
 from .taxonomy import LEAF
 from .xl import Book
 
-SHEETS = ["Guide", "Entity", "Checks", "DQ_Log", "SoFP", "SoCI", "SoCE", "SoCF", "Notes", "SoCI_Nature", "Analysis", "Checklist",
-          "Mapping", "Lead", "TB", "AJE", "GL", "Lists"]
-TAB = {"Guide": "7F7F7F", "Entity": "FFC000", "Checks": "C00000", "DQ_Log": "C00000", "SoFP": "1F3864",
-       "SoCI": "1F3864", "SoCE": "1F3864", "SoCF": "1F3864", "Notes": "1F3864", "SoCI_Nature": "8EA9DB", "Analysis": "548235",
-       "Checklist": "548235", "Mapping": "FFC000", "AJE": "FFC000"}
+SHEETS = ["Dashboard", "Guide", "Entity", "Directors_Report", "SoFP", "SoCI", "SoCE", "SoCF", "Notes", "SoCI_Nature",
+          "Materiality", "Policies", "Analysis", "Checklist", "Checks", "Findings", "DQ_Log", "GL", "TB", "AJE", "ATB", "Mapping",
+          "Lead", "Dash_Data", "Lists"]
+TAB = {"Dashboard": "14284B", "Guide": "7F7F7F", "Entity": "FFC000", "Directors_Report": "1F3864", "SoFP": "1F3864",
+       "SoCI": "1F3864", "SoCE": "1F3864", "SoCF": "1F3864", "Notes": "1F3864", "SoCI_Nature": "8EA9DB",
+       "Materiality": "548235", "Policies": "548235", "Analysis": "548235", "Checklist": "548235", "Checks": "C00000",
+       "Findings": "C00000", "DQ_Log": "C00000", "Mapping": "FFC000", "AJE": "FFC000"}
 
 
 def run(tb_cy, out, tb_py=None, gl_cy=None, gl_py=None, config=None, mapping_file=None):
@@ -79,20 +83,27 @@ def run(tb_cy, out, tb_py=None, gl_cy=None, gl_py=None, config=None, mapping_fil
     build_lists(book, ws["Lists"])
     sheet_mapping(book, ws["Mapping"], mapping)
     build_tb(book, ws["TB"], mapping, t_cy, t_py)
-    build_aje(book, ws["AJE"])
+    build_atb(book, ws["ATB"], mapping)
+    build_aje(book, ws["AJE"], cfg.get("adjustments", []))
     build_gl(book, ws["GL"], [("PY", g_py), ("CY", g_cy)])
     plan_notes(book)
     build_soci(book, ws["SoCI"])
-    build_soci_nature(book, ws["SoCI_Nature"])
     build_sofp(book, ws["SoFP"])
     build_soce(book, ws["SoCE"])
     build_socf(book, ws["SoCF"])
+    build_soci_nature(book, ws["SoCI_Nature"])
+    build_materiality(book, ws["Materiality"])
+    build_policies(book, ws["Policies"])
     Notes(book, ws["Notes"], cfg).build()
     build_analysis(book, ws["Analysis"])
     build_checklist(book, ws["Checklist"])
     build_checks(book, ws["Checks"])
     sources = [Path(p).name for p in (tb_cy, tb_py, gl_cy, gl_py) if p]
     build_dq_log(book, ws["DQ_Log"], results, log.rows, sources)
+    build_findings(book, ws["Findings"], results)
+    build_directors_report(book, ws["Directors_Report"])
+    build_dash_data(book, ws["Dash_Data"])
+    build_dashboard(book, ws["Dashboard"])
     for n in ("SoFP", "SoCI", "SoCE", "SoCF", "Notes"):
         s = ws[n]
         s.page_setup.orientation = "portrait" if n not in ("SoCE", "Notes") else "landscape"
@@ -116,5 +127,8 @@ def live_check_results(path):
         subprocess.run([soffice, "--headless", f"-env:UserInstallation=file://{tmp}/profile", "--convert-to",
                         "xlsx:Calc MS Excel 2007 XML", "--outdir", tmp, str(path)],
                        check=True, capture_output=True, timeout=300)
-        ws = load_workbook(Path(tmp) / path.name, data_only=True)["Checks"]
+        import warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            ws = load_workbook(Path(tmp) / path.name, data_only=True)["Checks"]
         return [(r[1], r[2], r[3]) for r in ws.iter_rows(min_row=6, values_only=True) if r[0] is not None and r[3]]

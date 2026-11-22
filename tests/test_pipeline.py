@@ -11,13 +11,13 @@ from afs_smes.mapping import suggest
 @pytest.fixture(scope="module")
 def data(tmp_path_factory):
     d = tmp_path_factory.mktemp("sample")
-    sample.generate(d, 2025)
+    sample.generate(d, 2026)
     return d
 
 
 def build(d, out, **over):
-    args = dict(tb_cy=d / "TB_2025.xlsx", tb_py=d / "TB_2024.xlsx", gl_cy=d / "GL_2025.xlsx",
-                gl_py=d / "GL_2024.xlsx", config=d / "config.json")
+    args = dict(tb_cy=d / "TB_2026.xlsx", tb_py=d / "TB_2025.xlsx", gl_cy=d / "GL_2026.xlsx",
+                gl_py=d / "GL_2025.xlsx", config=d / "config.json")
     args.update(over)
     return pipeline.run(out=out, **args)
 
@@ -51,11 +51,18 @@ def test_workbook_statements_reconcile(data, tmp_path):
     res = build(data, tmp_path / "afs.xlsx")
     live = pipeline.live_check_results(res["out"])
     assert len(live) > 40 and all(status == "PASS" for _, _, status in live)
+    # Excel rejects a formula containing a text literal longer than 255 characters
+    import re
+    for ws in load_workbook(res["out"]).worksheets:
+        for row in ws.iter_rows():
+            for c in row:
+                if isinstance(c.value, str) and c.value.startswith("="):
+                    assert all(len(lit) <= 255 for lit in re.findall(r'"((?:[^"]|"")*)"', c.value)), (ws.title, c.coordinate)
 
 
 def test_broken_trial_balance_is_detected(data, tmp_path):
     bad = tmp_path / "TB_bad.xlsx"
-    wb = load_workbook(data / "TB_2025.xlsx")
+    wb = load_workbook(data / "TB_2026.xlsx")
     ws = wb.active
     row = next(r for r in range(5, ws.max_row) if ws.cell(r, 2).value == "Office rent")
     ws.cell(row, 7).value = ws.cell(row, 7).value + 1000      # closing debit overstated

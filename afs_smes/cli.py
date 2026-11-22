@@ -10,7 +10,7 @@ def main(argv=None):
     sub = ap.add_subparsers(dest="cmd", required=True)
     s = sub.add_parser("sample", help="write a two-year sample GL/TB data set with deliberate data defects")
     s.add_argument("--out", default="data/sample")
-    s.add_argument("--year", type=int, default=2025)
+    s.add_argument("--year", type=int, default=2026)
     b = sub.add_parser("build", help="clean, check, map and draft the financial statements workbook")
     b.add_argument("--tb-cy", required=True, help="current-year trial balance (xlsx/csv)")
     b.add_argument("--tb-py", help="prior-year trial balance")

@@ -1,13 +1,26 @@
 {
   "entity_name": "Mekong Trading Co., Ltd.",
   "legal_form": "private limited liability company",
-  "country": "[Country of incorporation]",
+  "country": "the Kingdom of Cambodia",
+  "registration_no": "[registration number]",
+  "directors": "[names and positions of the directors]",
+  "auditors": "[name of audit firm]",
   "registered_office": "[Registered office address]",
   "principal_activities": "the wholesale distribution of consumer goods and related after-sales services",
-  "reporting_date": "2025-12-31",
+  "reporting_date": "2026-12-31",
   "currency": "USD",
+  "pres_currency": "KHR",
+  "pres_scale": 1000,
+  "pres_reason": "presentation in Khmer Riel is required for statutory reporting purposes in Cambodia",
+  "fx_close_cy": 4005,
+  "fx_avg_cy": 4012,
+  "fx_close_py": 4010,
+  "fx_avg_py": 4018,
+  "fx_close_ppy": 4025,
+  "fx_hist_capital": 4000,
+  "fx_hist_re": 4060,
   "tax_rate": 0.2,
-  "authorised_date": "2026-03-25",
+  "authorised_date": "2027-03-25",
   "authorised_by": "the Board of Directors",
   "shares_issued_cy": 450000,
   "shares_issued_py": 400000,
@@ -61,6 +74,71 @@
       ]
     ]
   },
+  "adjustments": [
+    {
+      "no": 1,
+      "account": "6010",
+      "description": "Accrual of bonuses and professional fees",
+      "debit": 10640.0,
+      "credit": 0
+    },
+    {
+      "no": 1,
+      "account": "6070",
+      "description": "Accrual of bonuses and professional fees",
+      "debit": 4000,
+      "credit": 0
+    },
+    {
+      "no": 1,
+      "account": "2020",
+      "description": "Accrual of bonuses and professional fees",
+      "debit": 0,
+      "credit": 14640.0
+    },
+    {
+      "no": 2,
+      "account": "6100",
+      "description": "Impairment allowance adjusted to 5% of receivables",
+      "debit": 3479.2,
+      "credit": 0
+    },
+    {
+      "no": 2,
+      "account": "1110",
+      "description": "Impairment allowance adjusted to 5% of receivables",
+      "debit": 0,
+      "credit": 3479.2
+    },
+    {
+      "no": 3,
+      "account": "8010",
+      "description": "Current income tax for the year",
+      "debit": 22788.13,
+      "credit": 0
+    },
+    {
+      "no": 3,
+      "account": "2100",
+      "description": "Current income tax for the year",
+      "debit": 0,
+      "credit": 22788.13
+    },
+    {
+      "no": 4,
+      "account": "8020",
+      "description": "Deferred tax on accelerated tax depreciation",
+      "debit": 1000.0,
+      "credit": 0
+    },
+    {
+      "no": 4,
+      "account": "2600",
+      "description": "Deferred tax on accelerated tax depreciation",
+      "debit": 0,
+      "credit": 1000.0
+    }
+  ],
   "dayfirst": true,
   "account_classes": {
     "1": "A",

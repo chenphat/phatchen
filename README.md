@@ -15,14 +15,14 @@ pip install pandas openpyxl            # LibreOffice is optional (used to verify
 
 python -m afs_smes sample --out data/sample          # two-year teaching data set with planted defects
 python -m afs_smes build \
-    --tb-cy data/sample/TB_2025.xlsx --tb-py data/sample/TB_2024.xlsx \
-    --gl-cy data/sample/GL_2025.xlsx --gl-py data/sample/GL_2024.xlsx \
+    --tb-cy data/sample/TB_2026.xlsx --tb-py data/sample/TB_2025.xlsx \
+    --gl-cy data/sample/GL_2026.xlsx --gl-py data/sample/GL_2025.xlsx \
     --config data/sample/config.json \
-    --out output/AFS_Mekong_Trading_2025.xlsx
+    --out output/AFS_Mekong_Trading_2026.xlsx
 ```
 
 The command prints the cleaning and check summary and exits non-zero if any check fails.
-A built example is in `output/AFS_Mekong_Trading_2025.xlsx` (fictitious entity).
+A built example is in `output/AFS_Mekong_Trading_2026.xlsx` (fictitious entity).
 
 ## Inputs
 
@@ -59,18 +59,40 @@ accounts). The prior-year files are optional; without them comparatives are blan
 
 | Sheet | Purpose |
 |---|---|
-| Guide, Entity | Workflow, colour legend, entity inputs |
-| Checks | Live reconciliations (SoFP balances, SoCE and SoCF tie to the SoFP, notes tie to the statements, GL ties to TB …) |
-| DQ_Log | Source-data checks and the cleaning log |
-| SoFP, SoCI, SoCE, SoCF | Primary statements with comparatives and note references |
-| SoCI_Nature | Alternative SoCI with expenses classified by nature (paragraph 5.11(a)); issue one format only |
-| Notes | General information, basis of preparation, material accounting policy information, judgements and estimates, and supporting notes (revenue, expenses by nature, tax reconciliation, PPE and intangibles roll-forwards, receivables with age analysis, cash, equity, borrowings and financing-liabilities reconciliation, payables, provisions, deferred tax, financial instruments with maturity analysis, commitments, contingencies, related parties, events after the reporting period, approval) |
-| Analysis, Checklist | Ratios and year-on-year variances; disclosure checklist by Section |
-| Mapping, Lead, TB, AJE, GL, Lists | Working papers: mapping, lead schedule, adjusted TB, adjusting journals, cleaned GL |
+| Dashboard | KPI tiles, six charts, key ratios and priority actions, with navigation to every working paper |
+| Guide, Entity | Workflow, colour legend; entity inputs including exchange rates |
+| Directors_Report | Report of the Board of Directors, figures linked to the statements |
+| SoFP, SoCI, SoCE, SoCF | Primary statements, two years, in the presentation currency with the functional currency alongside |
+| Notes | All notes, in the presentation currency (see list in the sheet) |
+| SoCI_Nature | Alternative SoCI with expenses by nature (paragraph 5.11(a)); issue one format only |
+| Materiality | Benchmarks, overall / performance materiality, line-by-line assessment by size and nature |
+| Policies | Options the Standard permits, the policy selected, and whether it is material enough to disclose; drives Note 3 |
+| Analysis, Checklist | Two-year ratios, movements and common-size analysis; disclosure checklist by paragraph |
+| Checks, Findings, DQ_Log | Live reconciliations; action tracker; source-data checks and cleaning log |
+| GL, TB, AJE, ATB | Cleaned ledger; unadjusted trial balance; adjusting entries; adjusted trial balance |
+| Mapping, Lead, Dash_Data, Lists | Account mapping, lead schedule, chart data, drop-down lists |
 
 Presentation choices: single statement of comprehensive income, expenses by function with the
 analysis by nature in the notes, cash flows by the indirect method. Ledger data is signed
 debit +, credit −.
+
+### Functional and presentation currency (Section 30)
+
+The ledger stays in the functional currency. Set `pres_currency`, `pres_scale` and the rates in the
+config (or on the Entity sheet) to present in another currency:
+
+* assets and liabilities at the closing rate of each year end;
+* income, expenses and cash flows at the average rate for the year;
+* share capital, share premium and reserves at historical rates;
+* the difference goes to other comprehensive income and the translation reserve, with a proof
+  by rates on the Checks sheet (paragraph 30.20).
+
+The rates in `data/sample/config.json` are illustrative, not official rates.
+
+### Adjusting entries
+
+List them under `adjustments` in the config (account, description, debit, credit) or type them
+into the AJE sheet. TB + AJE = ATB.
 
 ## Limits – read before relying on the output
 

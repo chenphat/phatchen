@@ -3,6 +3,8 @@
 All statement figures are live formulas:
     GL / TB  ->  Mapping  ->  Lead (one row per AFS component)  ->  statements and notes
 """
+import re
+
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 
@@ -61,9 +63,9 @@ def nat(fy, natures, funcs=None):
     parts = []
     for n in natures:
         if funcs:
-            parts += [f'SUMIFS(TB!${c}:${c},TB!$E:$E,"{n}",TB!$D:$D,"{f}")' for f in funcs]
+            parts += [f'SUMIFS(ATB!${c}:${c},ATB!$E:$E,"{n}",ATB!$D:$D,"{f}")' for f in funcs]
         else:
-            parts.append(f'SUMIFS(TB!${c}:${c},TB!$E:$E,"{n}")')
+            parts.append(f'SUMIFS(ATB!${c}:${c},ATB!$E:$E,"{n}")')
     return "(" + "+".join(parts) + ")"
 
 
@@ -115,8 +117,45 @@ class Book:
         self.rows[(sheet, key)] = row
         return row
 
-    def cell(self, sheet, key, fy, cols=("C", "D")):
+    def cell(self, sheet, key, fy, cur="F"):
+        """Statement cell. cur 'F' = functional currency columns (E, F); 'P' = presentation currency columns (C, D)."""
+        cols = ("E", "F") if cur == "F" else ("C", "D")
         return f"{sheet}!{cols[0] if fy == CY else cols[1]}{self.rows[(sheet, key)]}"
+
+    def rate(self, kind, fy):
+        """Exchange rate cell: kind C closing, A average, O opening (the previous closing rate)."""
+        key = {("C", CY): "fx_close_cy", ("C", PY): "fx_close_py", ("O", CY): "fx_close_py", ("O", PY): "fx_close_ppy",
+               ("A", CY): "fx_avg_cy", ("A", PY): "fx_avg_py"}[(kind, fy)]
+        return self.ent[key]
+
+    def conv(self, kind, fy):
+        """Multiplier that turns a functional-currency amount into presentation-currency units."""
+        return f"*{self.rate(kind, fy)}/{self.ent['pres_scale']}"
+
+    def to_pres(self, formula, force=None):
+        """Translate every ledger term of a formula into the presentation currency (Section 30.18):
+        balances at the closing rate, opening balances at the previous closing rate, income, expenses and
+        movements at the average rate."""
+        from .taxonomy import FACE, is_pl
+
+        def lead_term(m):
+            col, code = m.group(1), m.group(3)
+            fy = CY if col in "FHJ" else PY
+            if col in "HI":
+                kind = "O"
+            elif col in "JK":
+                kind = "A"
+            else:
+                flow = is_pl(code) or code == "RE.DIV" or (code in FACE and FACE[code][2] == "SoCI")
+                kind = "A" if flow else "C"
+            return f"({m.group(0)}{self.conv(force or kind, fy)})"
+
+        f = re.sub(r'SUMIFS\(Lead!\$([F-K]):\$\1,Lead!\$([AC]):\$\2,"([^"]+)"\)', lead_term, formula)
+        f = re.sub(r'SUMIFS\(GL!\$J:\$J,GL!\$K:\$K,"[^"]+",GL!\$L:\$L,"[^"]+",GL!\$A:\$A,"(CY|PY)"\)',
+                   lambda m: f"({m.group(0)}{self.conv(force or 'A', m.group(1))})", f)
+        f = re.sub(r'SUMIFS\(ATB!\$([OI]):\$\1,[^()]*\)',
+                   lambda m: f"({m.group(0)}{self.conv(force or 'A', CY if m.group(1) == 'O' else PY)})", f)
+        return f
 
     def year(self, fy):
         return f"=YEAR({self.ent['reporting_date']})" + ("" if fy == CY else "-1")
