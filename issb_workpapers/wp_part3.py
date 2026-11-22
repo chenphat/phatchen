@@ -2,6 +2,7 @@
 import datetime as dt
 from wp_lib import C, A, ref, rng, CLIENT, PERIOD
 from wp_part2 import E1, E5, E9, MONTHS
+from wp_part4 import build_g1
 
 D = dt.date
 F1, F2, F3, F4, F5 = 'F1 Checklist', 'F2 Judgements', 'F3 Connectivity', 'F4 Evidence', 'F5 Actions'
@@ -400,7 +401,7 @@ def build_index(X):
     ws.set_row(0, 28)
     ws.merge_range(1, 0, 1, 7, 'WORKING PAPER INDEX - Sustainability-related financial disclosures under IFRS S1 and IFRS S2  |  ' + PERIOD, X.f(bold=True, font_size=12, font_color=C['navy']))
     ws.merge_range(2, 0, 2, 7, 'IMPORTANT: the client, all data and all amounts are fictional and for teaching / illustration only. Emission factors marked "illustrative" must be replaced before real use. Requirements are summarised - refer to the Standards. '
-                   'Colour code: blue font = input, black = formula, green = cross-working-paper link, yellow fill = key assumption. Guidance abbreviations: HB = KPMG IFRS Sustainability handbook (Sep 2026); MG = Materiality How-to guide; DC = Disclosure checklist (Oct 2026).',
+                   'Colour code: blue font = input, black = formula, green = cross-working-paper link, yellow fill = key assumption. Guidance abbreviations: HB = KPMG IFRS Sustainability handbook (Sep 2026); MG = Materiality How-to guide; DC = Disclosure checklist (Oct 2026). ISSA 5000 (assurance) is referenced by topic in G1 - it was not among the source documents.',
                    X.f(italic=True, text_wrap=True, font_color='#9C0006', bg_color='#FFF2CC', border=1, border_color=C['mid']))
     ws.set_row(2, 46)
     ws.merge_range(3, 0, 3, 1, '', X.f(font_color=C['blue'], underline=1, bold=True))
@@ -408,7 +409,7 @@ def build_index(X):
     ws.set_landscape(); ws.fit_to_pages(1, 0)
     H = ['WP ref', 'Sheet (click to open)', 'Title', 'ISSB reference', 'Prepared by', 'Reviewed by', 'Status', 'Guidance used']
     X.hdr(ws, 4, H)
-    secs = {'A': 'A. FOUNDATION - reporting entity, value chain, SROs and materiality', 'B': 'B. GOVERNANCE', 'C': 'C. STRATEGY', 'D': 'D. RISK MANAGEMENT', 'E': 'E. METRICS AND TARGETS', 'F': 'F. COMPLETION, CONNECTIVITY AND QUALITY'}
+    secs = {'A': 'A. FOUNDATION - reporting entity, value chain, SROs and materiality', 'B': 'B. GOVERNANCE', 'C': 'C. STRATEGY', 'D': 'D. RISK MANAGEMENT', 'E': 'E. METRICS AND TARGETS', 'F': 'F. COMPLETION, CONNECTIVITY AND QUALITY', 'G': 'G. ASSURANCE READINESS (ISSA 5000)'}
     r = 5
     last = ''
     first = None
@@ -513,9 +514,10 @@ def build_calc(X):
     X.hdr(ws, r, ['H. Reporting-readiness indicators', '%'])
     for i, (l, f) in enumerate([('Disclosure checklist complete', '=Chk_Pct'), ('Working papers reviewed', '=WP_Rev/WP_Total'), ('Evidence fully on file', '=Ev_Pct'),
                                 ('Assurance-ready data streams', '=Ev_Ready'), ('FS tie-out items agreeing', '=Tie_OK'), ('Scope 3 from primary activity data', '=S3_Primary'),
-                                ('Targets on track / achieved', '=Tgt_OnTrack/(Tgt_OnTrack+Tgt_Behind)')]):
+                                ('Targets on track / achieved', '=Tgt_OnTrack/(Tgt_OnTrack+Tgt_Behind)'),
+                                ('ESG KPIs with evidence on file', '=KPI_Ev/KPI_Total'), ('ISSA 5000 readiness items complete', '=ISSA_Ready')]):
         X.put(ws, r + 1 + i, 0, l); X.put(ws, r + 1 + i, 1, f, num_format='0%')
-    cz['rdy'] = (r + 1, r + 7)
+    cz['rdy'] = (r + 1, r + 9)
     # I. top scope 3 categories
     r = 75
     a, b = X.ad['s3cat']
@@ -561,7 +563,7 @@ def build_dashboard(X):
     ws.write(2, 0, 'WORKING PAPERS  FY2025', X.f(bg_color=C['navy'], font_color='#9FB8E0', bold=True, font_size=8, align='center'))
     nav = [('Dashboard', 'Dashboard', True), ('WP Index', 'Index', False), (None, 'FOUNDATION', None)] + \
           [(w['wp'] + '  ' + w['sheet'][len(w['wp']) + 1:], w['sheet'], False) for w in X.wps]
-    grp = {'B': 'CORE CONTENT', 'E': 'METRICS AND TARGETS', 'F': 'COMPLETION'}
+    grp = {'B': 'CORE CONTENT', 'E': 'METRICS AND TARGETS', 'F': 'COMPLETION', 'G': 'ASSURANCE'}
     r = 4
     seen = set()
     lf = X.f(bg_color=C['navy'], font_color='#FFFFFF', font_size=9, indent=1, valign='vcenter')
@@ -751,13 +753,13 @@ def build_dashboard(X):
     K_ = [('Revenue exposed to transition risk - S2.29(b)', '=Rev_Transition_Pct', '0%'), ('Assets exposed to physical risk - S2.29(c)', '=Assets_Physical_Pct', '0%'),
           ('Revenue aligned with opportunities - S2.29(d)', '=Rev_Opp_Pct', '0%'), ('Climate capex / total capex - S2.29(e)', '=Capex_Climate_Pct', '0%'),
           ('Internal carbon price USD/t - S2.29(f)', '=ICP', '#,##0'), ('Exec. remuneration climate-linked - S2.29(g)', '=Rem_Pct', '0.0%'),
-          ('Working papers reviewed', '=WP_Rev&" of "&WP_Total', 'General')]
+          ('ESG KPIs in ISSB disclosures (E10)', '=KPI_ISSB&" of "&KPI_Total', 'General')]
     for i, (l, f, nf) in enumerate(K_):
         rr = T + 2 + i
         ws.merge_range(rr, 20, rr, 23, l, cell(indent=1))
         ws.merge_range(rr, 24, rr, 25, '', cell(num_format=nf, bold=True, align='right', font_color=C['navy']))
         ws.write_formula(rr, 24, f, cell(num_format=nf, bold=True, align='right', font_color=C['navy']))
-    ws.merge_range(T + 10, 2, T + 10, 25, 'Sources: F1 checklist (KPIs 1-2, chart 1) | E3-E6 GHG inventory (KPIs 3-4, charts 2, 3, 6) | A3-A4 (KPI 5, chart 4) | F5 action log (KPI 6, chart 5) | E9 targets (chart 7) | F3-F4, Index (chart 8). '
+    ws.merge_range(T + 10, 2, T + 10, 25, 'Sources: F1 checklist (KPIs 1-2, chart 1) | E3-E6 GHG inventory (KPIs 3-4, charts 2, 3, 6) | A3-A4 (KPI 5, chart 4) | F5 action log (KPI 6, chart 5) | E9 targets (chart 7) | F3-F4, E10, G1, Index (chart 8). '
                    'Change inputs (blue cells) in the working papers and the dashboard recalculates.', X.f(bg_color=PAGE, font_color='#5B6B7F', italic=True, font_size=8, text_wrap=True, valign='top'))
     ws.set_row(T + 10, 26)
     ws.set_first_sheet(); ws.activate()
@@ -766,6 +768,7 @@ def build_dashboard(X):
 
 def build_part3(X):
     build_f1(X); build_f2(X); build_f3(X); build_f4(X); build_f5(X)
+    build_g1(X)
     build_index(X)
     build_calc(X)
     build_dashboard(X)
