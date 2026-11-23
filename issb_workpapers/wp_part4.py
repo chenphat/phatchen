@@ -9,11 +9,11 @@ NO = 'No - monitored only'
 
 
 def build_e10(X):
-    ws, r = X.sheet(E10, 'E10', 'ESG key-metric library - Environmental, Social and Governance KPIs mapped to ISSB',
+    ws, r = X.sheet(E10, 'E10', 'ESG key-metric library - Environmental, Social, Governance and supply-chain KPIs mapped to ISSB',
                     'Extend the metric set to a full Environmental / Social / Governance KPI library and decide, KPI by KPI, whether it belongs in the ISSB disclosures. ISSB does not prescribe a fixed ESG KPI list: a metric is disclosed when an ISSB Standard requires it (IFRS S2.29, 32) or when the entity uses it to measure and monitor a risk or opportunity that could reasonably be expected to affect its prospects (IFRS S1.46). Other KPIs are kept for internal monitoring or other frameworks.',
                     'IFRS S1.45-53, S1.55-58 (sources of guidance), S1.B25, B29-B30 (immaterial information; not obscuring); IFRS S2.29, 32, B64-B67',
                     'HB 3.5.10, 4.1.120-4.1.190; DC 2.4.2-2.4.5, 3.4; MG Steps 4-5. KPI structure adapted from "Key metrics for sustainability" (GTS / A. Vizcaya Abdo)',
-                    [8, 13, 22, 28, 40, 13, 16, 13, 11, 28, 19, 26, 18, 11, 12], prep='Chan M.', tab=C['green'], status='In review', obj_h=58)
+                    [8, 13, 22, 28, 40, 13, 16, 13, 11, 28, 19, 26, 18, 11, 12, 22], prep='Chan M.', tab=C['green'], status='In review', obj_h=58)
     e = X.ad
     t = e['e1t']
     prod = f"({ref(E1, t, 11)}+{ref(E1, t, 12)})"
@@ -40,9 +40,15 @@ def build_e10(X):
         (Env, 'Waste reduction and recycling', 'Total waste generated', 'All waste streams', '=' + waste, 'tonnes', N0, NA, 'SR-03', 'S1.46(b)', NO, 'GRI 306-3', 'E1', 'Yes', 'No'),
         (Env, 'Waste reduction and recycling', 'Recycling rate', 'Waste diverted from landfill / incineration', f"={e['e1_w_rec']}/{waste}", '%', P, NA, 'SR-03', 'S1.46(b)', NO, 'GRI 306-4', 'E8', 'Yes', 'No'),
         (Env, 'Waste reduction and recycling', 'Hazardous waste management', 'Hazardous waste treated by licensed contractor', '=' + e['e1_w_haz'], 'tonnes', N0, NA, 'SR-03', 'S1.46(b)', MAT, 'GRI 306-3', 'E1', 'Yes', 'No'),
+        (Env, 'Pollution and resources', 'Air-emissions compliance', 'Boiler stack tests within permit limits', f"={e['e1_stack_pass']}/{e['e1_stack_tests']}", '%', P, NA, 'CR-04', 'S1.B25 - not disclosed', NO, 'Entity-developed (MoE permit)', 'E1', 'Yes', 'No'),
+        (Env, 'Pollution and resources', 'Chemical management', 'Chemical inventory conforming to ZDHC MRSL', '=' + e['e1_mrsl'], '%', P, NA, 'SR-03', 'S1.55(a), 58(a)', MAT, 'SASB CG-AA-250a (adapted)', 'E1', 'Yes', 'No'),
+        (Env, 'Pollution and resources', 'Plastic packaging', 'Polybags used', '=' + e['e1_plastic'], 'tonnes', N0, NA, 'None', 'S1.B25 - not disclosed', NO, 'Entity-developed', 'E1', 'Yes', 'No'),
         (Env, 'Land use and biodiversity', 'Land area preserved', 'Hectares conserved or restored', '=' + e['e1_land_ha'], 'hectares', N0, NA, 'SR-05 (not relevant)', 'S1.B25 - not disclosed', NO, 'GRI 304-3', 'E1', 'Yes', 'No'),
         (Env, 'Land use and biodiversity', 'Operations in sensitive areas', 'Sites in or adjacent to protected areas', '=' + e['e1_sites_sens'], 'sites', N0, NA, 'SR-05 (not relevant)', 'S1.B25 - not disclosed', NO, 'GRI 304-1', 'E1', 'Yes', 'No'),
         (Env, 'Land use and biodiversity', 'Certified sourcing of biomass', 'Boiler biomass from certified plantation or agri-residue', '=' + e['e1_wood_cert'], '%', P, 0.27, 'CR-04', 'S2.33-35 (target T3)', MAT, 'Entity-developed', 'E9', 'Partial', 'No'),
+        (Env, 'Supply chain - environmental', 'Supplier environmental assessment', 'Tier-1 spend with verified Higg FEM assessment', '=SC_Env', '%', P, NA, 'CR-03, SR-07', 'S1.46(b); S2.32', MAT, 'IBG / SASB CG-AA-430a.2', 'E11', 'Yes', 'No'),
+        (Env, 'Supply chain - environmental', 'Supplier primary GHG data', 'Fabric spend from mills providing primary GHG data', '=SC_GHG', '%', P, NA, 'CR-03', 'S2.29(a)(vi), B56(a)', REQ, 'IFRS S2', 'E11, E5', 'Yes', 'No'),
+        (Env, 'Supply chain - environmental', 'Supplier wastewater', 'Wet-processing suppliers meeting ZDHC limits', '=SC_WW', '%', P, NA, 'SR-07', 'S1.55(a), 58(a)', MAT, 'SASB CG-AA-430a.1', 'E11', 'Partial', 'No'),
         (Soc, 'Employee satisfaction and retention', 'Employee turnover rate', 'Leavers / average headcount', '=' + e['e1_turnover'], '%', P, NA, 'SR-04', 'S1.46(b)', NO, 'GRI 401-1', 'E8', 'Yes', 'No'),
         (Soc, 'Employee satisfaction and retention', 'Employee satisfaction', 'Engagement-survey score', '=' + e['e1_eng'], 'score / 100', N0, NA, 'SR-04', 'S1.46(b)', NO, 'Entity-developed', 'E1', 'Yes', 'No'),
         (Soc, 'Employee satisfaction and retention', 'Training and development', 'Average training hours per employee', f"={e['e1_train_h']}/{e['e1_hc']}", 'hours', N1, NA, 'SR-04', 'S1.46(b)', NO, 'GRI 404-1', 'E1', 'Yes', 'No'),
@@ -52,6 +58,9 @@ def build_e10(X):
         (Soc, 'Community engagement', 'Community investment', 'Financial contributions to local communities', '=' + e['e1_comm'], 'USD\'000', N0, NA, 'None', 'S1.B25 - not disclosed', NO, 'GRI 201-1', 'E1', 'Yes', 'No'),
         (Soc, 'Community engagement', 'Local hiring', 'New hires from host provinces', '=' + e['e1_local'], '%', P, NA, 'SR-04', 'S1.B25 - not disclosed', NO, 'GRI 202-2 (adapted)', 'E1', 'Yes', 'No'),
         (Soc, 'Community engagement', 'Stakeholder engagement activities', 'Community consultations held', '=' + e['e1_consult'], 'number', N0, NA, 'CR-01, SR-03', 'S1.B25 - not disclosed', NO, 'GRI 413-1', 'E1', 'Yes', 'No'),
+        (Soc, 'Human rights and community', 'Human-rights due diligence', 'Own operations covered by HRDD assessment', '=' + e['e1_hrdd'], '%', P, NA, 'SR-01', 'S1.46(b)', MAT, 'UNGP / OECD due-diligence guidance', 'E1', 'Yes', 'No'),
+        (Soc, 'Human rights and community', 'Child and forced labour', 'Cases identified in own operations', '=' + e['e1_cl_fl'], 'number', N0, NA, 'SR-01', 'S1.46(b)', MAT, 'GRI 408 / 409', 'E1', 'Yes', 'No'),
+        (Soc, 'Human rights and community', 'Community grievances', 'Grievances received from communities', '=' + e['e1_comm_griev'], 'number', N0, NA, 'CR-01, SR-03', 'S1.B25 - not disclosed', NO, 'GRI 413', 'E1', 'Yes', 'No'),
         (Soc, 'Health and safety', 'Injury rate', 'Recordable injuries per 200,000 hours worked', f"={e['e1_rec_inj']}*200000/{e['e1_hours']}", 'per 200k hours', N2, NA, 'SR-02', 'S1.46(b), 49', MAT, 'OSHA / GRI 403-9', 'E1', 'Yes', 'Yes'),
         (Soc, 'Health and safety', 'Lost-time injury frequency rate', 'Lost-time injuries per million hours worked', '=LTIFR', 'per million hours', N2, NA, 'SR-02', 'S1.46(b), 51 (target T6)', MAT, 'GRI 403-9', 'E8', 'Yes', 'Yes'),
         (Soc, 'Health and safety', 'Safety training completion', 'Employees completing required safety training', '=' + e['e1_safe_tr'], '%', P, NA, 'SR-02', 'S1.46(b)', MAT, 'GRI 403-5', 'E1', 'Yes', 'No'),
@@ -61,6 +70,14 @@ def build_e10(X):
         (Soc, 'Employee well-being', 'Health-support access', 'Employees with access to on-site clinic', '=' + e['e1_clinic'], '%', P, NA, 'SR-02', 'S1.B25 - not disclosed', NO, 'Entity-developed', 'E1', 'Yes', 'No'),
         (Soc, 'Labour conditions', 'Social-audit performance', 'Buyer audits passed without critical finding', '=' + e['e1_audit_pass'], '%', P, NA, 'SR-01', 'S1.55(a), 58(a)', MAT, 'SASB CG-AA-430b.2 (adapted)', 'E8', 'Yes', 'No'),
         (Soc, 'Labour conditions', 'BFC non-compliance points', 'Non-compliant critical assessment items', '=' + e['e1_bfc_nc'], 'number', N0, NA, 'SR-01', 'S1.46(b), 50(c)', MAT, 'Better Factories Cambodia', 'E8', 'Yes', 'No'),
+        (Soc, 'Supply chain - social', 'Supplier social audits', 'Tier-1 spend covered by a social audit', '=SC_Soc', '%', P, NA, 'SR-07', 'S1.55(a), 58(a)', MAT, 'SASB CG-AA-430b.1', 'E11', 'Yes', 'No'),
+        (Soc, 'Supply chain - social', 'Supplier corrective actions', 'Suppliers with critical findings that have an agreed plan', '=SC_CAP', '%', P, NA, 'SR-07', 'S1.55(a), 58(a)', MAT, 'SASB CG-AA-430b.2', 'E11', 'Yes', 'No'),
+        (Soc, 'Supply chain - social', 'Supplier code of conduct', 'Tier-1 spend with code of conduct signed', '=SC_COC', '%', P, NA, 'SR-07', 'S1.46(b)', NO, 'Entity-developed', 'E11', 'Yes', 'No'),
+        (Soc, 'Supply chain - social', 'High-risk supplier concentration', 'Tier-1 spend with high-risk suppliers', '=SC_HighSpend', '%', P, NA, 'SR-07', 'S1.32(b)', MAT, 'Entity-developed', 'E11', 'Partial', 'No'),
+        (Soc, 'Customer responsibility', 'Restricted substances in products', 'Product RSL tests passed', f"={e['e1_rsl_pass']}/{e['e1_rsl_tests']}", '%', P, NA, 'SR-03', 'S1.55(a), 58(a)', MAT, 'SASB CG-AA-250a.1', 'E1', 'Yes', 'No'),
+        (Soc, 'Customer responsibility', 'Product recalls', 'Recalls of products supplied', '=' + e['e1_recalls'], 'number', N0, NA, 'None', 'S1.B25 - not disclosed', NO, 'Entity-developed', 'E1', 'Yes', 'No'),
+        (Soc, 'Customer responsibility', 'Customer quality claims', 'Claims as % of revenue', '=' + e['e1_claims'], '%', P, NA, 'None', 'S1.B25 - not disclosed', NO, 'Entity-developed', 'E1', 'Yes', 'No'),
+        (Soc, 'Customer responsibility', 'Data privacy', 'Substantiated privacy complaints', '=' + e['e1_privacy'], 'number', N0, NA, 'SR-06 (not relevant)', 'S1.B25 - not disclosed', NO, 'GRI 418', 'E1', 'Yes', 'No'),
         (Gov, 'Board oversight and structure', 'Board independence', 'Independent directors / board members', f"={e['e1_bd_ind']}/{e['e1_bd_n']}", '%', P, NA, 'Governance', 'S1.27(a) narrative only', NO, 'GRI 2-9', 'B1', 'Yes', 'No'),
         (Gov, 'Board oversight and structure', 'Sustainability oversight', 'Board-level committee with sustainability mandate (1 = yes)', '=' + e['e1_bd_cttee'], 'yes = 1', N0, NA, 'Governance', 'S1.27(a); S2.6(a)', REQ, 'IFRS S1 / S2', 'B1', 'Yes', 'No'),
         (Gov, 'Board oversight and structure', 'Sustainability on board agenda', 'Board / committee meetings with sustainability items', '=' + e['e1_bd_meet'], 'meetings', N0, NA, 'Governance', 'S1.27(a)(iii); S2.6(a)(iii)', REQ, 'IFRS S1 / S2', 'B1', 'Yes', 'No'),
@@ -71,6 +88,9 @@ def build_e10(X):
         (Gov, 'Ethics and compliance', 'Code-of-conduct training', 'Employees completing annual ethics training', '=' + e['e1_coc'], '%', P, NA, 'SR-01', 'S1.46(b)', NO, 'GRI 205-2', 'E1', 'Yes', 'No'),
         (Gov, 'Ethics and compliance', 'Anti-corruption cases', 'Confirmed corruption incidents', '=' + e['e1_corr'], 'number', N0, NA, 'None', 'S1.B25 - not disclosed', NO, 'GRI 205-3', 'E1', 'Yes', 'No'),
         (Gov, 'Ethics and compliance', 'Whistleblower system use', 'Reports resolved / reports received', f"={e['e1_wb_res']}/{e['e1_wb_rec']}", '%', P, NA, 'SR-01', 'S1.46(b)', MAT, 'GRI 2-26', 'E1', 'Yes', 'No'),
+        (Gov, 'Tax transparency', 'Effective tax rate', 'Income tax expense / profit before tax', f"={e['e1_tax_exp']}/PBT25", '%', P, NA, 'None', 'S1.B25 - not disclosed', NO, 'GRI 207 / FS note 8', 'E1', 'Yes', 'No'),
+        (Gov, 'Tax transparency', 'Total tax contribution', 'Income tax, payroll taxes, customs and withholding paid', '=' + e['e1_tax_total'], 'USD\'000', N0, NA, 'None', 'S1.B25 - not disclosed', NO, 'GRI 207-4', 'E1', 'Yes', 'No'),
+        (Gov, 'Tax transparency', 'Tax strategy published', 'Board-approved tax strategy published (1 = yes)', '=' + e['e1_tax_policy'], 'yes = 1', N0, NA, 'None', 'S1.B25 - not disclosed', NO, 'GRI 207-1', 'E1', 'Yes', 'No'),
         (Gov, 'Risk management', 'Business-continuity plans', 'Critical sites with a plan updated in the year', f"={e['e1_bcp']}/3", '%', P, 0.33, 'CR-01', 'S2.25(a); S2.14(a)(ii)', MAT, 'Entity-developed', 'D1', 'Yes', 'No'),
         (Gov, 'Risk management', 'Risk-mitigation coverage', 'Relevant SROs with a documented response (C1)', f"={e['e1_sro_resp']}/SRO_Relevant", '%', P, 0.78, 'All', 'S1.44; S2.25', MAT, 'Entity-developed', 'A3, C1', 'Yes', 'No'),
         (Gov, 'Risk management', 'Cyber-security audits', 'Audits conducted in the year', '=' + e['e1_cyber'], 'number', N0, NA, 'SR-06 (not relevant)', 'S1.B25 - not disclosed', NO, 'Entity-developed', 'E1', 'Yes', 'No'),
@@ -80,11 +100,20 @@ def build_e10(X):
         (Gov, 'Transparency and reporting', 'Grievance resolution', 'Average days to resolve worker grievances', '=' + e['e1_griev'], 'days', N0, NA, 'SR-01', 'S1.46(b)', MAT, 'Entity-developed', 'E1', 'Yes', 'No'),
     ]
     H = ['KPI ID', 'Pillar', 'Category', 'KPI', 'Metric definition', 'FY2025', 'Unit', 'FY2024', 'Linked SRO (A3)', 'ISSB basis', 'In ISSB disclosures?',
-         'Metric source (S1.49-50)', 'Working paper', 'Evidence on file? (F4)', 'In assurance scope? (G1)']
+         'Metric source (S1.49-50)', 'Working paper', 'Evidence on file? (F4)', 'In assurance scope? (G1)', 'ESG theme (E12)']
+    THEME = {'Carbon emissions and climate': 'Climate change', 'Energy use and efficiency': 'Climate change', 'Water management': 'Water security',
+             'Waste reduction and recycling': 'Pollution & resources', 'Pollution and resources': 'Pollution & resources', 'Land use and biodiversity': 'Biodiversity',
+             'Supply chain - environmental': 'Supply chain - environmental', 'Supply chain - social': 'Supply chain - social',
+             'Employee satisfaction and retention': 'Labour standards', 'Diversity, equity and inclusion': 'Labour standards', 'Labour conditions': 'Labour standards',
+             'Human rights and community': 'Human rights & community', 'Community engagement': 'Human rights & community',
+             'Health and safety': 'Health & safety', 'Employee well-being': 'Health & safety', 'Customer responsibility': 'Customer responsibility',
+             'Board oversight and structure': 'Corporate governance', 'Executive accountability': 'Corporate governance', 'Transparency and reporting': 'Corporate governance',
+             'Ethics and compliance': 'Anti-corruption', 'Risk management': 'Risk management', 'Tax transparency': 'Tax transparency',
+             'Certified sourcing of biomass': 'Supply chain - environmental', 'Code-of-conduct training': 'Anti-corruption'}
     rows = []
     for i, k in enumerate(K):
-        rows.append([f'{k[0][0]}-{i + 1:02d}', k[0], k[1], k[2], k[3], k[4], k[5], k[7], k[8], k[9], k[10], k[11], k[12], k[13], k[14]])
-    a, b = X.table(ws, r, H, rows, inp=(4, 6, 8, 9, 10, 11, 12, 13, 14))
+        rows.append([f'{k[0][0]}-{i + 1:02d}', k[0], k[1], k[2], k[3], k[4], k[5], k[7], k[8], k[9], k[10], k[11], k[12], k[13], k[14], THEME.get(k[2], THEME[k[1]])])
+    a, b = X.table(ws, r, H, rows, inp=(4, 6, 8, 9, 10, 11, 12, 13, 14, 15))
     for i, k in enumerate(K):
         X.put(ws, a + i, 5, k[4], num_format=k[6])
         v = k[7]
@@ -96,7 +125,7 @@ def build_e10(X):
     X.cf_status(ws, a, b, 13); X.cf_status(ws, a, b, 14)
     for word, bg, fg in ((REQ, '#C6EFCE', '#006100'), (MAT, '#DDEBF7', '#1F4E78'), (NO, '#EDEDED', '#595959')):
         ws.conditional_format(a, 10, b, 10, {'type': 'cell', 'criteria': '==', 'value': f'"{word}"', 'format': X.wb.add_format({'bg_color': bg, 'font_color': fg})})
-    ws.autofilter(r, 0, b, 14)
+    ws.autofilter(r, 0, b, 15)
     X.ad['kpi'] = (a, b)
     r = b + 2
     X.sec(ws, r, 'Summary (feeds Dashboard)', 9)
@@ -122,7 +151,7 @@ def build_e10(X):
         X.name(nm, E10, tr, c)
     X.note(ws, tr + 2, 'How to read "In ISSB disclosures?": "Yes - required" = a specific IFRS S1 / S2 requirement. "Yes - material SRO" = the entity uses the KPI to measure and monitor a relevant risk or opportunity and the information is material (S1.46(b)); '
                        'the source is identified (S1.49) and entity-developed metrics are defined (S1.50). "No - monitored only" = not linked to a relevant SRO or not material: ISSB does not require it and including it could obscure material information (S1.B25, B30); '
-                       'it can still be reported under other frameworks (e.g. GRI). No FY2024 comparative is given for non-climate KPIs in the first year they are reported (S1.E6).', 15, h=54)
+                       'it can still be reported under other frameworks (e.g. GRI). No FY2024 comparative is given for non-climate KPIs in the first year they are reported (S1.E6).', 16, h=54)
     ws.freeze_panes(9, 4)
 
 

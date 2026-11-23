@@ -6,8 +6,8 @@ All client data are invented for teaching purposes.
 
 | File | Purpose |
 |---|---|
-| `TTM_ISSB_Sustainability_Working_Papers_FY2025.xlsx` | The deliverable: Dashboard, Index and 25 cross-referenced working papers |
-| `build_workpapers.py`, `wp_lib.py`, `wp_part1-4.py` | Python (xlsxwriter) generator that rebuilds the workbook |
+| `TTM_ISSB_Sustainability_Working_Papers_FY2025.xlsx` | The deliverable: Dashboard, Index and 27 cross-referenced working papers |
+| `build_workpapers.py`, `wp_lib.py`, `wp_part1-5.py` | Python (xlsxwriter) generator that rebuilds the workbook |
 
 ## Working papers
 
@@ -18,7 +18,9 @@ All client data are invented for teaching purposes.
 | C1-C3 | Strategy, transition plan, financial effects, scenario analysis | S1.28-42; S2.8-23, B1-B18 |
 | D1 | Risk management | S1.43-44; S2.24-26 |
 | E1-E9 | Activity data, emission factors, Scope 1/2/3, GHG summary, cross-industry and industry metrics, targets | S1.45-53; S2.27-37, B19-B71 |
-| E10 | ESG KPI library (54 Environmental / Social / Governance KPIs) mapped to ISSB: required, material-SRO metric, or monitored only | S1.45-53, B25; S2.29, 32 |
+| E10 | ESG KPI library (74 Environmental / Social / Governance / supply-chain KPIs) mapped to ISSB: required, material-SRO metric, or monitored only | S1.45-53, B25; S2.29, 32 |
+| E11 | Supply-chain ESG register: tier-1 supplier environmental and social risk, assessment coverage, concentration | S1.32(b), B2-B5; S2.13(b), B47-B56 |
+| E12 | ESG theme map: 14 rating themes, KPI coverage and evidence, and which themes belong in the ISSB report (coverage, not a score) | S1.17, B25-B30, 55-58 |
 | G1 | ISSA 5000 assurance readiness: engagement parameters, readiness checklist, assertions, indicative materiality | ISSA 5000 (by topic); S1.B8-B10, D21-D24 |
 | F1-F5 | Disclosure checklist, judgements and uncertainty, FS connectivity, evidence tracker, action log | S1.21-24, 72-86, B39-B59 |
 

@@ -110,6 +110,21 @@ def build_e1(X):
         ('reports', 'Sustainability reports issued with annual report', 1, 'reports', 'Annual report', 'Finance', 'E10'),
         ('rating', 'Third-party ESG rating score', 58, 'score / 100', 'Rating scorecard', 'Sustainability', 'E10'),
         ('griev', 'Average days to resolve worker grievances', 9, 'days', 'Grievance system', 'Compliance', 'E10'),
+        ('stack_tests', 'Boiler stack-emission tests performed', 8, 'number', 'Accredited lab reports', 'EHS', 'E10'),
+        ('stack_pass', 'Stack tests within permit limits (particulates, SO2, NOx)', 7, 'number', 'Accredited lab reports', 'EHS', 'E10'),
+        ('mrsl', 'Chemical inventory conforming to ZDHC MRSL (wash plant)', 0.94, '%', 'Chemical inventory screening', 'JV EHS', 'E10'),
+        ('plastic', 'Plastic packaging used (polybags)', 96, 'tonnes', 'Purchase ledger', 'Procurement', 'E10'),
+        ('hrdd', 'Own operations covered by human-rights due diligence', 1.0, '%', 'HRDD assessment 2025', 'Compliance', 'E10'),
+        ('cl_fl', 'Child-labour or forced-labour cases identified (own operations)', 0, 'number', 'Compliance register; BFC report', 'Compliance', 'E10'),
+        ('comm_griev', 'Community grievances received', 3, 'number', 'Stakeholder log', 'Compliance', 'E10'),
+        ('rsl_tests', 'Product tests against buyer restricted-substances lists', 412, 'number', 'Lab test reports', 'Quality', 'E10'),
+        ('rsl_pass', 'Product RSL tests passed', 405, 'number', 'Lab test reports', 'Quality', 'E10'),
+        ('recalls', 'Product recalls', 0, 'number', 'Quality register', 'Quality', 'E10'),
+        ('claims', 'Customer quality claims as % of revenue', 0.006, '%', 'Customer claims log', 'Sales', 'E10'),
+        ('privacy', 'Substantiated data-privacy complaints', 0, 'number', 'IT / HR register', 'IT', 'E10'),
+        ('tax_exp', 'Income tax expense', 512, 'USD\'000', 'FS note 8', 'Finance', 'E10'),
+        ('tax_total', 'Total tax contribution (income tax, payroll taxes, customs, withholding)', 3420, 'USD\'000', 'Tax computations', 'Finance', 'E10'),
+        ('tax_policy', 'Board-approved tax strategy published (1 = yes)', 0, 'yes = 1', 'Board minutes', 'Finance', 'E10'),
     ]
     rows = [(k, d, v, u, s_, o_, w) for k, d, v, u, s_, o_, w in D_]
     a, b = X.table(ws, r + 1, H, rows, inp=(1, 3, 4, 5))

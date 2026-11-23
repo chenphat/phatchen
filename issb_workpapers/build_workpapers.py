@@ -9,6 +9,7 @@ from wp_part1 import build_part1
 from wp_part2 import build_part2
 from wp_part3 import build_part3
 from wp_part4 import build_e10
+from wp_part5 import build_e11, build_e12
 
 OUT = sys.argv[1] if len(sys.argv) > 1 else 'TTM_ISSB_Sustainability_Working_Papers_FY2025.xlsx'
 
@@ -25,6 +26,8 @@ def main():
     build_part1(X)
     build_part2(X)
     build_e10(X)
+    build_e11(X)
+    build_e12(X)
     build_part3(X)
     X.wb.close()
     print('written', OUT, '| sheets:', len(X.wb.worksheets()), '| names:', len(X.names))

@@ -341,7 +341,7 @@ def build_f5(X):
     H = ['No.', 'Action ID', 'WP ref', 'Pillar', 'Issue / review point', 'Action required', 'Owner', 'Priority', 'Raised', 'Due', 'Status', 'Days open', 'Ageing bucket', 'Overdue?', 'Rank (open, by due date)', 'ISSB reference']
     Ac = [('A1', G, 'Confirm jurisdictional status of ISSB adoption and any local modifications', 'Obtain written confirmation from regulator / legal counsel; update A1 s.5', 'Financial Controller', 'Medium', D(2025, 11, 12), D(2026, 1, 30), 'In progress', 'S1.B31-B33'),
           ('E2', MT, 'Scope 3 emission factors are illustrative placeholders', 'Replace with documented, current factors; record source, vintage, geography', 'Head of Sustainability', 'High', D(2025, 11, 18), D(2026, 2, 13), 'In progress', 'S2.B29, B40'),
-          ('E5', MT, 'No mill-specific data for fabric (95% of Scope 3 cat. 1)', 'Request Higg FEM / product-footprint data from top-5 mills (60% of volume)', 'Procurement', 'High', D(2025, 11, 18), D(2026, 3, 6), 'Open', 'S2.B47-B49'),
+          ('E5', MT, 'Scope 3 cat. 1 uses only secondary factors although three mills can provide primary GHG data (E11)', 'Obtain and use mill-specific data in E5; request data from remaining mills; update S2.B56 disclosure', 'Procurement', 'High', D(2025, 11, 18), D(2026, 3, 6), 'Open', 'S2.B47-B49'),
           ('F4', MT, 'JV diesel ledger for September unsigned', 'Obtain JV manager sign-off and stock reconciliation', 'JV Finance', 'Low', D(2025, 12, 3), D(2026, 1, 16), 'Closed', 'S2.6(b)(ii)'),
           ('E1', MT, 'Factory B wood deliveries recorded by volume (stere), not weight', 'Install weighbridge procedure; document density assumption and sensitivity', 'Procurement', 'Medium', D(2025, 12, 3), D(2026, 2, 6), 'In progress', 'S1.78'),
           ('E9', MT, 'Base-year (2023) inventory not recalculated after LPG omission error', 'Recalculate base year; assess effect on target T1; disclose per S1.B58', 'Head of Sustainability', 'High', D(2025, 12, 10), D(2026, 2, 20), 'In progress', 'S1.83, B58; S2.34(d)'),
@@ -362,6 +362,8 @@ def build_f5(X):
           ('E6', MT, 'Comparative restatement (R-01) disclosure drafted', 'None - reviewed and cleared', 'Sok D.', 'Medium', D(2025, 12, 10), D(2026, 1, 23), 'Closed', 'S1.B58'),
           ('A3', ST, 'Time-horizon definitions to be linked to planning horizons', 'None - updated and cleared', 'Chan M.', 'Low', D(2025, 11, 12), D(2025, 12, 19), 'Closed', 'S2.10(d)'),
           ('E4', MT, 'Contractual-instrument disclosure wording', 'None - cleared', 'Chan M.', 'Low', D(2025, 11, 25), D(2025, 12, 19), 'Closed', 'S2.29(a)(v)'),
+          ('E11', ST, 'New supply-chain SRO (SR-07) not yet in the materiality assessment (A4) or strategy response (C1)', 'Assess materiality; document response, resourcing and metrics; disclose where risks are concentrated', 'Head of Sustainability', 'High', D(2026, 2, 12), D(2026, 3, 13), 'Open', 'S1.30, 32-33, B2-B5'),
+          ('E11', ST, 'Two high-risk suppliers (CN-03, BD-01) without an agreed corrective action plan or assessment', 'Agree corrective action plans or exit plans with Procurement; re-assess by Q2-2026', 'Procurement', 'Medium', D(2026, 2, 12), D(2026, 4, 30), 'Open', 'S1.33(a); SASB CG-AA-430b.2'),
           ('F1', G, 'Statement of compliance cannot be finalised until all checklist items are complete', 'Final checklist review before authorisation; CFO sign-off', 'Keo V. (CFO)', 'High', D(2026, 2, 10), D(2026, 3, 25), 'Open', 'S1.72')]
     n = len(Ac)
     a, b = r + 1, r + n
@@ -515,11 +517,11 @@ def build_calc(X):
     for i, (l, f) in enumerate([('Disclosure checklist complete', '=Chk_Pct'), ('Working papers reviewed', '=WP_Rev/WP_Total'), ('Evidence fully on file', '=Ev_Pct'),
                                 ('Assurance-ready data streams', '=Ev_Ready'), ('FS tie-out items agreeing', '=Tie_OK'), ('Scope 3 from primary activity data', '=S3_Primary'),
                                 ('Targets on track / achieved', '=Tgt_OnTrack/(Tgt_OnTrack+Tgt_Behind)'),
-                                ('ESG KPIs with evidence on file', '=KPI_Ev/KPI_Total'), ('ISSA 5000 readiness items complete', '=ISSA_Ready')]):
+                                ('ESG KPIs with evidence on file', '=KPI_Ev/KPI_Total'), ('ISSA 5000 readiness items complete', '=ISSA_Ready'), ('Tier-1 spend social-audited (E11)', '=SC_Soc')]):
         X.put(ws, r + 1 + i, 0, l); X.put(ws, r + 1 + i, 1, f, num_format='0%')
-    cz['rdy'] = (r + 1, r + 9)
+    cz['rdy'] = (r + 1, r + 10)
     # I. top scope 3 categories
-    r = 75
+    r = 77
     a, b = X.ad['s3cat']
     X.hdr(ws, r, ['I. Largest Scope 3 categories', 'tCO2e', '% of Scope 3'])
     v = rng(E5, 3, a, b)
@@ -529,7 +531,7 @@ def build_calc(X):
         X.put(ws, r + 1 + i, 2, f'={A(r + 1 + i, 1)}/GHG_S3', num_format='0.0%')
     cz['s3'] = (r + 1, r + 5)
     # J. priority actions
-    r = 83
+    r = 85
     a, b = X.ad['act']
     X.hdr(ws, r, ['J. Priority open actions (by due date)', 'Action ID', 'WP', 'Owner', 'Due', 'Status', 'Overdue?', 'Rank'])
     rk = rng(F5, 14, a, b)
@@ -569,6 +571,8 @@ def build_dashboard(X):
     lf = X.f(bg_color=C['navy'], font_color='#FFFFFF', font_size=9, indent=1, valign='vcenter')
     hf = X.f(bg_color=C['navy'], font_color='#7FA3D9', font_size=8, bold=True, indent=1, valign='bottom')
     for lab, sh, act in nav:
+        while r in (8, 22, 36):      # thin spacer rows - keep sidebar labels off them
+            r += 1
         if lab is None:
             ws.write(r, 0, sh, hf); r += 1
             continue
@@ -576,6 +580,8 @@ def build_dashboard(X):
         if not act and sh not in ('Index',) and k in grp and k not in seen:
             seen.add(k)
             ws.write(r, 0, grp[k], hf); r += 1
+            while r in (8, 22, 36):
+                r += 1
         f = X.f(bg_color=C['blue'], font_color='#FFFFFF', bold=True, font_size=10, indent=1, valign='vcenter') if act else lf
         ws.write_formula(r, 0, f'=HYPERLINK("#\'{sh}\'!A1","{lab}")', f)
         r += 1
@@ -759,7 +765,7 @@ def build_dashboard(X):
         ws.merge_range(rr, 20, rr, 23, l, cell(indent=1))
         ws.merge_range(rr, 24, rr, 25, '', cell(num_format=nf, bold=True, align='right', font_color=C['navy']))
         ws.write_formula(rr, 24, f, cell(num_format=nf, bold=True, align='right', font_color=C['navy']))
-    ws.merge_range(T + 10, 2, T + 10, 25, 'Sources: F1 checklist (KPIs 1-2, chart 1) | E3-E6 GHG inventory (KPIs 3-4, charts 2, 3, 6) | A3-A4 (KPI 5, chart 4) | F5 action log (KPI 6, chart 5) | E9 targets (chart 7) | F3-F4, E10, G1, Index (chart 8). '
+    ws.merge_range(T + 10, 2, T + 10, 25, 'Sources: F1 checklist (KPIs 1-2, chart 1) | E3-E6 GHG inventory (KPIs 3-4, charts 2, 3, 6) | A3-A4 (KPI 5, chart 4) | F5 action log (KPI 6, chart 5) | E9 targets (chart 7) | F3-F4, E10-E12, G1, Index (chart 8). '
                    'Change inputs (blue cells) in the working papers and the dashboard recalculates.', X.f(bg_color=PAGE, font_color='#5B6B7F', italic=True, font_size=8, text_wrap=True, valign='top'))
     ws.set_row(T + 10, 26)
     ws.set_first_sheet(); ws.activate()
