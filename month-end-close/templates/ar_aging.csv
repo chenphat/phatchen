@@ -1,0 +1,1 @@
+customer,invoice_no,invoice_date,service_start,service_end,amount,days_outstanding,aging_bucket,revenue_treatment

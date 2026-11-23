@@ -1,0 +1,21 @@
+account,account_name,type,statement,debit,credit
+1000,Cash - operating account,Asset,BS,82600,0
+1100,Accounts receivable,Asset,BS,54300,0
+1150,Allowance for doubtful accounts,Asset,BS,0,2700
+1200,Prepaid expenses,Asset,BS,7800,0
+1500,Equipment - cost,Asset,BS,96000,0
+1510,Accumulated depreciation,Asset,BS,0,31000
+2000,Accounts payable,Liability,BS,0,21400
+2100,Accrued liabilities,Liability,BS,0,5600
+2200,Payroll liabilities,Liability,BS,0,9800
+2300,Deferred revenue,Liability,BS,0,12000
+3000,Share capital,Equity,BS,0,50000
+3100,Retained earnings - opening,Equity,BS,0,61500
+4000,Service revenue,Revenue,IS,0,168000
+5000,Salaries and wages,Expense,IS,72000,0
+5100,Contractor expense,Expense,IS,18000,0
+5200,Rent,Expense,IS,9500,0
+5300,Software subscriptions,Expense,IS,6200,0
+5400,Depreciation,Expense,IS,3100,0
+5500,Utilities and office,Expense,IS,4300,0
+5600,Marketing,Expense,IS,8200,0

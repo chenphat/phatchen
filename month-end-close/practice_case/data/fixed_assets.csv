@@ -1,0 +1,4 @@
+asset_id,description,in_service_date,cost,useful_life_months,method,salvage_value,months_depreciated_to_period_end,accumulated_depreciation,period_depreciation
+FA-001,Staff laptops (24 units),2026-05-01,56400,24,Straight-line,0,7,16450,2350
+FA-002,Server and network equipment,2026-03-01,21600,48,Straight-line,0,9,4050,450
+FA-003,Office furniture,2024-01-01,18000,60,Straight-line,0,35,10500,300
