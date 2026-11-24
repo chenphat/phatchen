@@ -55,10 +55,15 @@ before translation (30.21). With USD as functional currency this is not expected
 - **Initial recognition** at the spot rate on the transaction date (30.7); a weekly or monthly average may be used
   for practicality unless rates fluctuate significantly (30.8).
 - **At each reporting date** (30.9):
-  - monetary items (cash, receivables, payables, loans, tax payable, employee obligations payable in KHR) → closing rate;
-  - non-monetary items at historical cost (prepayments, inventories, PPE, advance payments, contract liabilities for
-    goods/services still to be delivered) → rate at the transaction date, **not** retranslated;
+  - monetary items (cash, receivables, payables, loans, **tax assets and liabilities**, employee benefits payable in
+    cash, dividends recognised) → closing rate;
+  - non-monetary items at historical cost (prepaid rent and other prepayments, inventories, PPE, intangibles, and
+    **advance consideration** paid or received — 30.8A — such as a customer deposit for goods still to be delivered)
+    → rate at the transaction date, **not** retranslated;
   - non-monetary items at fair value → rate at the date fair value was determined.
+- **Advance consideration (30.8A, new in the third edition):** when the related asset, expense or income is later
+  recognised (e.g. revenue on delivering the goods), use the rate at the date the advance was first recognised —
+  so revenue against a KHR customer deposit carries the deposit-date rate, with no exchange difference.
 - **Exchange differences** on settlement or retranslation of monetary items → profit or loss (30.10). When a gain or
   loss on a non-monetary item is recognised in OCI (e.g. revaluation), its exchange component also goes to OCI (30.11).
 
@@ -70,6 +75,15 @@ rate 4,005 → USD 10,012.48):
 | Bank – KHR account | 12.48 | |
 | Foreign exchange gain (P&L) | | 12.48 |
 
+**Books kept in KHR?** If the accounting records are kept in a currency other than the functional currency, every
+amount is first remeasured into USD under 30.6–30.11 (monetary items at the closing rate, historical-cost
+non-monetary items at historical rates, fair-value items at the fair-value date rate); only then are the statements
+translated into KHR (module note to 30.6).
+
+**Impairment and lower-of tests** are done in USD: compare the carrying amount at its historical rate with the
+recoverable amount (or selling price less costs) translated at the rate when that amount was determined — an
+impairment can arise in USD even when none exists in KHR, and vice versa (module Case study 2).
+
 ## 4. Step C: translate the USD statements into KHR (30.18)
 
 | Item | Rate | Paragraph |
@@ -77,7 +91,7 @@ rate 4,005 → USD 10,012.48):
 | Assets and liabilities of each SoFP presented, including comparatives | closing rate at that SoFP date | 30.18(a) |
 | Income and expenses of each period presented, including comparatives | rates at the transaction dates; an average rate is acceptable unless rates fluctuate significantly | 30.18(b), 30.19 |
 | OCI items (e.g. revaluation surplus, its deferred tax) | same as income and expense: transaction-date or average rate | 30.18(b) |
-| Share capital and share premium | historical rate at the date of issue (Standard silent on equity rates; this is the usual practice — document the policy) | — |
+| Share capital and share premium | historical rate at the date of issue. The Standard gives no explicit rule for equity components; Educational Module 30 uses historical rates for share capital in every example and notes total equity is the same either way (Ex 28 note (a)) — document the policy | module |
 | Retained earnings | opening balance carried forward in KHR; each year's profit at that year's translated amount; dividends at the declaration-date rate | — |
 | Resulting exchange difference | OCI → foreign currency translation reserve; not reclassified to P&L | 30.18(c), 30.20 |
 
@@ -128,6 +142,8 @@ Compute the proof independently and agree it to the OCI line. A difference means
   (30.19). Record the range (min/max) to evidence that.
 - Keep a rates table in the working papers: closing CY, average CY, closing PY, average PY, opening rate of the
   earliest period (needed to translate opening equity), historical rates for share capital issues.
+- If a currency is not exchangeable into another, estimate the spot rate under 30.5A (new in the third edition) and
+  give the related disclosures; not expected for KHR/USD, but record the conclusion.
 - KHR amounts are normally presented in thousands (KHR'000). State the rounding level (3.23(e)).
 
 ## 9. Worked example (illustrative rates)
