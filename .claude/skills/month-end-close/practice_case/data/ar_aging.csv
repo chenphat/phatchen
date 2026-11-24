@@ -1,0 +1,7 @@
+customer,invoice_no,invoice_date,service_start,service_end,amount,days_outstanding,aging_bucket,revenue_treatment
+Khan Logistics,INV-1188,2026-11-25,2026-12-01,2027-02-28,12000,5,Current,Deferred revenue
+Altan Retail,INV-1185,2026-11-20,2026-11-01,2026-11-30,16500,10,Current,Recognized
+Nomad Foods,INV-1186,2026-11-28,2026-11-01,2026-11-30,11500,2,Current,Recognized
+Gobi Mining,INV-1171,2026-10-05,2026-09-01,2026-09-30,8100,56,31-60,Recognized
+Tuul Clinics,INV-1150,2026-09-15,2026-08-16,2026-09-15,4000,76,61-90,Recognized
+Orkhon Print,INV-1122,2026-07-25,2026-07-01,2026-07-31,2200,128,90+,Recognized

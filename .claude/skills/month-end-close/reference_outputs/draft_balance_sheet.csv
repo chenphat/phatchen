@@ -1,0 +1,18 @@
+account,line,posted,adjustments,draft
+1000,Cash - operating account,82600,0,82600
+1100,Accounts receivable,54300,0,54300
+1150,Allowance for doubtful accounts,-2700,0,-2700
+1200,Prepaid expenses,7800,0,7800
+1500,Equipment - cost,96000,0,96000
+1510,Accumulated depreciation,-31000,0,-31000
+TA,Total assets,207000,0,207000
+2000,Accounts payable,21400,0,21400
+2100,Accrued liabilities,5600,12400,18000
+2200,Payroll liabilities,9800,0,9800
+2300,Deferred revenue,12000,0,12000
+TL,Total liabilities,48800,12400,61200
+3000,Share capital,50000,0,50000
+3100,Retained earnings - opening,61500,0,61500
+CP,Current-period profit,46700,-12400,34300
+TE,Total equity,158200,-12400,145800
+TLE,Total liabilities and equity,207000,0,207000

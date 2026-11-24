@@ -1,0 +1,12 @@
+date,reference,description,counterparty,book_amount,bank_amount,bank_date
+2026-10-31,OPEN,Opening balance (reconciled at 31 Oct),,57300,57300,2026-10-31
+2026-11-01,ACH-3301,November office rent,Ulaan Properties,-9500,-9500,2026-11-01
+2026-11-03,DEP-5521,Customer receipt,Altan Retail,40000,40000,2026-11-03
+2026-11-12,DEP-5534,Customer receipt,Nomad Foods,35000,35000,2026-11-12
+2026-11-15,PAY-1115,Payroll net pay (1-15 Nov),Employees,-26200,-26200,2026-11-15
+2026-11-18,ACH-3317,Vendor payment run,Various vendors,-12000,-12000,2026-11-18
+2026-11-20,DEP-5547,Customer receipt,Gobi Mining,30000,30000,2026-11-20
+2026-11-20,TAX-1120,Payroll tax remittance (1-15 Nov run),Tax authority,-9800,-9800,2026-11-20
+2026-11-22,CHK-1047,Check 1047 - invoice LD-0412,Lumen Design,-2000,,
+2026-11-30,PAY-1130,Payroll net pay (16-30 Nov),Employees,-26200,-26200,2026-11-30
+2026-11-30,DEP-5560,Customer receipt (deposited after bank cut-off),Khan Logistics,6000,6000,2026-12-01

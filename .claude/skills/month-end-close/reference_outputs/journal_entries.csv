@@ -1,0 +1,3 @@
+je_id,date,account,account_name,debit,credit,memo,source_doc,prepared_by,status,approved_by,reverse_on
+AJE-2026-11-01,2026-11-30,5100,Contractor expense,12400,0,Accrue Blue Ridge Engineering BR-2291 - network cabling completed 28 Nov; invoice received 4 Dec,ap_invoices.csv > BR-2291; completion sheet 28 Nov,close-07-expense-cutoff,Proposed,,2026-12-01
+AJE-2026-11-01,2026-11-30,2100,Accrued liabilities,0,12400,Accrue Blue Ridge Engineering BR-2291 - network cabling completed 28 Nov; invoice received 4 Dec,ap_invoices.csv > BR-2291; completion sheet 28 Nov,close-07-expense-cutoff,Proposed,,2026-12-01

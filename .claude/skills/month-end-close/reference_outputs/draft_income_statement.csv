@@ -1,0 +1,12 @@
+account,line,posted,adjustments,draft
+4000,Service revenue,168000,0,168000
+REV,Total revenue,168000,0,168000
+5000,Salaries and wages,72000,0,72000
+5100,Contractor expense,18000,12400,30400
+5200,Rent,9500,0,9500
+5300,Software subscriptions,6200,0,6200
+5400,Depreciation,3100,0,3100
+5500,Utilities and office,4300,0,4300
+5600,Marketing,8200,0,8200
+EXP,Total operating expenses,121300,12400,133700
+OP,Operating profit,46700,-12400,34300
