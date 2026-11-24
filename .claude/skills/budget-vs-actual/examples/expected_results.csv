@@ -1,0 +1,10 @@
+line_item,category,behavior,static_budget,flexible_budget,actual,volume_variance,flexible_budget_variance,static_budget_variance,fb_variance_pct,direction,material
+Sales revenue,revenue,variable,250000.00,275000.00,269500.00,25000.00,-5500.00,19500.00,-2.00,U,YES
+Direct materials,cogs,variable,80000.00,88000.00,90200.00,8000.00,2200.00,10200.00,2.50,U,YES
+Direct labour,cogs,variable,50000.00,55000.00,53900.00,5000.00,-1100.00,3900.00,-2.00,F,no
+Variable manufacturing overhead,cogs,variable,15000.00,16500.00,17050.00,1500.00,550.00,2050.00,3.33,U,no
+Fixed manufacturing overhead,cogs,fixed,30000.00,30000.00,31500.00,0.00,1500.00,1500.00,5.00,U,no
+Sales commissions,opex,variable,12500.00,13750.00,13475.00,1250.00,-275.00,975.00,-2.00,F,no
+Marketing,opex,fixed,10000.00,10000.00,8800.00,0.00,-1200.00,-1200.00,-12.00,F,YES
+Administrative salaries,opex,fixed,25000.00,25000.00,25000.00,0.00,0.00,0.00,0.00,-,no
+Rent and utilities,opex,fixed,8000.00,8000.00,8600.00,0.00,600.00,600.00,7.50,U,no

@@ -1,0 +1,10 @@
+line_item,category,behavior,budget_amount,actual_amount
+Sales revenue,revenue,variable,250000,269500
+Direct materials,cogs,variable,80000,90200
+Direct labour,cogs,variable,50000,53900
+Variable manufacturing overhead,cogs,variable,15000,17050
+Fixed manufacturing overhead,cogs,fixed,30000,31500
+Sales commissions,opex,variable,12500,13475
+Marketing,opex,fixed,10000,8800
+Administrative salaries,opex,fixed,25000,25000
+Rent and utilities,opex,fixed,8000,8600
