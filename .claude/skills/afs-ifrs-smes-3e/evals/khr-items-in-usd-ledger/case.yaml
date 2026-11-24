@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: khr-items-in-usd-ledger
+expected_outcome: |
+  Distinguishes remeasurement in the USD ledger from translation to KHR. The KHR bank balance and the KHR tax payable
+  are monetary and are remeasured at 4,020 with exchange differences in profit or loss (30.9(a), 30.10); the customer
+  advance is a non-monetary contract liability left at its historical rate 4,080. Gives the USD journals with correct
+  amounts, then explains translation to KHR under 30.18 and the 30.25/30.26 disclosures.

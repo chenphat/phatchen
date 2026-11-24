@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: compile-afs-from-trial-balance
+expected_outcome: |
+  One Excel workbook containing TB, adjusting entries and an adjusted TB, the four primary statements in KHR'000 with
+  comparatives, notes and a report of the Board of Directors. The SoFP balances, the translation difference sits in OCI
+  and a translation reserve, the basis-of-preparation note states compliance, early application of the third edition,
+  USD functional and KHR presentation currency with the reason, and the reply lists open items honestly.
+context:
+  scaffold_script: place-files.sh
