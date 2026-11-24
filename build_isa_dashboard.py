@@ -80,6 +80,7 @@ sub = wb.create_sheet("Substantive Testing")
 pbc = wb.create_sheet("PBC Tracker")
 mis = wb.create_sheet("Misstatements")
 fnd = wb.create_sheet("Findings")
+rep5 = wb.create_sheet("5Cs Report")
 isa = wb.create_sheet("ISA Map")
 calc = wb.create_sheet("Calc")
 
@@ -266,7 +267,7 @@ P = [  # phase idx, ISA, procedure, owner, start, due, status, completed, budget
     (3, "ISA 330", "Test operating effectiveness - payroll controls", "Associate 2", D(2026,10,5), D(2026,10,12), "Completed", D(2026,10,12), 10, 10, "D4"),
     (3, "ISA 330", "Test IT general controls (access, change management, backup)", "IT Specialist", D(2026,9,28), D(2026,11,13), "In Progress", None, 20, 16, "D5"),
     (3, "ISA 330", "Test operating effectiveness - treasury and financial close controls", "Associate 1", D(2026,10,12), D(2026,10,21), "Completed", D(2026,10,22), 12, 12, "D6"),
-    (3, "ISA 265", "Evaluate control deficiencies and revise risk assessment", "Manager", D(2026,10,19), D(2026,10,28), "Completed", D(2026,10,28), 6, 7, "D7"),
+    (3, "ISA 265", "Evaluate control deficiencies; document each finding in 5Cs format; revise risk assessment", "Manager", D(2026,10,19), D(2026,10,28), "Completed", D(2026,10,28), 6, 7, "D7"),
     (4, "ISA 505", "Send and follow up bank and receivable confirmations", "Associate 1", D(2026,10,19), D(2026,11,13), "In Progress", None, 14, 12, "E1"),
     (4, "ISA 501", "Inventory existence - reconcile year-end count attended to final listing", "Senior", D(2026,10,19), D(2026,10,30), "Completed", D(2026,10,30), 16, 18, "E2"),
     (4, "ISA 500", "Inventory valuation - standard cost, overhead absorption and NRV", "Senior", D(2026,10,26), D(2026,11,25), "Under Review", None, 20, 22, "E3"),
@@ -283,7 +284,8 @@ P = [  # phase idx, ISA, procedure, owner, start, due, status, completed, budget
     (5, "ISA 450", "Evaluate misstatements; summary of uncorrected misstatements", "Manager", D(2026,12,1), D(2026,12,10), "Not Started", None, 5, 0, "F3"),
     (5, "ISA 520", "Final analytical review of the financial statements", "Senior", D(2026,12,3), D(2026,12,10), "Not Started", None, 5, 0, "F4"),
     (5, "ISA 580", "Obtain written representations from management", "Manager", D(2026,12,7), D(2026,12,14), "Not Started", None, 2, 0, "F5"),
-    (5, "ISA 220", "Engagement partner review and engagement quality review", "Partner", D(2026,12,7), D(2026,12,15), "Not Started", None, 10, 0, "F6"),
+    (5, "ISA 265", "Finalise management letter points in 5Cs format; obtain management responses", "Manager", D(2026,12,3), D(2026,12,11), "Not Started", None, 6, 0, "F6"),
+    (5, "ISA 220", "Engagement partner review and engagement quality review", "Partner", D(2026,12,7), D(2026,12,15), "Not Started", None, 10, 0, "F7"),
     (6, "ISA 700", "Form the opinion and draft the auditor's report", "Partner", D(2026,12,10), D(2026,12,16), "Not Started", None, 6, 0, "G1"),
     (6, "ISA 701 / 705 / 706", "Determine key audit matters, modifications and emphasis of matter", "Partner", D(2026,12,10), D(2026,12,16), "Not Started", None, 4, 0, "G2"),
     (6, "ISA 720", "Read other information in the annual report", "Manager", D(2026,12,10), D(2026,12,16), "Not Started", None, 3, 0, "G3"),
@@ -385,7 +387,9 @@ C = [  # cycle, control, frequency, type, design, sample, tested, exceptions, ev
 ]
 sheet_header(ctl, "CONTROL TESTING  -  ISA 330 (tests of controls) / ISA 530",
              "Enter design rating, sample size, items tested and exceptions. Operating effectiveness compares the deviation rate with the "
-             "tolerable rate in Settings (0 deviations = Effective; up to tolerable = Partially Effective; above = Ineffective).", 14)
+             "tolerable rate in Settings (0 deviations = Effective; up to tolerable = Partially Effective; above = Ineffective). "
+             "Any exception or design weakness must be raised as a 5Cs finding - enter its ID in 'Finding ref'.", 16)
+CREF = {2: "F-06", 5: "F-04", 6: "F-05", 8: "F-02", 15: "F-03", 17: "F-01"}
 rows = []
 for i, x in enumerate(C):
     r = 6 + i
@@ -393,12 +397,18 @@ for i, x in enumerate(C):
                  f'=IF(G{r}=0,0,H{r}/G{r})', f'=IF(H{r}=0,0,I{r}/H{r})',
                  f'=IF(A{r}="","",IF(H{r}=0,"Not Tested",IF(K{r}=0,"Effective",IF(K{r}<=Settings!$B$8,"Partially Effective","Ineffective"))))',
                  x[8],
-                 f'=IF(A{r}="","",IF(OR(F{r}="Ineffective",L{r}="Ineffective"),"No reliance - substantive approach",IF(J{r}<1,"Testing in progress",IF(AND(F{r}="Effective",L{r}="Effective"),"Rely on control","Limited reliance"))))'])
+                 f'=IF(A{r}="","",IF(OR(F{r}="Ineffective",L{r}="Ineffective"),"No reliance - substantive approach",IF(J{r}<1,"Testing in progress",IF(AND(F{r}="Effective",L{r}="Effective"),"Rely on control","Limited reliance"))))',
+                 f'=IF(A{r}="","",IF(OR(I{r}>0,F{r}<>"Effective"),"Yes","No"))',
+                 CREF.get(i + 1)])
 table(ctl, ["Control ID", "Cycle", "Control description", "Frequency", "Type", "Design effectiveness", "Sample size",
             "Items tested", "Exceptions", "Sample completion", "Deviation rate", "Operating effectiveness",
-            "Evidence quality", "Reliance conclusion"],
-      rows, [9, 15, 56, 14, 11, 16, 8, 8, 10, 11, 10, 17, 11, 30],
-      {10: "0%", 11: "0.0%"}, formula_cols=(10, 11, 12, 14))
+            "Evidence quality", "Reliance conclusion", "5Cs finding required?", "Finding ref (5Cs)"],
+      rows, [9, 15, 56, 14, 11, 16, 8, 8, 10, 11, 10, 17, 11, 30, 11, 11],
+      {10: "0%", 11: "0.0%"}, formula_cols=(10, 11, 12, 14, 15))
+for r in range(6, 6 + len(C)):
+    ctl.cell(r, 16).alignment = align("center")
+status_cf(ctl, f"O6:O{LAST}", {"Yes": AMBER})
+ctl.conditional_formatting.add(f"P6:P{LAST}", FormulaRule(formula=['AND($O6="Yes",$P6="")'], fill=fill("FCA5A5")))
 add_dv(ctl, "Cycles", "B"); add_dv(ctl, "Design rating", "F"); add_dv(ctl, "Evidence quality", "M")
 EFF_COL = {"Effective": GREEN, "Partially Effective": AMBER, "Ineffective": RED, "Not Tested": GREY}
 status_cf(ctl, f"F6:F{LAST}", EFF_COL); status_cf(ctl, f"L6:L{LAST}", EFF_COL)
@@ -480,32 +490,34 @@ status_cf(pbc, f"G6:G{LAST}", {"Received": GREEN, "Outstanding": AMBER, "Overdue
 
 # ---------------------------------------------------------------- Misstatements (ISA 450)
 M = [
-    ("Revenue", "Cut-off: July 2026 sales recorded in June 2026", "Factual", 86000, "Yes"),
-    ("Inventory", "Production overhead over-absorbed into closing finished goods", "Factual", 64500, "No"),
-    ("Inventory", "NRV shortfall on obsolete items not provided", "Judgmental", 38000, "No"),
-    ("Trade payables", "Unrecorded accrued liabilities at year end", "Factual", 27400, "Yes"),
-    ("Cost of sales", "Projected error from purchases sample", "Projected", 21000, "No"),
-    ("Trade receivables", "ECL allowance understated on balances over 120 days", "Judgmental", 45000, "No"),
-    ("Property, plant and equipment", "Repairs and maintenance capitalised", "Factual", 12800, "Yes"),
-    ("Payroll expense", "Year-end bonus accrual understated", "Factual", 8900, "No"),
+    ("Revenue", "Cut-off: July 2026 sales recorded in June 2026", "Factual", 86000, "Yes", "F-06"),
+    ("Inventory", "Production overhead over-absorbed into closing finished goods", "Factual", 64500, "No", "F-02"),
+    ("Inventory", "NRV shortfall on obsolete items not provided", "Judgmental", 38000, "No", "F-07"),
+    ("Trade payables", "Unrecorded accrued liabilities at year end", "Factual", 27400, "Yes", "F-05"),
+    ("Cost of sales", "Projected error from purchases sample", "Projected", 21000, "No", None),
+    ("Trade receivables", "ECL allowance understated on balances over 120 days", "Judgmental", 45000, "No", "F-11"),
+    ("Property, plant and equipment", "Repairs and maintenance capitalised", "Factual", 12800, "Yes", None),
+    ("Payroll expense", "Year-end bonus accrual understated", "Factual", 8900, "No", None),
 ]
 sheet_header(mis, "SUMMARY OF MISSTATEMENTS  -  ISA 450",
              "Amount = effect on profit before tax (positive = profit overstated). Items below the clearly-trivial threshold are not "
-             "accumulated. The summary on the right compares uncorrected misstatements with materiality.", 11)
+             "accumulated. Where a misstatement was caused by a control deficiency, link the 5Cs finding that explains its cause.", 12)
 rows = []
 for i, x in enumerate(M):
     r = 6 + i
     rows.append([f"M-{i+1:02d}", x[0], x[1], x[2], x[3], x[4],
                  f'=IF(A{r}="","",IF(ABS(E{r})<{TRIV},"Clearly trivial","Accumulate"))',
-                 f'=IF(AND(F{r}="No",G{r}="Accumulate"),E{r},0)'])
+                 f'=IF(AND(F{r}="No",G{r}="Accumulate"),E{r},0)', x[5]])
 table(mis, ["ID", "FS area", "Description of misstatement", "Type (ISA 450.A6)", "Amount (USD)", "Corrected by management?",
-            "Treatment", "Uncorrected amount (USD)"], rows, [8, 28, 54, 14, 14, 13, 15, 16],
+            "Treatment", "Uncorrected amount (USD)", "Cause: related finding (5Cs)"], rows, [8, 28, 54, 14, 14, 13, 15, 16, 14],
       {5: "#,##0", 8: "#,##0;(#,##0);-"}, formula_cols=(7, 8))
+for r in range(6, 6 + len(M)):
+    mis.cell(r, 9).alignment = align("center")
 add_dv(mis, "Misstatement type", "D"); add_dv(mis, "Yes / No", "F")
-mis.column_dimensions["I"].width = 3
-mis.column_dimensions["J"].width = 40
-mis.column_dimensions["K"].width = 18
-put(mis, 5, 10, "Evaluation (ISA 450.11)", font(9, True, WHITE), align("center"), bg=NAVY2, to=(5, 11))
+mis.column_dimensions["J"].width = 3
+mis.column_dimensions["K"].width = 40
+mis.column_dimensions["L"].width = 18
+put(mis, 5, 11, "Evaluation (ISA 450.11)", font(9, True, WHITE), align("center"), bg=NAVY2, to=(5, 12))
 summ = [
     ("Total misstatements identified", f"=SUM(E6:E{LAST})", "#,##0"),
     ("Corrected by management", f'=SUMIF(F6:F{LAST},"Yes",E6:E{LAST})', "#,##0"),
@@ -513,60 +525,194 @@ summ = [
     ("Overall materiality", f"={OM}", "#,##0"),
     ("Performance materiality", f"={PM}", "#,##0"),
     ("Clearly trivial threshold", f"={TRIV}", "#,##0"),
-    ("Uncorrected as % of overall materiality", "=IF(K9=0,0,K8/K9)", "0%"),
+    ("Uncorrected as % of overall materiality", "=IF(L9=0,0,L8/L9)", "0%"),
 ]
 for i, (k, v, f) in enumerate(summ):
     r = 6 + i
-    put(mis, r, 10, k, font(9, True)).border = BOX
-    put(mis, r, 11, v, font(9, True), align("right"), fmt=f, bg=HEAD).border = BOX
-put(mis, 13, 10, "Conclusion", font(9, True))
-put(mis, 14, 10,
-    '=IF(K8>=K9,"Uncorrected misstatements exceed overall materiality - request correction; consider a modified opinion (ISA 705).",'
-    'IF(K8>=K10,"Uncorrected misstatements exceed performance materiality - request correction and extend procedures (ISA 450).",'
+    put(mis, r, 11, k, font(9, True)).border = BOX
+    put(mis, r, 12, v, font(9, True), align("right"), fmt=f, bg=HEAD).border = BOX
+put(mis, 13, 11, "Conclusion", font(9, True))
+put(mis, 14, 11,
+    '=IF(L8>=L9,"Uncorrected misstatements exceed overall materiality - request correction; consider a modified opinion (ISA 705).",'
+    'IF(L8>=L10,"Uncorrected misstatements exceed performance materiality - request correction and extend procedures (ISA 450).",'
     '"Uncorrected misstatements are below performance materiality - evaluate qualitative factors (ISA 450)."))',
-    font(9, True, RED), align(wrap=True, v="top"), to=(17, 11))
+    font(9, True, RED), align(wrap=True, v="top"), to=(17, 12))
 
 # ---------------------------------------------------------------- Findings (ISA 265)
-F = [  # cycle, finding, severity, action, owner, raised, target, status, closed
-    ("IT General", "User access reviews not performed; leavers still active in the ERP", "Critical", "Disable leaver accounts; implement quarterly access review", "IT Manager", D(2026,9,11), D(2026,10,30), "In Progress", None),
-    ("Inventory", "Standard costs and overhead absorption rates not reviewed or approved for FY2026", "High", "Cost accountant to update rates; CFO to approve annually", "Cost Accountant", D(2026,10,9), D(2026,11,30), "In Progress", None),
-    ("Financial Close", "Manual journals posted without independent approval", "High", "Enforce maker-checker workflow in the ERP", "Financial Controller", D(2026,10,22), D(2026,11,15), "Open", None),
-    ("Purchases", "Three-way match overridden for urgent supplier payments", "High", "Restrict override rights; monthly exception report to CFO", "Procurement Manager", D(2026,10,6), D(2026,11,20), "In Progress", None),
-    ("Purchases", "Supplier statement reconciliations not performed consistently", "Medium", "Reconcile top 20 suppliers monthly", "Financial Controller", D(2026,10,6), D(2026,12,5), "Open", None),
-    ("Revenue", "Delivery notes missing customer acknowledgement", "Medium", "Require signed proof of delivery before invoicing", "Sales Manager", D(2026,10,5), D(2026,11,10), "Closed", D(2026,11,6)),
-    ("Inventory", "Obsolete stock provision methodology is undocumented", "Medium", "Document and approve provisioning policy", "Cost Accountant", D(2026,10,30), D(2026,12,10), "Open", None),
-    ("Fixed Assets", "Asset register not reconciled to the general ledger monthly", "Low", "Introduce monthly reconciliation", "Financial Controller", D(2026,11,12), D(2026,12,15), "Open", None),
-    ("Payroll", "Leaver records updated late in the payroll system", "Low", "HR to notify payroll within two working days", "HR Manager", D(2026,10,12), D(2026,11,5), "Closed", D(2026,11,3)),
-    ("Treasury", "Petty cash counts not documented", "Low", "Monthly surprise counts signed by reviewer", "Financial Controller", D(2026,10,22), D(2026,11,30), "In Progress", None),
-    ("Revenue", "ECL model lacks forward-looking information", "Medium", "Update model with macro-economic overlay", "CFO", D(2026,11,18), D(2026,12,12), "Open", None),
-    ("Financial Close", "Related party register is incomplete", "High", "Annual declarations from directors and key management", "CFO", D(2026,11,19), D(2026,12,8), "Open", None),
-    ("IT General", "Program changes released to production without documented testing", "Medium", "Mandatory test sign-off before release", "IT Manager", D(2026,9,11), D(2026,10,31), "In Progress", None),
-    ("Inventory", "Cycle count variances adjusted without an investigation threshold", "Low", "Set threshold and approval for count adjustments", "Warehouse Manager", D(2026,10,9), D(2026,11,13), "Closed", D(2026,11,13)),
-    ("IT General", "No periodic backup restore test", "Medium", "Perform and document semi-annual restore test", "IT Manager", D(2026,9,11), D(2026,11,27), "Open", None),
-    ("Inventory", "Year-end cost variances not allocated between inventory and cost of sales", "Critical", "Allocate variances at each period end; management review", "Cost Accountant", D(2026,11,13), D(2026,12,4), "Open", None),
+F = [  # cycle, source, title, severity, criteria, condition, cause, consequence, corrective action, mgmt response, owner, raised, target, status, closed
+    ("IT General", "C-17", "Leavers retain active ERP access", "Critical",
+     "IT Security Policy requires leavers' system access to be removed within one working day and all user access to be reviewed quarterly.",
+     "7 of 22 leavers in FY2026 still had active ERP accounts at the test date; no quarterly access reviews were performed in Q2-Q4.",
+     "HR does not notify IT when staff leave, and the access review was not reassigned when the IT Manager role changed.",
+     "Unauthorised users could post or change transactions, undermining reliance on system reports and increasing fraud risk.",
+     "Disable all leaver accounts immediately; automate HR-to-IT leaver notifications; assign and evidence a quarterly access review.",
+     "Agreed. Leaver accounts disabled 15 Oct 2026; automated notification in development.",
+     "IT Manager", D(2026,9,11), D(2026,10,30), "In Progress", None),
+    ("Inventory", "C-08", "Standard costs and overhead rates not updated", "High",
+     "Costing Policy requires standard costs and overhead absorption rates to be reviewed and approved by the CFO each year, based on normal capacity (IAS 2.13).",
+     "FY2026 standard costs and overhead rates were rolled forward from FY2024 without review; actual overhead differed from absorbed overhead by 9%.",
+     "The cost accountant post was vacant for five months and no one else was assigned the annual review.",
+     "Inventory and cost of sales may be misstated; over-absorbed overhead of USD 64,500 was found in closing finished goods (M-02).",
+     "Recalculate rates on normal capacity, obtain CFO approval every year, and assign a back-up reviewer for key costing tasks.",
+     "Agreed. Revised rates to be approved by 30 Nov 2026.",
+     "Cost Accountant", D(2026,10,9), D(2026,11,30), "In Progress", None),
+    ("Financial Close", "C-15", "Manual journals posted without approval", "High",
+     "The Delegation of Authority requires every manual journal to be approved by someone other than the preparer before posting.",
+     "3 of 25 manual journals tested (USD 412,000 in total) were posted and approved by the same person.",
+     "The ERP lets preparers approve their own journals; the maker-checker workflow was never switched on.",
+     "Errors or fraudulent entries could be posted undetected - a presumed fraud risk (management override, ISA 240).",
+     "Enable system-enforced maker-checker approval and review a monthly report of journals posted by senior finance staff.",
+     "Agreed. Workflow configuration requested from the ERP vendor.",
+     "Financial Controller", D(2026,10,22), D(2026,11,15), "Open", None),
+    ("Purchases", "C-05", "Three-way match overridden for payments", "High",
+     "Payments Policy requires the purchase order, goods received note and invoice to agree before payment is released.",
+     "2 of 25 payments tested were released by overriding a failed three-way match, with no recorded reason or approval.",
+     "All AP staff hold override rights and use them to meet urgent supplier deadlines.",
+     "Payments for goods not received, duplicate payments or overpricing may occur and go undetected.",
+     "Restrict override rights to the Finance Manager and send a monthly override exception report to the CFO.",
+     "Agreed. Override rights restricted from 1 Dec 2026.",
+     "Procurement Manager", D(2026,10,6), D(2026,11,20), "In Progress", None),
+    ("Purchases", "C-06", "Vendor reconciliations not performed", "Medium",
+     "The Finance Policy requires monthly vendor reconciliations to be performed and reviewed by the Finance Manager.",
+     "No vendor reconciliations were performed for 5 out of 12 months reviewed.",
+     "The Accounts Payable Officer was not aware of the reconciliation schedule, and there was no monitoring process by management.",
+     "Errors, duplicate payments and unrecorded liabilities may go undetected, leading to inaccurate financial reporting (see M-04).",
+     "Management should implement a reconciliation calendar and require monthly supervisory review and sign-off.",
+     "Agreed. Calendar issued; top 20 suppliers reconciled monthly from December 2026.",
+     "Financial Controller", D(2026,10,6), D(2026,12,5), "Open", None),
+    ("Revenue", "C-02", "Delivery notes lack customer signature", "Medium",
+     "Sales Policy requires a customer-signed delivery note before an invoice is raised, as evidence that control has transferred (IFRS 15).",
+     "1 of 25 invoices tested was raised without a signed delivery note.",
+     "The drivers' delivery app did not make the customer signature a required field.",
+     "Revenue could be recognised before control transfers, causing cut-off errors (see M-01).",
+     "Make proof of delivery mandatory in the delivery app before invoicing is enabled.",
+     "Implemented 6 Nov 2026; verified by the audit team.",
+     "Sales Manager", D(2026,10,5), D(2026,11,10), "Closed", D(2026,11,6)),
+    ("Inventory", "E3", "Obsolete stock provisioning not documented", "Medium",
+     "IAS 2.28-33 requires inventory to be written down to net realisable value; Costing Policy requires an approved provisioning method.",
+     "The obsolete stock provision is set by judgement each year with no written method; items with no movement for 12+ months total USD 210,000.",
+     "No formal policy exists and nobody other than the preparer reviews the provision.",
+     "Inventory may be overstated; an NRV shortfall of USD 38,000 was identified (M-03).",
+     "Document an ageing-based provisioning policy approved by the CFO and review the provision every quarter.",
+     "Agreed. Draft policy to the Audit Committee in December.",
+     "Cost Accountant", D(2026,10,30), D(2026,12,10), "Open", None),
+    ("Fixed Assets", "E7", "Fixed asset physical verification incomplete", "Medium",
+     "The Fixed Asset Policy requires annual physical verification of all fixed assets.",
+     "Physical verification was conducted for only 60% of assets during the year.",
+     "Insufficient planning and lack of adequate resources to complete the exercise.",
+     "Missing, obsolete or impaired assets may remain undetected, leading to inaccurate asset records.",
+     "Develop a comprehensive asset verification plan and monitor completion through periodic management reporting.",
+     "Agreed. Remaining 40% to be verified by January 2027.",
+     "Financial Controller", D(2026,11,12), D(2026,12,15), "Open", None),
+    ("Payroll", "E6", "Leaver records updated late in payroll", "Low",
+     "Payroll Procedure requires HR to update leaver records within two working days of the leaving date.",
+     "3 leavers were paid an extra week's salary (USD 2,400 in total) because their records were updated late.",
+     "Resignation forms were held by line managers and not sent to HR promptly.",
+     "Overpayments to former employees, and a risk of ghost employees remaining on the payroll.",
+     "Line managers to send leaver forms to HR on the day of resignation; HR to reconcile headcount to payroll monthly.",
+     "Implemented 3 Nov 2026; overpayments recovered.",
+     "HR Manager", D(2026,10,12), D(2026,11,5), "Closed", D(2026,11,3)),
+    ("Treasury", "E1", "Petty cash counts not documented", "Low",
+     "Cash Handling Procedure requires monthly surprise petty cash counts signed by the custodian and an independent reviewer.",
+     "No counts were documented for 8 of 12 months; the count at audit showed a USD 150 shortage.",
+     "The reviewer role was not reassigned when the previous accountant left.",
+     "Misappropriation of cash may not be detected promptly.",
+     "Assign an independent reviewer and keep signed count sheets every month.",
+     "Agreed. Counts resumed from November 2026.",
+     "Financial Controller", D(2026,10,22), D(2026,11,30), "In Progress", None),
+    ("Revenue", "E1", "ECL model lacks forward-looking information", "Medium",
+     "IFRS 9 requires expected credit losses to reflect reasonable and supportable forward-looking information.",
+     "The ECL provision matrix uses historical loss rates only, with no adjustment for current or forecast conditions.",
+     "Finance staff were not trained on IFRS 9 when the model was built.",
+     "The ECL allowance may be understated; a USD 45,000 shortfall was identified on balances over 120 days (M-06).",
+     "Add a documented macro-economic overlay to the model and have the CFO review it every quarter.",
+     "Agreed in principle; external adviser to support.",
+     "CFO", D(2026,11,18), D(2026,12,12), "Open", None),
+    ("Financial Close", "E10", "Related party register incomplete", "High",
+     "IAS 24 requires disclosure of related party relationships and transactions; company policy requires annual declarations from directors.",
+     "Two entities controlled by a director, with FY2026 sales of USD 1.15 million, were missing from the related party register.",
+     "Annual declarations of interest were not collected from directors in FY2026.",
+     "Related party transactions may be undisclosed or not at arm's length, misleading users of the financial statements.",
+     "Obtain signed annual declarations from all directors and key management; reconcile them to the register and customer/vendor master files.",
+     "Agreed. Declarations requested from all directors.",
+     "CFO", D(2026,11,19), D(2026,12,8), "Open", None),
+    ("IT General", "C4", "Program changes released without testing", "Medium",
+     "IT Change Management Policy requires each change to be tested and signed off by users before release to production.",
+     "4 of 9 changes reviewed during the walkthrough had no evidence of user acceptance testing before release.",
+     "Developers can release directly to production; development and production duties are not segregated.",
+     "Unauthorised or faulty changes could corrupt financial data or calculations without detection.",
+     "Separate developer and release roles and require documented test sign-off before each release.",
+     "Agreed. Release rights moved to the IT Manager.",
+     "IT Manager", D(2026,9,11), D(2026,10,31), "In Progress", None),
+    ("Inventory", "D3", "Count variances adjusted without investigation", "Low",
+     "Inventory Procedure requires cycle count variances above USD 1,000 to be investigated and approved before adjustment.",
+     "Count variances were adjusted in the system without investigation; no approval threshold was set.",
+     "The procedure was never built into the ERP workflow.",
+     "Theft or recording errors could be hidden within routine stock adjustments.",
+     "Set a USD 1,000 threshold requiring Finance Manager approval for larger adjustments.",
+     "Implemented 13 Nov 2026.",
+     "Warehouse Manager", D(2026,10,9), D(2026,11,13), "Closed", D(2026,11,13)),
+    ("IT General", "C4", "No backup restore testing", "Medium",
+     "IT Continuity Policy requires backups to be restore-tested every six months.",
+     "No restore test has been performed since the ERP went live in 2024.",
+     "Restore testing was not included in the IT outsourcing contract.",
+     "Financial data may not be recoverable after a system failure, disrupting operations and reporting.",
+     "Perform and document a restore test every six months and add the duty to the outsourcing contract.",
+     "Agreed. First test scheduled for 25 Nov 2026.",
+     "IT Manager", D(2026,9,11), D(2026,11,27), "Open", None),
+    ("Inventory", "E3", "Cost variances not allocated at year end", "Critical",
+     "IAS 2.12-13 requires inventory to carry actual production cost; significant standard cost variances must be allocated between inventory and cost of sales.",
+     "USD 1.4 million of production variances were charged entirely to cost of sales at year end, with none allocated to closing inventory.",
+     None,  # cause still being investigated - shows the 5Cs completeness check
+     "Closing inventory and profit may be materially misstated.",
+     "Allocate variances between inventory and cost of sales at each period end based on stock turnover, reviewed by the CFO.",
+     "Response awaited.",
+     "Cost Accountant", D(2026,11,13), D(2026,12,4), "Open", None),
 ]
-sheet_header(fnd, "AUDIT FINDINGS & CONTROL DEFICIENCIES  -  ISA 265 / ISA 260",
-             "Enter status as Open, In Progress or Closed. 'Display status' turns to Overdue automatically once the target date passes. "
-             "Critical and High findings are classified as significant deficiencies to be reported in writing to those charged with governance.", 15)
+sheet_header(fnd, "AUDIT FINDINGS REGISTER  -  5Cs FORMAT  (ISA 265 / ISA 260)",
+             "Every finding is written in the 5Cs: Criteria (what should happen) - Condition (what actually happened) - Cause (why) - "
+             "Consequence (effect / risk) - Corrective action (recommendation). ISA 265.11 requires the written communication to describe the "
+             "deficiency (Condition) and explain its potential effects (Consequence). '5Cs check' flags any C left blank. Critical / High = "
+             "significant deficiency. Print any finding from the '5Cs Report' sheet.", 22)
+fnd.row_dimensions[2].height = 40
 rows = []
 for i, x in enumerate(F):
     r = 6 + i
-    rows.append([f"F-{i+1:02d}", x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7], x[8],
-                 f'=IF(A{r}="","",IF(I{r}="Closed","Closed",IF(H{r}<{RD},"Overdue",I{r})))',
-                 f'=IF(OR(A{r}="",I{r}="Closed"),"",{RD}-G{r})',
-                 f'=IF(L{r}="","",IF(L{r}<=30,"0-30 days",IF(L{r}<=60,"31-60 days",IF(L{r}<=90,"61-90 days","90+ days"))))',
-                 f'=IF(A{r}="","",IF(OR(D{r}="Critical",D{r}="High"),"Significant deficiency","Other deficiency"))',
-                 f'=IF(OR(A{r}="",I{r}="Closed"),"",H{r}+ROW()/100000)'])
-table(fnd, ["Finding ID", "Cycle", "Finding / deficiency", "Severity", "Agreed management action", "Client owner",
-            "Raised date", "Target date", "Status (input)", "Closed date", "Display status", "Age (days)",
-            "Ageing bucket", "ISA 265 classification", "Sort key (helper)"],
-      rows, [9, 15, 56, 10, 46, 19, 11, 11, 12, 11, 12, 8, 12, 21, 12],
-      {7: "dd-mmm-yy", 8: "dd-mmm-yy", 10: "dd-mmm-yy", 12: "0", 15: "0.00000"}, formula_cols=(11, 12, 13, 14, 15))
-add_dv(fnd, "Cycles", "B"); add_dv(fnd, "Finding severity", "D"); add_dv(fnd, "Finding status", "I")
+    rows.append([f"F-{i+1:02d}", *x,
+                 f'=IF(A{r}="","",IF(O{r}="Closed","Closed",IF(N{r}<{RD},"Overdue",O{r})))',
+                 f'=IF(OR(A{r}="",O{r}="Closed"),"",{RD}-M{r})',
+                 f'=IF(R{r}="","",IF(R{r}<=30,"0-30 days",IF(R{r}<=60,"31-60 days",IF(R{r}<=90,"61-90 days","90+ days"))))',
+                 f'=IF(A{r}="","",IF(OR(E{r}="Critical",E{r}="High"),"Significant deficiency","Other deficiency"))',
+                 f'=IF(A{r}="","",IF(COUNTA(F{r}:J{r})=5,"Complete","Missing "&(5-COUNTA(F{r}:J{r}))&" C"))',
+                 f'=IF(OR(A{r}="",O{r}="Closed"),"",N{r}+ROW()/100000)'])
+table(fnd, ["Finding ID", "Cycle", "Source (test / WP)", "Finding title", "Severity",
+            "1. CRITERIA\nWhat should happen", "2. CONDITION\nWhat actually happened", "3. CAUSE\nWhy it happened",
+            "4. CONSEQUENCE\nImpact / risk (effect)", "5. CORRECTIVE ACTION\nRecommendation",
+            "Management response", "Client owner", "Raised date", "Target date", "Status (input)", "Closed date",
+            "Display status", "Age (days)", "Ageing bucket", "ISA 265 classification", "5Cs check", "Sort key (helper)"],
+      rows, [9, 13, 9, 26, 10, 36, 36, 32, 34, 36, 28, 16, 10, 10, 11, 10, 11, 8, 11, 19, 11, 10],
+      {13: "dd-mmm-yy", 14: "dd-mmm-yy", 16: "dd-mmm-yy", 18: "0", 22: "0.00000"},
+      formula_cols=(17, 18, 19, 20, 21, 22), wrap_cols=(4, 6, 7, 8, 9, 10, 11))
+fnd.row_dimensions[5].height = 42
+for j in range(6, 11):
+    fnd.cell(5, j).fill = fill("B45309")
+for r in range(6, 6 + len(F)):
+    fnd.row_dimensions[r].height = 78
+    for c in range(1, 23):
+        fnd.cell(r, c).alignment = Alignment(horizontal=fnd.cell(r, c).alignment.horizontal,
+                                             vertical="top", wrap_text=c in (4, 6, 7, 8, 9, 10, 11))
+    for c in range(6, 11):
+        fnd.cell(r, c).fill = fill("FFFBEB")
+fnd.freeze_panes = "F6"
+add_dv(fnd, "Cycles", "B"); add_dv(fnd, "Finding severity", "E"); add_dv(fnd, "Finding status", "O")
 SEV_COL = {"Critical": RED, "High": "EA580C", "Medium": AMBER, "Low": GREEN}
-status_cf(fnd, f"D6:D{LAST}", SEV_COL)
+status_cf(fnd, f"E6:E{LAST}", SEV_COL)
 FS_COL = {"Open": AMBER, "In Progress": BLUE, "Overdue": RED, "Closed": GREEN}
-status_cf(fnd, f"K6:K{LAST}", FS_COL)
+status_cf(fnd, f"Q6:Q{LAST}", FS_COL)
+status_cf(fnd, f"U6:U{LAST}", {"Complete": GREEN})
+fnd.conditional_formatting.add(f"U6:U{LAST}", FormulaRule(formula=['LEFT($U6,7)="Missing"'],
+                               font=Font(name="Arial", size=9, bold=True, color=WHITE), fill=fill(RED)))
+fnd.conditional_formatting.add(f"F6:J{LAST}", FormulaRule(formula=['AND($A6<>"",F6="")'], fill=fill("FCA5A5")))
 FR = lambda col: f"Findings!${col}$6:${col}${LAST}"
 
 # ---------------------------------------------------------------- ISA Map
@@ -585,7 +731,7 @@ I = [
     ("Risk Assessment", "ISA 550", "Related parties", "Related party listing", "Risk Assessment"),
     ("Risk Assessment", "ISA 540", "Auditing accounting estimates and related disclosures", "Understanding of estimates", "Risk Assessment"),
     ("Control Testing", "ISA 330", "The auditor's responses to assessed risks", "Tests of controls; reliance conclusion", "Control Testing"),
-    ("Control Testing", "ISA 265", "Communicating deficiencies in internal control", "Deficiency log; management letter points", "Findings"),
+    ("Control Testing", "ISA 265", "Communicating deficiencies in internal control", "Findings written in 5Cs: criteria, condition, cause, consequence, corrective action", "Findings / 5Cs Report"),
     ("Substantive Testing", "ISA 500", "Audit evidence", "Sufficient appropriate evidence per assertion", "Substantive Testing / PBC Tracker"),
     ("Substantive Testing", "ISA 501", "Audit evidence - specific considerations (inventory, litigation)", "Count attendance; lawyer's letter", "Substantive Testing"),
     ("Substantive Testing", "ISA 505", "External confirmations", "Bank and receivable confirmations", "Substantive Testing"),
@@ -600,6 +746,7 @@ I = [
     ("Reporting", "ISA 705", "Modifications to the opinion", "Qualified / adverse / disclaimer where required", "Misstatements"),
     ("Reporting", "ISA 706", "Emphasis of matter and other matter paragraphs", "Additional paragraphs where required", "Audit Programme"),
     ("Reporting", "ISA 720", "The auditor's responsibilities relating to other information", "Other information read and considered", "Audit Programme"),
+    ("Reporting", "ISA 260 / 265", "Communication with TCWG; written communication of significant deficiencies", "Management letter of 5Cs findings with management responses", "5Cs Report"),
     ("Reporting", "ISA 230", "Audit documentation", "Final audit file assembled within 60 days", "Audit Programme"),
 ]
 table(isa, ["Audit phase", "ISA", "Title", "Key output / working paper", "Tracked on sheet"],
@@ -655,7 +802,8 @@ nav = [("Dashboard", "Dashboard"), ("Guide", "Guide & legend"), ("ISA Map", "ISA
        ("Materiality", "Materiality  (ISA 320)"), ("Audit Programme", "Audit programme  (ISA 300)"),
        ("Risk Assessment", "Risk assessment  (ISA 315)"), ("Control Testing", "Control testing  (ISA 330)"),
        ("Substantive Testing", "Substantive testing  (ISA 500)"), ("PBC Tracker", "Evidence tracker  (PBC)"),
-       ("Misstatements", "Misstatements  (ISA 450)"), ("Findings", "Findings  (ISA 265)"), ("Calc", "Calculations")]
+       ("Misstatements", "Misstatements  (ISA 450)"), ("Findings", "Findings  (ISA 265)"),
+       ("5Cs Report", "5Cs finding report"), ("Calc", "Calculations")]
 for i, (sheet, label) in enumerate(nav):
     r = 6 + 2 * i
     active = i == 0
@@ -710,11 +858,11 @@ for i, p in enumerate(PHASES):
 chead(25, ["Open findings by severity", "Count"])
 for i, s in enumerate(SEVERITY):
     put(calc, 26 + i, 1, s, font(9))
-    put(calc, 26 + i, 2, f'=COUNTIFS({FR("D")},A{26+i},{FR("K")},"<>Closed")', font(9))
+    put(calc, 26 + i, 2, f'=COUNTIFS({FR("E")},A{26+i},{FR("Q")},"<>Closed")', font(9))
 
 chead(32, ["Open findings - age", "Count"])
 for i, s in enumerate(["0-30 days", "31-60 days", "61-90 days", "90+ days"]):
-    put(calc, 33 + i, 1, s, font(9)); put(calc, 33 + i, 2, f'=COUNTIF({FR("M")},A{33+i})', font(9))
+    put(calc, 33 + i, 1, s, font(9)); put(calc, 33 + i, 2, f'=COUNTIF({FR("S")},A{33+i})', font(9))
 
 chead(39, ["Team member", "Budget hrs", "Actual hrs", "Remaining hrs", "% used"])
 for i, t in enumerate(TEAM):
@@ -754,7 +902,10 @@ kp = [
     ("Overdue procedures", f'=COUNTIFS({base},{PR("M")},"Yes")', None),
     ("Open findings", "=SUM(B26:B29)", None),
     ("Total findings raised", f'=COUNTA({FR("A")})', None),
-    ("Overdue finding actions", f'=COUNTIF({FR("K")},"Overdue")', None),
+    ("Overdue finding actions", f'=COUNTIF({FR("Q")},"Overdue")', None),
+    ("Findings complete in 5Cs", f'=COUNTIF({FR("U")},"Complete")', None),
+    ("Findings complete in 5Cs %", f'=IF(COUNTA({FR("A")})=0,0,COUNTIF({FR("U")},"Complete")/COUNTA({FR("A")}))', "0%"),
+    ("Control exceptions not raised as findings", f'=COUNTIFS({CR("O")},"Yes",{CR("P")},"")', None),
     ("Significant risks", f'=COUNTIF({RR("L")},"Yes")', None),
     ("Total risks identified", f'=COUNTA({RR("A")})', None),
     ("Fraud risks (ISA 240)", f'=COUNTIF({RR("M")},"Yes")', None),
@@ -880,6 +1031,9 @@ put(dash, r, cc(23), f'=COUNTIF({CR("N")},"No reliance*")&" of "&COUNTA({CR("A")
 r += 1
 put(dash, r, cc(18), "PBC items not yet received", font(8, color=MUTED), to=(r, cc(22)))
 put(dash, r, cc(23), f"={KP['PBC items not yet received']}", font(10, True, AMBER), align("right"), to=(r, cc(25)))
+r += 1
+put(dash, r, cc(18), "Exceptions without a 5Cs finding", font(8, color=MUTED), to=(r, cc(22)))
+put(dash, r, cc(23), f"={KP['Control exceptions not raised as findings']}", font(10, True, RED), align("right"), to=(r, cc(25)))
 put(dash, T1 + 15, cc(18), "● ≥80%   ● 50-79%   ● <50% of controls / sample items in the cycle",
     font(7, italic=True, color=MUTED), to=(T1 + 15, cc(25)))
 
@@ -902,8 +1056,16 @@ ch.y_axis.majorGridlines = None
 ch.y_axis.scaling.min = 0
 ch.y_axis.majorUnit = 1
 ch.y_axis.number_format = "0"
-clean(ch, CW, CH)
+clean(ch, CW, 7.3)
 dash.add_chart(ch, f"{L(cc(27))}{T1+1}")
+r = T1 + 14
+put(dash, r, cc(27), "Findings fully written in the 5Cs", font(8, True, NAVY), to=(r, cc(31)))
+put(dash, r, cc(32), f'={KP["Findings complete in 5Cs"]}&" of "&{KP["Total findings raised"]}', font(10, True, "B45309"),
+    align("right"), to=(r, cc(34)))
+r += 1
+put(dash, r, cc(27), "% with all five Cs documented", font(7, italic=True, color=MUTED), to=(r, cc(31)))
+put(dash, r, cc(32), f'={KP["Findings complete in 5Cs %"]}', font(10, True, "B45309"), align("right"), to=(r, cc(34)), fmt="0%")
+dash.conditional_formatting.add(f"{L(cc(32))}{r}", DataBarRule(start_type="num", start_value=0, end_type="num", end_value=1, color="FCD34D"))
 
 # --- Panel 5: finding ageing
 panel(T2, 0, 8, BODY, " 5. Management Action Ageing (open findings)")
@@ -972,10 +1134,10 @@ put(dash, T2 + 16, cc(18), "% used above 100% = budget overrun on work assigned.
 panel(T2, 27, 8, BODY, " 8. Materiality & Misstatements (ISA 320 / 450)")
 items = [("Overall materiality", f"={OM}", "#,##0", NAVY), ("Performance materiality", f"={PM}", "#,##0", NAVY),
          ("Clearly trivial threshold", f"={TRIV}", "#,##0", NAVY),
-         ("Misstatements identified", "=Misstatements!$K$6", "#,##0", INK),
-         ("Corrected by management", "=Misstatements!$K$7", "#,##0", GREEN),
-         ("Uncorrected (accumulated)", "=Misstatements!$K$8", "#,##0", RED),
-         ("Uncorrected / materiality", "=Misstatements!$K$12", "0%", RED)]
+         ("Misstatements identified", "=Misstatements!$L$6", "#,##0", INK),
+         ("Corrected by management", "=Misstatements!$L$7", "#,##0", GREEN),
+         ("Uncorrected (accumulated)", "=Misstatements!$L$8", "#,##0", RED),
+         ("Uncorrected / materiality", "=Misstatements!$L$12", "0%", RED)]
 for i, (lab, f, fmt, col) in enumerate(items):
     r1 = T2 + 1 + 2 * i
     put(dash, r1, cc(27), lab, font(8, color=MUTED), to=(r1 + 1, cc(31)), bg=WHITE)
@@ -984,7 +1146,7 @@ for i, (lab, f, fmt, col) in enumerate(items):
         dash.cell(r1 + 1, c).border = BOTTOM
 rng = f"{L(cc(32))}{T2+13}"
 dash.conditional_formatting.add(rng, DataBarRule(start_type="num", start_value=0, end_type="num", end_value=1, color="FCA5A5"))
-put(dash, T2 + 15, cc(27), "=Misstatements!$J$14", font(7, True, RED), align(wrap=True, v="top"), to=(T2 + 16, cc(34)), bg=WHITE)
+put(dash, T2 + 15, cc(27), "=Misstatements!$K$14", font(7, True, RED), align(wrap=True, v="top"), to=(T2 + 16, cc(34)), bg=WHITE)
 dash.row_dimensions[T2 + 15].height = 18
 dash.row_dimensions[T2 + 16].height = 18
 
@@ -992,15 +1154,15 @@ dash.row_dimensions[T2 + 16].height = 18
 NB = 13
 panel(T3, 0, 17, NB, " 9. Priority Audit Actions (open findings by target date)")
 r = T3 + 1
-spans = [("Finding", 0, 1, "A", None), ("Area", 2, 4, "B", None), ("Finding / deficiency", 5, 9, "C", None),
-         ("Client owner", 10, 12, "F", None), ("Target date", 13, 14, "H", "dd-mmm-yy"), ("Status", 15, 16, "K", None)]
+spans = [("Finding", 0, 1, "A", None), ("Area", 2, 4, "B", None), ("Finding title (5Cs)", 5, 9, "D", None),
+         ("Client owner", 10, 12, "L", None), ("Target date", 13, 14, "N", "dd-mmm-yy"), ("Status", 15, 16, "Q", None)]
 for h, a, b, _, _ in spans:
     put(dash, r, cc(a), h, font(8, True, MUTED), align("left" if a in (5,) else "center"), to=(r, cc(b)), bg=HEAD)
 for k in range(1, 7):
     r1 = T3 + 2 * k
     for h, a, b, col, fmt in spans:
-        f = (f'=IFERROR(INDEX({FR(col)},MATCH(SMALL({FR("O")},{k}),{FR("O")},0)),"")')
-        put(dash, r1, cc(a), f, font(8, h == "Finding"), align("left" if col == "C" else "center", wrap=True),
+        f = (f'=IFERROR(INDEX({FR(col)},MATCH(SMALL({FR("V")},{k}),{FR("V")},0)),"")')
+        put(dash, r1, cc(a), f, font(8, h == "Finding"), align("left" if col == "D" else "center", wrap=True),
             to=(r1 + 1, cc(b)), fmt=fmt, bg=WHITE)
     for c in range(cc(0), cc(17)):
         dash.cell(r1 + 1, c).border = BOTTOM
@@ -1062,6 +1224,17 @@ g = [
     ("Black text on grey", "Formula - do not overwrite."),
     ("Yellow cell (Dashboard)", "Filter selector."),
     ("Calc sheet", "Helper tables behind the charts - do not edit."),
+    ("THE 5Cs OF AUDIT FINDINGS", None),
+    ("1. Criteria", "What should happen - the policy, procedure, law, standard or expectation used as the benchmark."),
+    ("2. Condition", "What actually happened - the facts found, quantified where possible (e.g. 5 of 12 months, 60% of assets)."),
+    ("3. Cause", "Why the deviation occurred - the root cause the corrective action must fix (people, process, system, oversight)."),
+    ("4. Consequence (effect)", "The impact or risk resulting from the issue - link it to the financial statements or a misstatement where you can."),
+    ("5. Corrective action", "What should be done to address the issue - aimed at the cause, practical, with an owner and a target date."),
+    ("Where the 5Cs are used", "Control Testing (an exception or design weakness raises a finding) -> Findings register (written in 5Cs) -> "
+     "Misstatements (cause linked to a finding) -> 5Cs Report (printable management letter point) -> Dashboard (5Cs completeness)."),
+    ("Link to ISA 265", "ISA 265.11 requires the written communication of significant deficiencies to describe each deficiency and explain "
+     "its potential effects - that is the Condition and the Consequence. Criteria, Cause and Corrective action give management the context "
+     "and the remedy to act on, and help those charged with governance follow up."),
     ("KEY RULES BUILT INTO THE FORMULAS", None),
     ("Inherent risk (ISA 315)", "Likelihood x magnitude (1-5 each): score >= 15 High, >= 8 Medium, otherwise Low."),
     ("RoMM", "Inherent risk x control risk (Low=1, Medium=2, High=3): product >= 6 High, >= 3 Medium, otherwise Low."),
@@ -1078,11 +1251,105 @@ for k, v in g:
     else:
         put(guide, r, 1, k, font(10, True), align(v="top"))
         put(guide, r, 2, v, font(10), align(wrap=True, v="top"))
-        guide.row_dimensions[r].height = 30 if len(v) > 100 else 18
+        guide.row_dimensions[r].height = max(18, 14 * (len(v) // 105 + 1) + 4)
     r += 1
 
+# ---------------------------------------------------------------- 5Cs Report (printable finding)
+ws = rep5
+ws.sheet_view.showGridLines = False
+GOLD, GOLD_L, GOLD_D = "FCD34D", "FFFBEB", "B45309"
+ws.column_dimensions["A"].width = 2
+for col in "BCDEF":
+    ws.column_dimensions[col].width = 26
+ws.column_dimensions["G"].width = 2
+put(ws, 1, 2, "AUDIT FINDING REPORT  -  THE 5Cs", font(16, True, WHITE), bg=NAVY, to=(1, 6))
+ws.row_dimensions[1].height = 30
+put(ws, 2, 2, "A clear structure, a stronger message, greater impact. Written communication of deficiencies - ISA 265 / ISA 260.",
+    font(9, italic=True, color=MUTED), to=(2, 6))
+put(ws, 3, 2, "◄ Back to Dashboard", font(9, True, BLUE, underline="single")).hyperlink = "#'Dashboard'!A1"
+put(ws, 3, 5, "Findings register ►", font(9, True, BLUE, underline="single"), align("right"), to=(3, 6))
+ws.cell(3, 5).hyperlink = "#'Findings'!A1"
+put(ws, 5, 2, "▼ Select finding ID", font(10, True, NAVY), align("right"))
+put(ws, 5, 3, "F-05", font(12, True, INPUT_BLUE), align("center"), bg="FFF7CC").border = BOX
+dv = DataValidation(type="list", formula1="=Findings!$A$6:$A$300")
+ws.add_data_validation(dv); dv.add("C5")
+put(ws, 5, 4, "Change the yellow cell to print any finding.", font(8, italic=True, color=MUTED), to=(5, 6))
+ws.row_dimensions[5].height = 22
+
+# 5Cs explainer strip
+EXPL = [("Criteria", "What should happen (policy, procedure, law, standard or expectation)."),
+        ("Condition", "What actually happened."),
+        ("Cause", "Why the deviation occurred."),
+        ("Consequence (Effect)", "The impact or risk resulting from the issue."),
+        ("Corrective Action", "What should be done to address the issue (recommendation).")]
+for j, (name, desc) in enumerate(EXPL):
+    c = 2 + j
+    put(ws, 7, c, j + 1, font(11, True, WHITE), align("center"), bg=NAVY)
+    put(ws, 8, c, name, font(10, True, NAVY), align("center", wrap=True), bg=GOLD)
+    put(ws, 9, c, desc, font(8, color=INK), align("center", "top", wrap=True), bg=GOLD_L)
+    for rr in (7, 8, 9):
+        ws.cell(rr, c).border = Border(left=Side(style="thin", color=WHITE), right=Side(style="thin", color=WHITE))
+ws.row_dimensions[8].height = 22
+ws.row_dimensions[9].height = 36
+
+LK = lambda col: f"INDEX(Findings!${col}$6:${col}$300,MATCH($C$5,Findings!$A$6:$A$300,0))"
+MISSING = "[Not yet documented - complete before issuing]"
+put(ws, 11, 2, f'=IFERROR("Finding "&$C$5&":  "&{LK("D")},"Select a valid finding ID")', font(13, True, WHITE),
+    align("left"), bg=NAVY2, to=(11, 6))
+ws.row_dimensions[11].height = 26
+meta = [("Cycle", "B", None), ("Severity", "E", None), ("ISA 265 classification", "T", None),
+        ("Source (test / WP)", "C", None), ("Status", "Q", None)]
+for j, (lab, col, fmt) in enumerate(meta):
+    c = 2 + j
+    put(ws, 12, c, lab, font(8, True, MUTED), align("center"), bg=HEAD)
+    put(ws, 13, c, f'=IFERROR({LK(col)},"")', font(10, True), align("center"), bg=WHITE).border = BOX
+status_cf(ws, "C13", SEV_COL)
+status_cf(ws, "F13", FS_COL)
+ws.row_dimensions[13].height = 20
+
+five = [("1.  CRITERIA", "What should happen", "F"), ("2.  CONDITION", "What actually happened", "G"),
+        ("3.  CAUSE", "Why it happened", "H"), ("4.  CONSEQUENCE", "Effect - impact or risk", "I"),
+        ("5.  CORRECTIVE ACTION", "Recommendation", "J")]
+for i, (lab, sub_, col) in enumerate(five):
+    r = 15 + i
+    put(ws, r, 2, f"{lab}\n{sub_}", font(10, True, NAVY), align("left", "center", wrap=True), bg=GOLD)
+    ws.cell(r, 2).border = Border(bottom=Side(style="thin", color=WHITE))
+    put(ws, r, 3, f'=IFERROR(IF({LK(col)}="","{MISSING}",{LK(col)}),"")', font(10), align("left", "center", wrap=True),
+        to=(r, 6), bg=WHITE)
+    for c in range(3, 7):
+        ws.cell(r, c).border = BOTTOM
+    ws.row_dimensions[r].height = 50
+ws.conditional_formatting.add("C15:C19", FormulaRule(formula=[f'C15="{MISSING}"'],
+                              font=Font(name="Arial", size=10, bold=True, color=RED), fill=fill("FEE2E2")))
+
+put(ws, 21, 2, "Management response", font(9, True, WHITE), align("left"), bg=NAVY2)
+put(ws, 21, 3, f'=IFERROR(IF({LK("K")}="","Awaited",{LK("K")}),"")', font(10, italic=True), align("left", wrap=True), to=(21, 6), bg=WHITE)
+ws.row_dimensions[21].height = 34
+tail = [("Client owner", "L", None), ("Raised", "M", "dd-mmm-yyyy"), ("Target date", "N", "dd-mmm-yyyy"),
+        ("Age (days)", "R", "0"), ("5Cs check", "U", None)]
+for j, (lab, col, fmt) in enumerate(tail):
+    c = 2 + j
+    put(ws, 23, c, lab, font(8, True, MUTED), align("center"), bg=HEAD)
+    put(ws, 24, c, f'=IFERROR({LK(col)},"")', font(10, True), align("center"), fmt=fmt, bg=WHITE).border = BOX
+status_cf(ws, "F24", {"Complete": GREEN})
+ws.conditional_formatting.add("F24", FormulaRule(formula=['LEFT($F$24,7)="Missing"'],
+                              font=Font(name="Arial", size=10, bold=True, color=WHITE), fill=fill(RED)))
+put(ws, 26, 2, "Writing tips", font(9, True, NAVY))
+tips = ["Criteria: cite the exact policy, standard or law (e.g. 'Finance Policy s.4.2', 'IAS 2.13').",
+        "Condition: state facts and quantify them - how many, how much, which period. No opinions.",
+        "Cause: find the root cause (people, process, system, oversight); the corrective action must fix it.",
+        "Consequence: explain the risk to the financial statements, operations or compliance; quantify when possible.",
+        "Corrective action: specific, practical, aimed at the cause, with an owner and a target date agreed with management."]
+for i, t in enumerate(tips):
+    put(ws, 27 + i, 2, "•  " + t, font(8, color=MUTED), align(wrap=True), to=(27 + i, 6))
+ws.page_setup.orientation = "portrait"
+ws.page_setup.fitToWidth = 1
+ws.page_setup.fitToHeight = 1
+ws.sheet_properties.pageSetUpPr.fitToPage = True
+ws.print_area = "A1:G32"
+
 for ws in wb.worksheets:
-    ws.sheet_properties.tabColor = BLUE if ws.title == "Dashboard" else (GREY if ws.title in ("Calc", "Guide", "ISA Map", "Settings") else NAVY)
+    ws.sheet_properties.tabColor = "F59E0B" if ws.title == "5Cs Report" else BLUE if ws.title == "Dashboard" else (GREY if ws.title in ("Calc", "Guide", "ISA Map", "Settings") else NAVY)
 
 wb.save(OUT)
 print("saved", OUT)
