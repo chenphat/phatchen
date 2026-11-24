@@ -1,0 +1,599 @@
+{
+  "meta": {
+    "title": "Audit Policies and Procedures Manual",
+    "subtitle": "ISA-Based Methodology for Statutory Audits of Small and Medium-Sized Entities",
+    "org": "[Firm Name] Audit & Assurance",
+    "doc_ref": "APPM-2026-01",
+    "version": "1.0 (Draft for Partner Approval)",
+    "effective_date": "15 December 2026",
+    "owner": "Head of Audit Methodology",
+    "approved_by": "Managing Partner",
+    "review_cycle": "Annual, and whenever an ISA, ISQM or IESBA pronouncement becomes effective",
+    "source": "Audit Practice Manual: The Fundamentals of an ISA Audit (workshop, 18-19 August 2026)",
+    "framework": "International Standards on Auditing (ISA), ISQM 1, ISQM 2, IESBA Code, local regulator and professional body requirements"
+  },
+
+  "analysis": {
+    "summary": "The source is a two-day training deck on the Audit Practice Manual (APM). The APM is a structured set of audit programmes, checklists and example documents. It is built to produce an ISA-compliant file for a straightforward, single-entity audit using a wholly substantive approach. The APM describes itself as guidance, not regulation, so it does not bind a firm on its own. A firm that adopts it needs its own approved policies that say who must do what, by when, and with what evidence. This manual turns the APM's method into that layer of firm policy.",
+    "structure": [
+      ["Part 1", "What the APM is: status (guidance), why it exists, intended scope and limits, the three sections plus documents folder, and adoption hints."],
+      ["Part 2", "The ISA audit loop: Risk (ISA 315) > Response (ISA 330) > Evidence (ISA 500) > Conclusion (ISA 450) > Opinion (ISA 700/705)."],
+      ["Phase 1", "Client acceptance and continuance: two questions, three tests, six continuance triggers, file evidence, ISA 210 engagement letter, 'publicly traded entity' re-scoping."],
+      ["Phase 2", "Planning: strategy versus plan, risk assessment procedures, what/where/why risks, separate IR and CR, COSO components, design and implementation, preliminary analytics, materiality, fraud (ISA 240 Revised)."],
+      ["Phase 3", "Execution: sufficient appropriate evidence, direction of testing, error projection, the four-question working paper test, assertions, sampling (five approaches, sample-size tables), area procedures."],
+      ["Working papers", "File index: Ac1-Ac19 planning and control, sections C-O detailed work, Ab disclosures and critical review, Aa finalisation, A/B permanent file."],
+      ["Phase 4", "Completion: reassess materiality (ISA 450), six material-by-nature triggers, going concern outcomes (ISA 570 Revised)."]
+    ],
+    "strengths": [
+      "A clear risk > response > evidence > conclusion > opinion chain, with each step tied to specific ISA paragraphs.",
+      "Practical tests a reviewer can apply: 'a heading is not a risk', the four-question working paper test, 'one error is never just one error'.",
+      "A fixed file reference system (Ac/C-O/Ab/Aa/A/B), so any judgement can be found without asking the engagement team.",
+      "Quantified sampling guidance: five approaches, transaction sample table, substantive formula with a worked example, controls frequency table.",
+      "Covers the standards effective 15 December 2026 (ISA 240 Revised, ISA 570 Revised 2024, 'publicly traded entity') ahead of the first affected opinions.",
+      "Treats acceptance and capacity as quality objectives (ISQM 1), not commercial decisions."
+    ],
+    "gaps": [
+      {"area": "Status and ownership", "finding": "The APM is guidance only. Following it does not make a file compliant, and departing from it is not a breach. It names no owner, approver, version control or mandatory minimums.", "risk": "High", "recommendation": "Adopt this manual as firm policy, with document control, a named owner, annual review and mandatory 'shall' requirements (Policy 1 and Appendix F)."},
+      {"area": "Out-of-scope engagements", "finding": "Groups, publicly traded entities, banks, insurers and IT-dependent entities are excluded, but the APM gives no route for escalating them.", "risk": "High", "recommendation": "Add a scope gate at acceptance: excluded engagements need the partner and the methodology lead to approve an extended approach (ISA 600 Revised, controls reliance, specialists) (POL-02)."},
+      {"area": "IT environment", "finding": "IT scoping appears as a learning outcome, but there is little guidance on IT general controls (ITGC) or on understanding the IT environment under ISA 315 (Revised 2019).", "risk": "Medium", "recommendation": "Require IT environment documentation and a decision on whether ITGCs are relevant on every engagement (POL-04)."},
+      {"area": "Reporting", "finding": "The extracted deck stops at going concern. It gives no detail on ISA 700/701/705/706, ISA 720 other information or ISA 260/265 communications.", "risk": "High", "recommendation": "Set out reporting procedures, the material-and-pervasive grid, EOM/OM rules and governance communications (POL-14)."},
+      {"area": "Specific ISAs lightly covered", "finding": "Related parties (ISA 550), laws and regulations (ISA 250), written representations (ISA 580), subsequent events (ISA 560), external experts (ISA 620) and opening balances (ISA 510) are mentioned briefly or not at all.", "risk": "Medium", "recommendation": "Embed these as required completion steps with working paper references (POL-12, Appendix D)."},
+      {"area": "Engagement quality review", "finding": "There is no guidance on ISQM 2 engagement quality (EQ) reviews or on the criteria for selecting engagements for EQ review.", "risk": "Medium", "recommendation": "Define EQ review criteria, timing (before the report is dated) and documentation (POL-15)."},
+      {"area": "File assembly and retention", "finding": "The 60-day file assembly window, the archiving lock and retention periods are not addressed.", "risk": "Medium", "recommendation": "Require final assembly within 60 days of the report date, with no deletions after assembly and retention for at least the local statutory period (POL-10)."},
+      {"area": "Substantive sample risk factors", "finding": "The substantive sample formula relies on a risk-factor table (cited as ICAEW 2020) that is not reproduced. Only the low-risk factor of 1.2 is shown.", "risk": "Medium", "recommendation": "The firm must formally adopt and record its full risk-factor table. Until it does, the Excel calculator treats the factor as a controlled input (Appendix C)."},
+      {"area": "Monitoring and root cause", "finding": "Root-cause diagnosis is a learning outcome, but there is no monitoring cycle, remediation tracking or link back to acceptance decisions.", "risk": "Medium", "recommendation": "Run annual file inspections, a root-cause template and a remediation log owned by the quality management partner (POL-15)."},
+      {"area": "Going concern horizon", "finding": "The deck notes that ISA 570 (Revised 2024) moves the 12-month assessment period to run from the date the financial statements are approved.", "risk": "Medium", "recommendation": "Update templates for periods beginning on or after 15 December 2026. For a 31 December year end that is FY2027, with reports signed in 2028 (POL-13, POL-16)."}
+    ]
+  },
+
+  "roles": [
+    ["EP", "Engagement Partner"],
+    ["EQR", "Engagement Quality Reviewer"],
+    ["MGR", "Audit Manager"],
+    ["SNR", "Audit Senior / In-Charge"],
+    ["STF", "Audit Staff"],
+    ["ETH", "Ethics / Independence Partner"],
+    ["QM", "Quality Management Partner"]
+  ],
+
+  "policies": [
+    {
+      "id": "POL-01",
+      "title": "Governance, Status and Use of this Manual",
+      "phase": "Framework",
+      "isa": "ISQM 1; ISA 200; ISA 220 (Revised)",
+      "purpose": "To set out the authority of this manual, its relationship with the ISAs and the APM, and the minimum standard expected on every audit file.",
+      "scope": "All audit engagements accepted by the firm, all audit personnel and all audit files.",
+      "statements": [
+        "This manual is firm policy. Requirements written as 'shall' are mandatory. Any departure needs the Engagement Partner's documented justification and the QM Partner's approval.",
+        "The ISAs prevail over this manual. Where they conflict, the ISA applies and the conflict shall be reported to the methodology owner.",
+        "The APM programmes and checklists are the firm's default working method for in-scope engagements and shall be tailored to each client. An untailored programme produces untailored evidence.",
+        "The objective of every file is defensibility: an experienced auditor with no prior connection to the engagement must be able to follow the reasoning from risk to opinion."
+      ],
+      "procedures": [
+        ["Confirm the latest version of this manual and the APM templates before setting up the file", "SNR", "Ac1", "File set-up"],
+        ["Pilot the APM on a well-known engagement, run in parallel with the existing file, before rolling it out across the firm", "QM", "-", "Adoption"],
+        ["Train the whole audit team on the file structure before first live use", "QM", "-", "Adoption"],
+        ["Record any departure from a 'shall' requirement with its justification and approval", "EP", "Aa", "When it arises"],
+        ["Review the manual each year and on the effective date of new pronouncements", "QM", "-", "Annual"]
+      ],
+      "documentation": ["Version of the manual used, recorded on Ac1", "Departure log with approvals", "Training attendance records"],
+      "red_flags": ["Manual applied to a client outside its intended scope", "Programmes completed without tailoring", "Checklist answered 'N/A' without explanation"]
+    },
+    {
+      "id": "POL-02",
+      "title": "Client Acceptance and Continuance",
+      "phase": "Acceptance",
+      "isa": "ISQM 1 para 30(a); ISA 220 (Revised); ISA 210; ISA 300 para 6; IESBA Code",
+      "purpose": "To accept or continue only engagements that the firm is eligible, able and willing to perform to a quality standard, treating acceptance as a quality objective and not a commercial one.",
+      "scope": "Every new engagement and every continuing engagement, every year.",
+      "statements": [
+        "An engagement shall be accepted only if BOTH questions are answered YES. Eligibility: can we take this client (independence, ethics, skills, time)? Risk: should we take this client (management integrity, acceptable risk)?",
+        "Three tests shall be passed: INTEGRITY, CAPABILITY and INDEPENDENCE. Passing two tests and failing one is a fail.",
+        "Continuance is a fresh decision, not a rollforward, if any of these six changed: ownership; key management; regulated-sector entry; loss-making or covenant stress; findings in the prior year; fee or deadline.",
+        "Declining shall be considered where there is unresolved disagreement with the previous auditor, management refuses access, ownership is unclear or hidden, or there are known fraud, legal or regulatory problems.",
+        "The acceptance decision shall be signed by the Engagement Partner BEFORE any fieldwork begins. A memo signed after fieldwork started is not an acceptance decision.",
+        "Engagements outside the manual's scope (group audits, publicly traded entities, banks, insurers, significant IT dependency) shall not be accepted on the standard approach. They need an extended approach approved by the EP and the methodology owner."
+      ],
+      "procedures": [
+        ["Research the background of owners and directors and search media, legal and regulatory records", "MGR", "Ac2", "Before acceptance"],
+        ["Contact the previous auditor for any professional reason not to accept", "EP", "Ac2", "Before acceptance"],
+        ["Identify independence threats (financial interest, family, non-audit services, fee dependence) and record the specific safeguard and why it removes each threat", "ETH", "Ac2 / Ac3", "Before acceptance"],
+        ["Assess capability: industry knowledge, staff available, hours to the deadline, and fee against hours required", "EP", "Ac2 / Ac17", "Before acceptance"],
+        ["For continuance, document what changed against the six triggers, or evidence that nothing did", "MGR", "Ac2", "Each year"],
+        ["Classify the entity against the 'publicly traded entity' definition and record the decision", "EP", "Ac2", "Each year from 15 Dec 2026"],
+        ["The Engagement Partner personally completes and signs Ac2 as written permission for work to begin", "EP", "Ac2", "Before any planning"],
+        ["Agree and sign the engagement letter under ISA 210 (objective, scope, responsibilities, framework, form of report)", "EP", "A2 / Ac19", "Before fieldwork"]
+      ],
+      "documentation": ["Integrity research and the previous auditor's reply", "The specific threat and safeguard (not 'none noted')", "Competence conclusion naming who on the team knows the industry", "Hours required compared with the agreed fee", "Continuance change analysis", "Partner sign-off dated before fieldwork", "Signed engagement letter"],
+      "red_flags": ["Ac2 completed by someone other than the EP", "Acceptance dated after fieldwork began", "Blanket 'no threats identified'", "Fee pressure reducing hours below the assessed requirement"]
+    },
+    {
+      "id": "POL-03",
+      "title": "Audit Strategy, Planning and Team Briefing",
+      "phase": "Planning",
+      "isa": "ISA 300 para 4, 8-9; ISA 260 (Revised); ISA 240 (Revised)",
+      "purpose": "To develop an overall audit strategy and a detailed audit plan so the audit is effective, risk-focused and properly resourced.",
+      "scope": "All engagements.",
+      "statements": [
+        "Each engagement shall have a documented audit strategy (scope, timing, direction) and an audit plan that turns the strategy into risk-based procedures.",
+        "Points forward from the prior year shall be reviewed and cleared before the current-year risk assessment.",
+        "Work programmes shall be tailored at planning, before the team starts. Every procedure must answer a risk on Ac11.",
+        "The whole team shall take part in the engagement team discussion (Ac18), including fraud risk. Fraud matters shall be communicated at appropriate times throughout the engagement, not only at the opening briefing.",
+        "A detailed time budget shall be prepared and compared with the agreed fee."
+      ],
+      "procedures": [
+        ["Review and clear points forward from the prior year", "SNR", "Ac4-Ac6", "Planning"],
+        ["Complete preliminary planning procedures and communicate with the client before fieldwork", "MGR", "Ac8/1", "Planning"],
+        ["Prepare the assignment plan setting out each planning matter and how fieldwork will address it", "MGR", "Ac14", "Planning"],
+        ["Tailor work programmes for sections C-O", "MGR", "Ac14 / C-O", "Before fieldwork"],
+        ["Prepare the detailed time budget", "MGR", "Ac17", "Planning"],
+        ["Hold and document the team discussion and briefing, including fraud", "EP", "Ac18", "Before fieldwork"],
+        ["Issue the assignment terms letter covering ISA 260 and IESBA matters", "EP", "Ac19", "Planning"]
+      ],
+      "documentation": ["Audit strategy and assignment plan", "Tailored programmes", "Time budget", "Team discussion minutes with attendees", "Governance communication"],
+      "red_flags": ["Procedure justified as 'we always do it'", "No team discussion, or only partners attend", "Planning documents dated after fieldwork"]
+    },
+    {
+      "id": "POL-04",
+      "title": "Understanding the Entity, its Environment and Internal Control",
+      "phase": "Planning",
+      "isa": "ISA 315 (Revised 2019) para 13-14, 21-26; ISA 520",
+      "purpose": "To obtain an understanding that gives an appropriate basis for identifying and assessing risks and designing responses.",
+      "scope": "All engagements; standing information maintained in the permanent file.",
+      "statements": [
+        "Risk assessment procedures shall combine inquiry, analytical procedures, and observation and inspection. Inquiry alone is never enough.",
+        "The understanding shall cover the industry, regulation, business model, related parties, accounting policies and systems.",
+        "For each of the five components of internal control, the auditor shall both understand the component and evaluate it. Understanding alone is not enough.",
+        "Relevant controls (over significant risks, journal entries including unusual entries, and controls the auditor plans to rely on) shall be evaluated for design and implementation, normally by a walkthrough.",
+        "The IT environment shall be understood and documented, with a decision recorded on whether IT general controls are relevant. Significant IT dependency triggers the out-of-scope escalation in POL-02.",
+        "Preliminary analytical procedures shall feed the risk assessment. If Ac9 changed nothing on Ac10 or Ac11, it was done for the file and not for the audit."
+      ],
+      "procedures": [
+        ["Update the permanent file: what the client does, engagement letters, statutory information", "SNR", "Ac7 / A1-A3", "Planning"],
+        ["Document systems in the B sections (flows, records, key controls) and understand them, not just list them", "SNR", "B", "Planning"],
+        ["Evaluate the control environment, the entity's risk assessment process, monitoring, information and communication, and control activities", "MGR", "Ac10/3", "Planning"],
+        ["Perform a walkthrough of each significant transaction cycle to confirm design and implementation", "SNR", "B / Ac10", "Planning"],
+        ["Document the IT environment and decide whether ITGCs are relevant", "MGR", "B", "Planning"],
+        ["Perform preliminary analytics (GP%, receivable and inventory days, current and quick ratios) against the prior year and budget", "SNR", "Ac9", "Planning"],
+        ["Identify related parties and related party transactions", "SNR", "A / Ac8", "Planning"]
+      ],
+      "documentation": ["Permanent file checklist", "Systems notes and walkthrough evidence", "Control environment evaluation", "IT environment summary", "Preliminary analytics with conclusions linked to risks"],
+      "red_flags": ["Control named but not understood", "Analytics with no explanations", "No walkthrough of a significant cycle"]
+    },
+    {
+      "id": "POL-05",
+      "title": "Risk Assessment",
+      "phase": "Planning",
+      "isa": "ISA 315 (Revised 2019) para 28, 31; ISA 200 para 13; ISA 330",
+      "purpose": "To identify and assess risks of material misstatement (RMM) at the financial statement and assertion levels, so responses can be designed.",
+      "scope": "Every material class of transactions, account balance and disclosure.",
+      "statements": [
+        "Each risk shall name a WHAT (assertion), a WHERE (class, balance or disclosure) and a WHY (inherent risk factor). A heading such as 'Revenue may be overstated' is not a risk.",
+        "Inherent risk and control risk shall be assessed separately, on a spectrum, at the assertion level. RMM = IR x CR.",
+        "Control risk shall be assessed below high only if controls are tested and found effective. If controls are not tested, CR is high and RMM equals IR.",
+        "The five inherent risk factors (uncertainty, subjectivity, complexity, change, and bias or fraud) shall be named explicitly in the reasoning.",
+        "Significant risks shall be identified and justified. Each significant risk requires a specific response, not a standard programme.",
+        "The risk assessment shall be completed and approved before fieldwork begins, and revised when evidence contradicts it. A risk assessment dated after fieldwork started is a reconstruction."
+      ],
+      "procedures": [
+        ["Summarise the risk assessment", "MGR", "Ac10/1", "Planning"],
+        ["Assess overall inherent risk with notes justifying the conclusion", "MGR", "Ac10/2", "Planning"],
+        ["Assess specific area risk for each material element and assertion (what, where, why, IR, CR)", "MGR", "Ac11", "Planning"],
+        ["Identify significant risks, including the presumed risks of revenue recognition and management override", "EP", "Ac11", "Planning"],
+        ["Approve the risk assessment before fieldwork", "EP", "Ac10", "Before fieldwork"],
+        ["Reassess risk when exceptions, contradictory evidence or new information arise", "MGR", "Ac11", "Throughout"]
+      ],
+      "documentation": ["Client-specific risks with what/where/why", "Separate IR and CR at the assertion level", "Named inherent risk factors", "Significant risk justifications", "Approval date before fieldwork"],
+      "red_flags": ["A single High/Medium/Low label with no note", "Risks copied from the prior year", "CR below high without tests of controls"]
+    },
+    {
+      "id": "POL-06",
+      "title": "Fraud Risk",
+      "phase": "Planning / Execution",
+      "isa": "ISA 240 (Revised, effective for periods beginning on or after 15 Dec 2026); ISA 315; ISA 200",
+      "purpose": "To obtain reasonable assurance that the financial statements are free from material misstatement due to fraud, applying a fraud lens throughout the audit.",
+      "scope": "All engagements.",
+      "statements": [
+        "Professional scepticism shall be maintained throughout the audit, not only at planning.",
+        "Fraud risk shall be identified within the ISA 315 risk assessment process, not on a separate checklist, considering pressure, opportunity and rationalisation.",
+        "Revenue recognition is a presumed significant fraud risk. It may be rebutted only in narrow circumstances, with written justification approved by the EP.",
+        "Management override of controls is a significant risk on every audit. Responses shall include journal entry testing, review of estimates for bias, and testing of unusual transactions.",
+        "Unpredictability shall be built into the programme every year.",
+        "The auditor shall judge and document the authenticity of documents relied on. Where incentives exist, corroborate outside the client and investigate any sign of alteration."
+      ],
+      "procedures": [
+        ["Ask management and those charged with governance about known or suspected fraud, and understand the whistleblowing programme", "EP", "Ac8 / Ac18", "Planning"],
+        ["Weigh fraud risk factors at the financial statement and assertion levels", "MGR", "Ac11", "Planning"],
+        ["Document the revenue presumption: engaged, or rebutted with justification", "EP", "Ac11", "Planning"],
+        ["Test journal entries (criteria-based selection including period-end and unusual entries)", "SNR", "O / Ab", "Fieldwork"],
+        ["Review accounting estimates for management bias, including retrospective review", "MGR", "Ac8/2", "Fieldwork"],
+        ["Record each document's source and the authenticity judgement", "STF", "C-O", "Fieldwork"],
+        ["Communicate fraud matters to the team and to governance at appropriate times throughout", "EP", "Ac18 / Aa", "Throughout"]
+      ],
+      "documentation": ["Fraud risk factors and assessment", "Revenue presumption conclusion", "Journal entry testing criteria and results", "Estimates bias review", "Fraud communications log"],
+      "red_flags": ["Revenue presumption routinely rebutted", "Fraud risk considered once at planning only", "Journal testing with no selection rationale"]
+    },
+    {
+      "id": "POL-07",
+      "title": "Materiality",
+      "phase": "Planning / Completion",
+      "isa": "ISA 320 para 10-13; ISA 450 para 10, A15",
+      "purpose": "To set and keep under review the overall and performance materiality used to plan, perform and evaluate the audit.",
+      "scope": "All engagements.",
+      "statements": [
+        "Overall materiality shall be set by choosing a benchmark and applying a percentage, and BOTH shall be justified. The benchmark choice is the key judgement.",
+        "Large or unusual items shall be removed so the benchmark is not distorted.",
+        "When profit before tax is negative, volatile or nominal, an alternative benchmark (revenue, total assets, net assets) shall be used and the file shall say why.",
+        "Performance materiality shall be set below overall materiality to leave a margin for undetected and uncorrected misstatements.",
+        "Materiality shall be revisited when figures move during fieldwork and reassessed against actual results before misstatements are evaluated. If it falls, the sufficiency of work already done shall be reconsidered."
+      ],
+      "procedures": [
+        ["Select the benchmark, adjust for unusual items, apply the percentage and document the justification", "MGR", "Ac13", "Planning"],
+        ["Set performance materiality and the clearly trivial threshold", "MGR", "Ac13", "Planning"],
+        ["Approve materiality", "EP", "Ac13", "Planning"],
+        ["Revise materiality during fieldwork if figures move significantly", "MGR", "Ac13", "Fieldwork"],
+        ["Reassess materiality against final figures before evaluating misstatements, and document it even when unchanged", "MGR", "Ac13 / Aa", "Completion"]
+      ],
+      "documentation": ["Benchmark rationale", "Percentage rationale", "Adjustments to the benchmark", "PM and clearly trivial threshold", "Completion reassessment"],
+      "red_flags": ["Profit benchmark used in a loss year", "Percentage with no rationale", "No completion reassessment"]
+    },
+    {
+      "id": "POL-08",
+      "title": "Audit Evidence and Sampling",
+      "phase": "Execution",
+      "isa": "ISA 330 para 6-8, 18, 21; ISA 500 para 5-6; ISA 530",
+      "purpose": "To obtain sufficient and appropriate audit evidence through procedures whose nature, timing and extent respond to assessed risks.",
+      "scope": "All further audit procedures.",
+      "statements": [
+        "Each procedure shall be traceable to a named risk and assertion.",
+        "Substantive procedures shall be performed for each material class of transactions, account balance and disclosure.",
+        "Direction of testing: to test overstatement (assets, income), start from the recorded item and trace to source. To test understatement (liabilities, expenses), start from the source outside the ledger and trace into the records.",
+        "For each material area, one of five approaches shall be chosen and recorded on Ac15 before fieldwork: Immaterial (I), Proof in total (P), Test 100% (%), Transaction testing (T), Substantive testing (S). Only T and S produce a sample.",
+        "Transaction sample sizes shall not be below the firm's table. The '+' means a floor, not a target.",
+        "Substantive sample size = residual population / overall materiality x risk factor, after removing items above performance materiality and key items, which are tested in full.",
+        "Item selection shall be evidenced (for example, the Ac16 random number table) so the sample can be re-performed.",
+        "Every error found shall be investigated for cause, projected across the population, compared with performance materiality, and used to reconsider the risk assessment."
+      ],
+      "procedures": [
+        ["Choose and record the audit approach for every material area", "MGR", "Ac15", "Before fieldwork"],
+        ["Calculate sample sizes (transaction table or substantive formula)", "SNR", "Ac15", "Before fieldwork"],
+        ["Select items and document the selection basis", "SNR", "Ac16", "Fieldwork"],
+        ["Perform tests in the right direction for each assertion", "STF", "C-O", "Fieldwork"],
+        ["Investigate and project errors, compare with PM and reassess risk", "SNR", "C-O / Ac11", "Fieldwork"],
+        ["Where controls reliance is planned, test operating effectiveness using the controls sample table", "SNR", "B / C-O", "Fieldwork"]
+      ],
+      "documentation": ["Ac15 approach and sample size calculation", "Ac16 selection evidence", "Error investigation and projection", "Revised risk assessment where relevant"],
+      "red_flags": ["Sample size negotiated down after the approach was chosen", "Convenience selection", "Error treated as isolated without proof"]
+    },
+    {
+      "id": "POL-09",
+      "title": "Substantive Procedures by Audit Area",
+      "phase": "Execution",
+      "isa": "ISA 500; ISA 501; ISA 505; ISA 540 (Revised 2019)",
+      "purpose": "To set minimum procedures for the main financial statement areas, each linked to its main risks.",
+      "scope": "Sections C to O of the audit file.",
+      "statements": [
+        "Every section shall contain a lead schedule, a tailored work programme, the evidence, and a conclusion on the assertions tested.",
+        "The minimum procedures in Appendix B shall be performed, tailored to the assessed risk.",
+        "Accounting estimates shall be audited under ISA 540 (Revised 2019), addressing method, assumptions and data.",
+        "Audit files most often lack the conclusion, not the evidence. A section is not complete until it reaches an assertion-level conclusion."
+      ],
+      "procedures": [
+        ["C - PPE: inspect assets, recalculate depreciation, vouch additions, assess impairment", "STF", "C", "Fieldwork"],
+        ["E - Inventory: attend the count, test cost, test NRV against post year-end prices, review ageing", "SNR", "E", "Year end / Fieldwork"],
+        ["F - Receivables: circularise, test after-date cash, review days and ageing", "STF", "F", "Fieldwork"],
+        ["H - Bank and cash: obtain bank confirmations, review reconciliation, check for unrecorded loans, test cut-off", "STF", "H", "Fieldwork"],
+        ["I - Payables and accruals: supplier confirmations and statement reconciliations, search for unrecorded liabilities, test completeness of accruals", "STF", "I", "Fieldwork"],
+        ["O - Income and expenditure: cut-off, analytics, journal testing, revenue recognition tests", "SNR", "O", "Fieldwork"],
+        ["Conclude on each section's assertions and sign off", "SNR / MGR", "C-O", "Fieldwork"]
+      ],
+      "documentation": ["Lead schedule agreed to the trial balance", "Tailored programme", "Evidence with source and authenticity judgement", "Assertion-level conclusion"],
+      "red_flags": ["Section with evidence but no conclusion", "Count not attended where inventory is material", "Unrecorded liabilities searched for only in the ledger"]
+    },
+    {
+      "id": "POL-10",
+      "title": "Audit Documentation and Working Papers",
+      "phase": "Throughout",
+      "isa": "ISA 230; ISQM 1",
+      "purpose": "To make every file understandable to an experienced auditor with no previous connection to the audit.",
+      "scope": "All working papers, electronic or paper.",
+      "statements": [
+        "Files shall follow the standard index: A/B permanent file, Ac planning and control, C-O detailed sections, Ab disclosures and critical review, Aa finalisation (Appendix A).",
+        "Every working paper shall answer, in order: PURPOSE (risk and assertion referenced), WORK DONE (repeatable detail, including the selection method), RESULTS (including exceptions) and CONCLUSION (what it means for the assertion).",
+        "'Work performed. No exceptions noted.' is not a conclusion.",
+        "Each paper shall show the preparer and reviewer, with dates.",
+        "The final file shall be assembled within 60 days of the auditor's report date. After assembly, documents shall not be deleted or discarded, and any later addition shall be dated and explained.",
+        "Files shall be retained for at least the period required by law and professional regulation, and in any case not less than five years from the report date."
+      ],
+      "procedures": [
+        ["Set up the file using the standard index", "SNR", "Ac1", "File set-up"],
+        ["Prepare each paper to the four-question standard", "STF", "All", "Fieldwork"],
+        ["Review papers and clear review notes", "MGR / EP", "All", "Fieldwork / Completion"],
+        ["Assemble and lock the final file within 60 days", "MGR", "Aa", "After report"],
+        ["Archive and retain under firm policy", "QM", "-", "After assembly"]
+      ],
+      "documentation": ["File index", "Sign-off trail", "Review notes clearance", "Assembly date and lock evidence"],
+      "red_flags": ["Papers without a stated purpose or conclusion", "Review notes cleared by deletion without response", "Changes after assembly without a date or explanation"]
+    },
+    {
+      "id": "POL-11",
+      "title": "Accounting Estimates",
+      "phase": "Planning / Execution",
+      "isa": "ISA 540 (Revised 2019); ISA 240 (Revised)",
+      "purpose": "To obtain sufficient appropriate evidence on whether accounting estimates and related disclosures are reasonable.",
+      "scope": "All material estimates (for example: provisions, impairment, expected credit losses, inventory write-downs, useful lives, fair values).",
+      "statements": [
+        "Estimates shall be identified at planning and assessed for estimation uncertainty, complexity and subjectivity.",
+        "The response shall address the method, the significant assumptions and the data. Where appropriate, the auditor shall develop a point estimate or range.",
+        "A retrospective review of prior-year estimates shall be performed to identify management bias.",
+        "The work of an external expert, where used, shall be evaluated for competence, capability, objectivity and the appropriateness of the work."
+      ],
+      "procedures": [
+        ["List estimates and assess inherent risk factors", "MGR", "Ac8/2", "Planning"],
+        ["Test method, assumptions and data, or develop an auditor's estimate", "SNR", "C-O", "Fieldwork"],
+        ["Perform a retrospective review for bias", "MGR", "Ac8/2", "Fieldwork"],
+        ["Evaluate the adequacy of estimate disclosures", "MGR", "Ab", "Completion"]
+      ],
+      "documentation": ["Estimates register", "Testing of method, assumptions and data", "Bias assessment", "Expert evaluation"],
+      "red_flags": ["Management's estimate accepted without challenge", "Consistent one-directional bias year on year"]
+    },
+    {
+      "id": "POL-12",
+      "title": "Audit Completion and Evaluation of Misstatements",
+      "phase": "Completion",
+      "isa": "ISA 450; ISA 560; ISA 580; ISA 550; ISA 250; ISA 510; ISA 520",
+      "purpose": "To bring the evidence together and confirm nothing further changes the picture before the opinion is formed.",
+      "scope": "All engagements.",
+      "statements": [
+        "All misstatements above the clearly trivial threshold shall be accumulated and communicated to management with a request for correction.",
+        "Misstatements shall be evaluated individually and in aggregate, both quantitatively and qualitatively.",
+        "A misstatement below materiality is material by nature if it: turns a profit into a loss (or crosses a threshold users care about); breaches a covenant; affects management pay; conceals a fraud; relates to a related party; or was deliberate.",
+        "If uncorrected misstatements exceed overall materiality, an adjustment is required, failing which the opinion shall be modified.",
+        "Completion procedures shall include final analytical review, a subsequent events review to the report date, written representations, and a review of related parties, laws and regulations, and opening balances (first-year audits)."
+      ],
+      "procedures": [
+        ["Reassess materiality against final figures", "MGR", "Ac13 / Aa", "Completion"],
+        ["Complete the schedule of unadjusted misstatements and evaluate it", "SNR", "Aa", "Completion"],
+        ["Apply the six material-by-nature triggers", "MGR", "Aa", "Completion"],
+        ["Perform final analytical review and a critical review of the financial statements", "MGR", "Ab", "Completion"],
+        ["Review subsequent events up to the report date", "SNR", "Aa", "Completion"],
+        ["Complete the disclosure checklist", "SNR", "Ab", "Completion"],
+        ["Obtain the written representation letter dated as near as practicable to, but not after, the report date", "EP", "Aa", "Completion"],
+        ["Record points forward for next year", "MGR", "Aa", "Completion"]
+      ],
+      "documentation": ["Misstatement schedule and evaluation", "Subsequent events review", "Disclosure checklist", "Representation letter", "Points forward"],
+      "red_flags": ["Below-materiality error waived without a qualitative assessment", "Representation letter dated after the report", "No subsequent events work up to the report date"]
+    },
+    {
+      "id": "POL-13",
+      "title": "Going Concern",
+      "phase": "Completion",
+      "isa": "ISA 570 (Revised 2024, effective for periods beginning on or after 15 Dec 2026); ISA 570 (Revised)",
+      "purpose": "To challenge, not transcribe, management's assessment of going concern and to report the appropriate outcome.",
+      "scope": "All engagements.",
+      "statements": [
+        "The auditor shall evaluate management's assessment covering at least twelve months from the date of the financial statements. For periods beginning on or after 15 December 2026, this runs from the date of approval of the financial statements.",
+        "Indicators (losses, covenant stress, financing difficulties, loss of key customers) shall be identified at planning and revisited at completion.",
+        "Reporting shall follow the outcomes table in Appendix E: no material uncertainty; material uncertainty adequately disclosed; material uncertainty not adequately disclosed; going concern basis inappropriate.",
+        "An Emphasis of Matter paragraph never cures inadequate disclosure or an inappropriate basis."
+      ],
+      "procedures": [
+        ["Identify going concern indicators at planning", "MGR", "Ac10", "Planning"],
+        ["Obtain and challenge management's forecasts, assumptions and financing", "MGR", "Aa", "Completion"],
+        ["Assess the adequacy of going concern disclosures", "MGR", "Ab", "Completion"],
+        ["Conclude and select the reporting outcome", "EP", "Aa", "Completion"]
+      ],
+      "documentation": ["Indicators assessment", "Forecast challenge and sensitivity", "Disclosure evaluation", "Conclusion and reporting outcome"],
+      "red_flags": ["Management's assessment copied into the file without challenge", "Assessment period shorter than twelve months"]
+    },
+    {
+      "id": "POL-14",
+      "title": "Auditor's Reporting and Communication",
+      "phase": "Reporting",
+      "isa": "ISA 700 (Revised) para 10-15; ISA 705 (Revised); ISA 706 (Revised); ISA 701; ISA 720 (Revised); ISA 260 (Revised); ISA 265",
+      "purpose": "To form and express an appropriate opinion and communicate the required matters to those charged with governance.",
+      "scope": "All audit reports issued by the firm.",
+      "statements": [
+        "The opinion shall be formed on whether the financial statements are prepared, in all material respects, in accordance with the applicable framework.",
+        "Modifications shall follow the material-and-pervasive grid (Appendix E): qualified 'except for'; adverse; disclaimer.",
+        "An Emphasis of Matter paragraph highlights a matter that is properly presented and disclosed. It never fixes a problem.",
+        "Other information (ISA 720) shall be read for material inconsistencies before the report is signed.",
+        "Significant deficiencies in internal control shall be communicated in writing (ISA 265). Required matters shall be communicated to those charged with governance (ISA 260).",
+        "The report shall not be dated before sufficient appropriate evidence is obtained, the financial statements are approved and, where required, the EQ review is complete."
+      ],
+      "procedures": [
+        ["Draft the auditor's report and determine the opinion using the grid", "MGR", "Aa", "Reporting"],
+        ["Read the other information", "SNR", "Aa", "Reporting"],
+        ["Issue the management letter / ISA 265 deficiencies letter", "MGR", "Aa", "Reporting"],
+        ["Communicate with those charged with governance", "EP", "Aa", "Reporting"],
+        ["Sign and date the report after all conditions are met", "EP", "Aa", "Reporting"]
+      ],
+      "documentation": ["Opinion support memo", "Draft and final report", "Other information review", "Governance communications", "Deficiencies letter"],
+      "red_flags": ["EOM used in place of a modification", "Report dated before the representation letter or approval of the financial statements"]
+    },
+    {
+      "id": "POL-15",
+      "title": "Quality Management, Review and Monitoring",
+      "phase": "Throughout",
+      "isa": "ISQM 1; ISQM 2; ISA 220 (Revised, effective 15 Dec 2022)",
+      "purpose": "To operate an active, ongoing quality management system at firm and engagement level, rather than a checklist done once.",
+      "scope": "Firm-wide and every engagement.",
+      "statements": [
+        "The Engagement Partner takes overall responsibility for managing and achieving quality on the engagement and shall be sufficiently and appropriately involved throughout.",
+        "Engagements meeting the firm's EQ review criteria (publicly traded entities, entities of significant public interest, or those identified by the QM Partner as higher risk) shall have an EQ review completed before the report is dated.",
+        "The firm shall inspect a selection of completed files each year, covering every EP at least once in each inspection cycle.",
+        "Every finding shall be diagnosed to its ROOT CAUSE, traced back as far as the acceptance decision where relevant, and remediated with tracked actions.",
+        "Capacity (hours and staffing) is a quality objective. Deadline or fee pressure that threatens quality shall be escalated."
+      ],
+      "procedures": [
+        ["Determine whether an EQ review is required at acceptance", "EP / QM", "Ac2", "Acceptance"],
+        ["Perform the EQ review of significant judgements before the report date", "EQR", "Aa", "Before report"],
+        ["Run the annual monitoring inspection programme", "QM", "-", "Annual"],
+        ["Perform root-cause analysis and record the remediation plan", "QM", "-", "After inspection"],
+        ["Track remediation through to closure and report to the Managing Partner", "QM", "-", "Quarterly"]
+      ],
+      "documentation": ["EQ review documentation", "Inspection reports", "Root-cause analyses", "Remediation log"],
+      "red_flags": ["Findings repeated year on year", "Root cause recorded as 'staff error' without deeper analysis", "EQ review signed after the report date"]
+    },
+    {
+      "id": "POL-16",
+      "title": "Methodology Updates: Pronouncements Effective 15 December 2026",
+      "phase": "Framework",
+      "isa": "ISA 240 (Revised); ISA 570 (Revised 2024); Narrow-Scope Amendments (publicly traded entity); ISA 620 conforming changes; ISSA 5000",
+      "purpose": "To implement on time the pronouncements effective for periods beginning on or after 15 December 2026.",
+      "scope": "Methodology, templates, training and all affected engagements (FY2027 audits for 31 December year ends, reports signed in early 2028).",
+      "statements": [
+        "Templates shall be updated before the first affected planning. Methodology work starts now, not when the first affected report is signed.",
+        "'Listed entity' shall be replaced by 'publicly traded entity' in all checklists, and every client re-tested against the new definition.",
+        "The fraud lens shall be embedded in ISA 315 risk assessment templates, and rebuttal of the revenue presumption limited to narrow circumstances.",
+        "The going concern templates shall use a twelve-month assessment period from the date of approval of the financial statements.",
+        "ISSA 5000 sustainability assurance is not an ISA. Such engagements are outside the scope of this manual."
+      ],
+      "procedures": [
+        ["Update Ac2, Ac11, Ac18, the going concern and the reporting templates", "QM", "Ac2 / Ac11 / Ac18 / Aa", "By 30 June 2027"],
+        ["Re-classify all clients under the publicly traded entity definition", "EP", "Ac2", "Next acceptance cycle"],
+        ["Deliver firm-wide training on ISA 240 (Revised) and ISA 570 (Revised 2024)", "QM", "-", "Before FY2027 planning"],
+        ["Monitor first-year application through targeted file reviews", "QM", "-", "2028 inspection cycle"]
+      ],
+      "documentation": ["Implementation tracker", "Updated templates with version dates", "Training records", "Client re-classification log"],
+      "red_flags": ["Old 'listed entity' wording in use", "Going concern period still measured from the year-end date"]
+    }
+  ],
+
+  "working_papers": [
+    ["A1-A3", "Permanent file: business, engagement letters, statutory information", "Permanent", "ISA 315 / ISA 210"],
+    ["B", "Systems documentation and internal control", "Permanent", "ISA 315"],
+    ["Ac1", "File set-up control", "Acceptance", "ISA 230"],
+    ["Ac2", "Regulation of auditor checklist (ethics, acceptance), signed by EP", "Acceptance", "ISA 220 / IESBA"],
+    ["Ac3", "Non-audit services assessment", "Acceptance", "IESBA Code"],
+    ["Ac4-Ac6", "Points forward from the prior year", "Planning", "ISA 300"],
+    ["Ac7", "Permanent file checklist", "Planning", "ISA 315"],
+    ["Ac8/1", "Preliminary planning and client communication", "Planning", "ISA 300"],
+    ["Ac8/2", "Accounting estimates", "Planning", "ISA 540 (Revised 2019)"],
+    ["Ac9", "Preliminary analytical procedures", "Planning", "ISA 520"],
+    ["Ac10/1", "Risk assessment summary", "Planning", "ISA 315"],
+    ["Ac10/2", "Overall inherent risk", "Planning", "ISA 315"],
+    ["Ac10/3", "Control environment", "Planning", "ISA 315"],
+    ["Ac11", "Specific area risk and significant risks", "Planning", "ISA 315 / ISA 240"],
+    ["Ac13", "Materiality", "Planning", "ISA 320"],
+    ["Ac14", "Assignment plan and programme tailoring", "Planning", "ISA 300"],
+    ["Ac15", "Audit approach and sample sizes", "Planning", "ISA 530"],
+    ["Ac16", "Random number table / selection evidence", "Planning", "ISA 530"],
+    ["Ac17", "Detailed time budget", "Planning", "ISA 300 / ISQM 1"],
+    ["Ac18", "Team discussion and briefing", "Planning", "ISA 315 / ISA 240"],
+    ["Ac19", "Assignment terms letter", "Planning", "ISA 210 / ISA 260"],
+    ["C", "Property, plant and equipment", "Execution", "ISA 500"],
+    ["E", "Inventories and work in progress", "Execution", "ISA 501"],
+    ["F", "Accounts receivable and prepayments", "Execution", "ISA 505"],
+    ["H", "Bank balances and cash", "Execution", "ISA 505"],
+    ["I", "Payables and accruals", "Execution", "ISA 500"],
+    ["O", "Income and expenditure", "Execution", "ISA 500 / ISA 240"],
+    ["Ab", "Disclosures and critical review of the financial statements", "Completion", "ISA 700 / ISA 520"],
+    ["Aa", "Finalisation, opinion support and points forward", "Completion / Reporting", "ISA 450 / 560 / 570 / 580 / 700"]
+  ],
+
+  "area_procedures": [
+    ["C", "Property, plant and equipment", "Assets no longer exist; depreciation incorrect; capital items expensed or the reverse; impairment not recognised", "Physically inspect a sample; recalculate depreciation; vouch additions to invoices; assess impairment indicators"],
+    ["E", "Inventory", "Valued above NRV; obsolete or slow-moving items not written down; cut-off errors; count quantities differ from records", "Attend the count; test cost to recent purchase invoices; compare cost with post year-end selling price; review ageing"],
+    ["F", "Receivables", "Not collectable; revenue and receivables recognised too early; old debts not provided for; balance does not exist", "External confirmation; after-date cash; receivable days trend; test ageing"],
+    ["H", "Cash and bank", "Unrecorded loans or overdrafts; reconciliation errors; cut-off", "Bank confirmation letters; review reconciliation; check for unrecorded facilities; test cut-off"],
+    ["I", "Payables and accruals", "Understatement; unrecorded liabilities; incomplete accruals", "Supplier confirmations; search for unrecorded liabilities after year end (start outside the ledger); reconcile supplier statements; test accruals completeness"],
+    ["O", "Income and expenditure", "Revenue recognised before control transfers; cut-off; management override", "Cut-off testing; substantive analytics; journal entry testing; revenue recognition tests against contract terms"]
+  ],
+
+  "materiality_benchmarks": [
+    ["Profit before tax", 0.05, 0.10, "Profit-oriented businesses with stable profits"],
+    ["Revenue", 0.005, 0.01, "Not-for-profit or low-margin entities; loss years"],
+    ["Total assets", 0.01, 0.02, "Asset-heavy or holding entities, investment property"],
+    ["Net assets / equity", 0.02, 0.05, "Entities with low or volatile profit"]
+  ],
+
+  "transaction_samples": [
+    ["401 to 2,000,000", 401, 2000000, 60, 40, 25],
+    ["226 to 400", 226, 400, 48, 32, 20],
+    ["101 to 225", 101, 225, 36, 24, 15],
+    ["26 to 100", 26, 100, 24, 16, 10],
+    ["1 to 25", 1, 25, 12, 8, 5]
+  ],
+
+  "controls_samples": [
+    ["Daily, or many times a day", 25, "Manual controls operating continuously"],
+    ["Weekly", 5, "One selection covers several weeks"],
+    ["Monthly", 2, "Reperform the control end to end"],
+    ["Quarterly", 2, "Cover different quarters"],
+    ["Annually", 1, "Test the single occurrence in full"],
+    ["Automated", 1, "Test of one, plus general IT controls"]
+  ],
+
+  "substantive_example": {
+    "population": 1550375,
+    "overall_materiality": 100000,
+    "performance_materiality": 75000,
+    "large_items": 319035,
+    "key_items": 68500,
+    "risk_factor": 1.2,
+    "expected_sample": 14
+  },
+
+  "material_by_nature": [
+    ["Turns profit into a loss", "Or moves the entity across any threshold users care about"],
+    ["Breaches a covenant", "A small error can consume a large share of the remaining headroom"],
+    ["Affects management pay", "Bonus thresholds create an expectation of precision"],
+    ["Conceals a fraud", "Material because of who did it, whatever the amount"],
+    ["Relates to a related party", "Users judge these differently; size is nearly irrelevant"],
+    ["Was deliberate", "An intentional misstatement is material regardless of amount"]
+  ],
+
+  "going_concern": [
+    ["No material uncertainty", "Unmodified opinion, no additional section"],
+    ["Material uncertainty, adequately disclosed", "Unmodified opinion PLUS a 'Material Uncertainty Related to Going Concern' section"],
+    ["Material uncertainty, NOT adequately disclosed", "Qualified or adverse opinion"],
+    ["Going concern basis inappropriate", "Adverse opinion"]
+  ],
+
+  "opinion_grid": [
+    ["Material misstatement", "Qualified opinion ('except for')", "Adverse opinion"],
+    ["Unable to obtain sufficient appropriate evidence", "Qualified opinion ('except for')", "Disclaimer of opinion"]
+  ],
+
+  "continuance_triggers": [
+    ["Ownership changed", "New owners mean new incentives and possibly new integrity questions"],
+    ["Key management changed", "A new CFO or finance manager changes the control environment and fraud risk"],
+    ["Entered a regulated sector", "Banking, insurance or securities need different competence"],
+    ["Loss-making or covenant stressed", "Going concern becomes live, and so does the incentive to misstate"],
+    ["Prior year had findings", "Unresolved issues do not disappear because the year ended"],
+    ["Fee or deadline changed", "Capacity is a quality objective under ISQM 1"]
+  ],
+
+  "inherent_risk_factors": [
+    ["Uncertainty", "The outcome depends on future events not yet known"],
+    ["Subjectivity", "Judgement is needed and people may see it differently"],
+    ["Complexity", "Many steps or inputs make the item harder to get right"],
+    ["Change", "A new event, system or transaction type this year"],
+    ["Bias or fraud", "Possible management bias or intent to misstate"]
+  ],
+
+  "glossary": [
+    ["APM", "Audit Practice Manual: the structured set of programmes, checklists and example documents this manual adopts"],
+    ["RMM", "Risk of material misstatement = inherent risk x control risk"],
+    ["Audit risk", "Risk of an inappropriate opinion = IR x CR x detection risk (ISA 200)"],
+    ["IR / CR / DR", "Inherent risk / control risk / detection risk"],
+    ["PM", "Performance materiality: an amount below overall materiality used to design tests"],
+    ["Significant risk", "An identified RMM close to the upper end of the inherent risk spectrum, needing a specific response"],
+    ["EOM", "Emphasis of Matter paragraph (ISA 706)"],
+    ["EQR", "Engagement Quality Review (ISQM 2)"],
+    ["ITGC", "IT general controls"],
+    ["PIE", "Public interest entity (IESBA Code)"],
+    ["Points forward", "Matters carried to next year's audit"]
+  ],
+
+  "roadmap": [
+    ["Month 1", "Partner approval of this manual; appoint methodology owner"],
+    ["Month 2", "Team training on file structure and the four-question working paper test"],
+    ["Month 3", "Pilot on a well-known engagement, run in parallel with the current file"],
+    ["Month 4-6", "Roll out to all in-scope engagements; adopt the full substantive risk-factor table"],
+    ["By 30 Jun 2027", "Templates updated for ISA 240 (Revised), ISA 570 (Revised 2024), publicly traded entity"],
+    ["2028", "First affected opinions signed; targeted monitoring of first-year application"]
+  ]
+}
