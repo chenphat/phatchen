@@ -34,13 +34,25 @@ Two things make this harder than it looks, so keep them in view throughout:
 
 If the user has no data and wants an example or teaching material, generate the sample set with the engine.
 
+**Pick the tool by the input you have:**
+- Trial balance and ledger → `scripts/build_afs.py` (full workbook: working papers, statements, notes, directors'
+  report, checks). See `references/workbook-engine.md`.
+- Statement-level USD figures only (e.g. "here is our USD SoFP and P&L, put it into riel") →
+  `scripts/translate_summary.py`: live KHR SoFP, SoCI, SoCE and the 30.20 proof from a small typed CSV and a rates
+  file (usage in the script header). It refuses inputs whose USD equity does not roll forward, which catches
+  transcription errors early.
+
 ## Workflow
 
 Work through these phases in order. Each phase lists what to produce and where the detail lives.
 
 ### 1. Scope and acceptance
 Confirm the entity is eligible (no public accountability, Section 1), the reporting period, the applicable edition,
-transition status and the deliverables (workbook, directors' report, Word/PDF statements). Note the preparer's
+transition status and the deliverables. Transition has two different dates, and mixing them up is common: a
+**first-time adopter** (Section 35) restates from the start of the comparative year (date of transition, 35.6); an
+entity **moving from the 2015 edition** applies the third edition from the start of the current year (date of initial
+application, A2) with the A3 relief from current-period line-item disclosures. Both are covered in
+`references/sections/s35-transition.md` and `references/third-edition-changes.md`. Confirm the deliverables (workbook, directors' report, Word/PDF statements). Note the preparer's
 competence needs if the user is teaching — `references/competence-ies.md` maps each phase to IES 2/3/4 outcomes.
 
 ### 2. Read, clean and verify the data
@@ -58,7 +70,10 @@ Feed the corrected file back with `--mapping`.
 ### 4. Adjusting entries → adjusted trial balance
 Identify year-end adjustments the books lack: accruals, prepayments, depreciation, impairment of receivables
 (incurred-loss model, 11.21), inventory write-downs, provisions, current and deferred tax, reclassification of
-current portions of loans, **remeasurement of KHR monetary items at the closing rate (30.9–30.10)**. Put them in
+current portions of loans, **remeasurement of KHR monetary items at the closing rate (30.9–30.10)** — but not of
+advances paid or received in KHR, which are non-monetary and keep their original rate; the related revenue or expense
+later uses that same rate (30.8A, new in the third edition). An allowance for receivables needs objective evidence
+of impairment (incurred-loss model, 11.21–11.22), so tie it to the age analysis rather than a flat percentage. Put them in
 `adjustments` in the config (or the AJE sheet): TB + AJE = ATB. Use the section guides for the journals.
 
 ### 5. Materiality and accounting policies
@@ -74,6 +89,8 @@ The engine drafts all four statements in USD and translates them. Check:
 - SoCI: translation difference in OCI under "will not be reclassified"; revaluation and its tax there too.
 - SoCE has a translation-reserve column and agrees to the SoFP by component in both currencies.
 - SoCF shows "effect of exchange rate changes on cash" separately (7.13) and closes to cash in the SoFP.
+- A statement of income and retained earnings (3.18) is normally not available: the KHR translation difference is
+  OCI, so a SoCI and a SoCE are needed.
 - The proof by rates (30.20) agrees to the OCI translation line.
 
 ### 7. Notes

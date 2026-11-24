@@ -114,3 +114,13 @@ into the AJE sheet. TB + AJE = ATB.
 ```bash
 python -m pytest -q
 ```
+
+## Claude skill: `afs-ifrs-smes-3e`
+
+`.claude/skills/afs-ifrs-smes-3e/` packages this platform as a Claude skill for compiling IFRS for SMEs (third
+edition) financial statements with USD functional and KHR presentation currency. It contains the workflow
+(`SKILL.md`), reference guides distilled from the IFRS Foundation educational modules (Sections 2, 11, 12, 17, 23,
+28, 29, 30, 34, 35), the third-edition changes and transition reliefs, the IASB illustrative statements structure,
+a USD→KHR translation method, the Sections 3–8 presentation rules with a 54-row disclosure checklist, an IES
+competence mapping for teaching, the bundled workbook engine and a summary-translation script, and test cases.
+Claude Code loads it automatically in this repository.

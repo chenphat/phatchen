@@ -1,4 +1,9 @@
-# Bundled workbook engine (`scripts/build_afs.py`)
+# Bundled scripts
+
+`scripts/translate_summary.py` translates statement-level USD figures into KHR (see its header for the CSV
+and rates format). The rest of this page covers the full engine.
+
+## Workbook engine (`scripts/build_afs.py`)
 
 The engine turns a trial balance and general ledger into one Excel workbook in which every statement figure is a
 live formula. Use it whenever the user supplies ledger data (or wants a teaching example); write narrative and

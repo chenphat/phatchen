@@ -49,6 +49,9 @@ OPENING = {
 }
 TAX_RATE = 0.20
 PL_ACCOUNTS = [a for a in COA if a[0] in "45678"]
+# overdue bands as (share of trade receivables, share of that band impaired on objective evidence, 11.21-11.22)
+AGEING = [(0.08, 0.0), (0.04, 0.1), (0.02, 0.5), (0.01, 1.0)]
+ALLOWANCE_RATE = sum(p * a for p, a in AGEING)
 
 
 class Ledger:
@@ -206,8 +209,8 @@ def build_year(year, opening, rng, current):
     L.post(ye, "Payroll taxes withheld, payable next month", [("6010", 8500 * g), ("2030", -8500 * g)], "GJ")
     L.post(ye, "Advances received from customers for January deliveries", [("1020", 9000 * g), ("2060", -9000 * g)], "RV")
     L.post(ye, "Write-off of irrecoverable receivable", [("1110", 2000), ("1100", -2000)], "GJ")
-    target = round(L.bal["1100"] * 0.05, 2)
-    adj(*([ye] if not current else []), "Impairment allowance adjusted to 5% of receivables", [("6100", target + L.bal["1110"]), ("1110", -(target + L.bal["1110"]))], "GJ")
+    target = round(L.bal["1100"] * ALLOWANCE_RATE, 2)
+    adj(*([ye] if not current else []), "Impairment allowance for overdue receivables with objective evidence of impairment", [("6100", target + L.bal["1110"]), ("1110", -(target + L.bal["1110"]))], "GJ")
     L.post(ye, "Warranty provision for the year's sales", [("6110", 6000 * g), ("2210", -6000 * g)], "GJ")
     dep_int = round(L.bal.get("1030", 0) * 0.04 * (10 / 12 if not current else 1), 2)
     L.post(ye, "Interest accrued on short-term deposits", [("1140", dep_int), ("4200", -dep_int)], "GJ")
@@ -337,9 +340,9 @@ def generate(out_dir, cy=2026, dirty=True, seed=7):
             "tax_nondeductible_cy": round(entertainment * TAX_RATE, 2),
             "tax_nondeductible_py": round(L_py.bal["6130"] * TAX_RATE, 2),
             # illustrative: overdue bands [gross CY, allowance CY, gross PY, allowance PY]
-            "ageing": [[round(r * p), round(r * p * a), round(q * p), round(q * p * a)]
+            "ageing": [[round(r * p, 2), round(r * p * a, 2), round(q * p, 2), round(q * p * a, 2)]
                        for r, q in [(L_cy.bal["1100"], L_py.bal["1100"])]
-                       for p, a in [(0.08, 0.0), (0.04, 0.1), (0.02, 0.5), (0.01, 1.0)]],
+                       for p, a in AGEING],
             # illustrative: contractual undiscounted loan cash flows incl. interest [CY, PY] per time band
             "maturity_borrowings": [[80800, 56000], [240000, 185600], [0, 0]],
         },
