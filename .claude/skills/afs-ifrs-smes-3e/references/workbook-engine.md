@@ -1,7 +1,8 @@
 # Bundled scripts
 
 `scripts/translate_summary.py` translates statement-level USD figures into KHR (see its header for the CSV
-and rates format). `scripts/export_report.py` turns a recalculated workbook into the Word report.
+and rates format). `scripts/export_report.py` turns a recalculated workbook into the Word report. `scripts/compliance_checklist.py` makes a standalone
+compliance checklist; `scripts/extract_checklist.py` regenerates the checklist data from the text of the Standard.
 The rest of this page covers the full engine.
 
 ## Workbook engine (`scripts/build_afs.py`)
@@ -66,7 +67,7 @@ every run; review it, correct the `afs_code`, and feed it back with `--mapping`.
 
 Dashboard · Guide · Entity (inputs and rates) · Directors_Report · SoFP · SoCI · SoCE · SoCF · Notes ·
 SoCI_Nature (alternative format) · Materiality · Policies (selection drives Note 3) · Analysis (two-year) ·
-Checklist (by paragraph) · Checks (live reconciliations) · Findings (action tracker) · DQ_Log (source checks and
+Checklist (key disclosures) · Compliance_Summary and Compliance (full 813-item checklist) · Checks (live reconciliations) · Findings (action tracker) · DQ_Log (source checks and
 cleaning log) · GL · TB (unadjusted) · AJE · ATB (adjusted) · Mapping · Lead · Dash_Data · Lists.
 
 Statements show the presentation currency in columns C:D and the functional currency in E:F. Translation follows

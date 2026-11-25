@@ -17,6 +17,7 @@ from .sheets_data import (build_aje, build_atb, build_dq_log, build_entity, buil
                           build_mapping as sheet_mapping, build_tb)
 from .sheets_extra import (build_dash_data, build_dashboard, build_directors_report, build_findings, build_materiality,
                            build_policies)
+from .sheets_compliance import build_compliance, default_applicability, where_map
 from .sheets_notes import Notes, plan_notes
 from .sheets_review import build_analysis, build_checklist, build_checks
 from .sheets_statements import build_soce, build_socf, build_soci, build_soci_nature, build_sofp
@@ -24,11 +25,12 @@ from .taxonomy import LEAF
 from .xl import Book
 
 SHEETS = ["Dashboard", "Guide", "Entity", "Directors_Report", "SoFP", "SoCI", "SoCE", "SoCF", "Notes", "SoCI_Nature",
-          "Materiality", "Policies", "Analysis", "Checklist", "Checks", "Findings", "DQ_Log", "GL", "TB", "AJE", "ATB", "Mapping",
+          "Materiality", "Policies", "Analysis", "Checklist", "Compliance_Summary", "Compliance", "Checks", "Findings", "DQ_Log", "GL", "TB", "AJE", "ATB", "Mapping",
           "Lead", "Dash_Data", "Lists"]
 TAB = {"Dashboard": "14284B", "Guide": "7F7F7F", "Entity": "FFC000", "Directors_Report": "1F3864", "SoFP": "1F3864",
        "SoCI": "1F3864", "SoCE": "1F3864", "SoCF": "1F3864", "Notes": "1F3864", "SoCI_Nature": "8EA9DB",
-       "Materiality": "548235", "Policies": "548235", "Analysis": "548235", "Checklist": "548235", "Checks": "C00000",
+       "Materiality": "548235", "Policies": "548235", "Analysis": "548235", "Checklist": "548235",
+       "Compliance_Summary": "548235", "Compliance": "548235", "Checks": "C00000",
        "Findings": "C00000", "DQ_Log": "C00000", "Mapping": "FFC000", "AJE": "FFC000"}
 
 
@@ -97,6 +99,15 @@ def run(tb_cy, out, tb_py=None, gl_cy=None, gl_py=None, config=None, mapping_fil
     Notes(book, ws["Notes"], cfg).build()
     build_analysis(book, ws["Analysis"])
     build_checklist(book, ws["Checklist"])
+    for n in ("Compliance_Summary", "Compliance"):
+        wb.remove(ws[n])
+    sm, cl = build_compliance(wb, applies=default_applicability(book.active_faces, book.active, book.active_natures, cfg),
+                              where=where_map(book.notes), entity_ref=book.ent["entity_name"],
+                              period_ref=f'"year ended "&TEXT({book.ent["reporting_date"]},"d mmmm yyyy")')
+    ws["Compliance_Summary"], ws["Compliance"] = sm, cl
+    book.compliance_total = f"Compliance_Summary!K{sm.summary_total_row}"
+    order = [n for n in SHEETS]
+    wb._sheets = [wb[n] for n in order]
     build_checks(book, ws["Checks"])
     sources = [Path(p).name for p in (tb_cy, tb_py, gl_cy, gl_py) if p]
     build_dq_log(book, ws["DQ_Log"], results, log.rows, sources)

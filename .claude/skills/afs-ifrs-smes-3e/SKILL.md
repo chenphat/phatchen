@@ -107,8 +107,17 @@ Required by local law, not by the Standard. Use the structure in `references/pre
 every figure must agree to the statements (both currencies if shown).
 
 ### 9. Review and sign-off
-Run the disclosure checklist (54 rows by paragraph), the live Checks sheet, the two-year analysis (flag movements above
-performance materiality), and the Findings tracker. Report honestly what remains open.
+Complete the **compliance checklist** — sheets `Compliance_Summary` and `Compliance` in the workbook, 813 items taken
+from the text of the Standard (presentation, disclosure, recognition and measurement, transition), one row per lettered
+sub-paragraph. First confirm each section's applicability answer (pre-filled from the ledger; `?` needs a human
+answer), then give every applicable item a status (Yes / Partly / No / N/A), where it is addressed, and a comment for
+anything not Yes. Do not mark an item Yes because the template drafted a note: the entity's facts must be there.
+How to work it and the full item list: `references/compliance-checklist.md`. For a review of statements prepared
+elsewhere, or a teaching handout, make a standalone copy with `scripts/compliance_checklist.py`.
+
+Then run the quick key-disclosure summary (Checklist sheet, 54 rows), the live Checks sheet, the two-year analysis
+(flag movements above performance materiality), and the Findings tracker. Report honestly what remains open,
+including the checklist's % complete.
 
 ## Section guides — read the one you need, when you need it
 
@@ -125,7 +134,8 @@ performance materiality), and the Findings tracker. Report honestly what remains
 | Agriculture, extractive activities, service concessions | `references/sections/s34-specialised.md` |
 | First-time adoption; moving from the 2015 edition | `references/sections/s35-transition.md`, `references/third-edition-changes.md` |
 | Statement formats, note order, wording patterns | `references/illustrative-fs-structure.md` |
-| Sections 3–8 requirements, disclosure checklist, directors' report | `references/presentation-and-disclosure.md` |
+| Sections 3–8 requirements, key-disclosure summary, directors' report | `references/presentation-and-disclosure.md` |
+| Full compliance checklist (813 items by section and paragraph), how to complete it | `references/compliance-checklist.md` |
 | Teaching, competence mapping, assessment design | `references/competence-ies.md` |
 
 For a section without a guide (e.g. 13 Inventories, 20 Leases, 21 Provisions, 27 Impairment), use the disclosure

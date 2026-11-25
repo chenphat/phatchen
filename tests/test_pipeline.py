@@ -70,3 +70,18 @@ def test_broken_trial_balance_is_detected(data, tmp_path):
     res = build(data, tmp_path / "afs.xlsx", tb_cy=bad)
     failed = {c["id"] for c in res["checks"] if c["result"] == "FAIL"}
     assert {"CY-TB02", "CY-TB03"} <= failed
+
+
+def test_compliance_checklist(data, tmp_path):
+    from afs_smes.sheets_compliance import load_items
+    items = load_items()
+    assert len(items) > 800
+    refs = {i["ref"] for i in items}
+    for must in ("3.3", "7.19A(a)", "7.19C(a)", "11.43A", "17.31(e)", "23.84(b)", "30.26", "A1"):
+        assert must in refs, must
+    res = build(data, tmp_path / "afs.xlsx")
+    wb = load_workbook(res["out"])
+    assert {"Compliance_Summary", "Compliance"} <= set(wb.sheetnames)
+    cl = wb["Compliance"]
+    assert cl.max_row - 5 == len(items)
+    assert str(cl["G6"].value).startswith("=IF(Compliance_Summary!")

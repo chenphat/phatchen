@@ -555,7 +555,8 @@ def build_dashboard(book, ws):
            ("Data quality log", "DQ_Log"), ("Live checks", "Checks"), ("Findings & actions", "Findings"),
            ("Materiality", "Materiality"), ("Accounting policies", "Policies"), ("Directors' report", "Directors_Report"),
            ("Financial position", "SoFP"), ("Comprehensive income", "SoCI"), ("Changes in equity", "SoCE"),
-           ("Cash flows", "SoCF"), ("Notes", "Notes"), ("Comparative analysis", "Analysis"), ("Disclosure checklist", "Checklist")]
+           ("Cash flows", "SoCF"), ("Notes", "Notes"), ("Comparative analysis", "Analysis"), ("Disclosure checklist", "Checklist"),
+           ("Compliance checklist", "Compliance_Summary")]
     for i, (label, sheet) in enumerate(nav):
         c = ws.cell(row=5 + i * 2, column=1, value=f'=HYPERLINK("#\'{sheet}\'!A1","   {label}")')
         c.font = Font(name=FONT, size=10, bold=(i == 0), color="FFFFFF")
@@ -596,8 +597,9 @@ def build_dashboard(book, ws):
          f'=" "&COUNTIF(Checks!D6:D{cl},"FAIL")&" failing of "&COUNTA(Checks!D6:D{cl})', "006300")
     tile(4, 10, "Open findings", f'COUNTIF(Findings!I6:I{book.findings_last},"<>Closed")', "#,##0",
          f'=" "&COUNTIFS(Findings!E6:E{book.findings_last},"High",Findings!I6:I{book.findings_last},"<>Closed")&" high severity"', "D03B3B")
-    tile(5, 10, "Disclosure checklist signed off", f'IFERROR(COUNTIF(Checklist!D6:D80,"Complete")/(COUNTA(Checklist!D6:D80)-COUNTIF(Checklist!D6:D80,"N/A")),0)',
-         "0%", f'=" "&COUNTIF(Checklist!D6:D80,"Drafted")&" rows drafted, awaiting review"', "EB6834")
+    ct = book.compliance_total
+    tile(5, 10, "Compliance checklist complete", f'IFERROR({ct}+0,0)', "0%",
+         f'=" "&{ct.replace("K", "J")}&" of "&{ct.replace("K", "F")}&" applicable items open"', "EB6834")
 
     # charts
     def place(chart, col, row, title, w=10.2, h=7.6):

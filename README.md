@@ -68,6 +68,7 @@ accounts). The prior-year files are optional; without them comparatives are blan
 | Materiality | Benchmarks, overall / performance materiality, line-by-line assessment by size and nature |
 | Policies | Options the Standard permits, the policy selected, and whether it is material enough to disclose; drives Note 3 |
 | Analysis, Checklist | Two-year ratios, movements and common-size analysis; disclosure checklist by paragraph |
+| Compliance_Summary, Compliance | Full IFRS for SMEs 3E compliance checklist: 813 items from the text of the Standard, applicability by section pre-answered from the ledger, status and sign-off columns |
 | Checks, Findings, DQ_Log | Live reconciliations; action tracker; source-data checks and cleaning log |
 | GL, TB, AJE, ATB | Cleaned ledger; unadjusted trial balance; adjusting entries; adjusted trial balance |
 | Mapping, Lead, Dash_Data, Lists | Account mapping, lead schedule, chart data, drop-down lists |
@@ -121,6 +122,6 @@ python -m pytest -q
 edition) financial statements with USD functional and KHR presentation currency. It contains the workflow
 (`SKILL.md`), reference guides distilled from the IFRS Foundation educational modules (Sections 2, 11, 12, 17, 23,
 28, 29, 30, 34, 35), the third-edition changes and transition reliefs, the IASB illustrative statements structure,
-a USD→KHR translation method, the Sections 3–8 presentation rules with a 54-row disclosure checklist, an IES
+a USD→KHR translation method, the Sections 3–8 presentation rules with a 54-row key-disclosure summary, the full 813-item compliance checklist, an IES
 competence mapping for teaching, the bundled workbook engine and a summary-translation script, and test cases.
 Claude Code loads it automatically in this repository.
