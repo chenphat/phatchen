@@ -145,5 +145,7 @@ checklist rows and quote the Standard's paragraph numbers; if the user has suppl
 
 Default deliverable: the Excel workbook from the engine plus a short summary to the user covering — the checks
 result; adjustments posted; materiality and key policy choices; translation rates used and their source; open
-items (placeholders, findings, judgements). If the user asks for a Word or PDF version of the statements, produce it
-from the workbook figures with the same structure, KHR'000 headings and note numbering.
+items (placeholders, findings, judgements). For the finished report (cover, contents, directors' report, the four
+statements and all notes in KHR'000), run `scripts/export_report.py <workbook> --out <file>.docx [--banner "DRAFT"]`
+on the recalculated workbook; it carries placeholders across highlighted in yellow and drops policies judged not
+material on the Policies sheet. Convert to PDF with LibreOffice if needed, and look at the pages before sending.

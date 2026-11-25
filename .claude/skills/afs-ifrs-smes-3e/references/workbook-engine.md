@@ -1,7 +1,8 @@
 # Bundled scripts
 
 `scripts/translate_summary.py` translates statement-level USD figures into KHR (see its header for the CSV
-and rates format). The rest of this page covers the full engine.
+and rates format). `scripts/export_report.py` turns a recalculated workbook into the Word report.
+The rest of this page covers the full engine.
 
 ## Workbook engine (`scripts/build_afs.py`)
 
