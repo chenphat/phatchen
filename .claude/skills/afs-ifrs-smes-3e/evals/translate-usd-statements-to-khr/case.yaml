@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: translate-usd-statements-to-khr
+expected_outcome: |
+  An Excel file with the SoFP, SoCI and SoCE in KHR'000 for 2026 and 2025. Assets and liabilities at each year's
+  closing rate (4,020 / 4,080), income and expenses at each year's average rate (4,050 / 4,100), share capital at
+  the historical 4,050, retained earnings rolled forward from KHR 734,400 thousand, and a foreign currency translation
+  reserve shown separately in equity, with its movement in OCI (not profit or loss) and a proof by rates that agrees.
+context:
+  scaffold_script: place-files.sh
