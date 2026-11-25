@@ -127,7 +127,7 @@ PHASES = [
     ("1. Acceptance & ethics", "ISQM 1.30; ISA 210; ISA 220R.16–24; IESBA Code", ["A1_Acceptance", "A3_Independence", "A5_Team_Competence"]),
     ("2. Planning", "ISA 300; ISA 320; ISA 520", ["C0_Client_Info", "A2_Team_Budget", "A4_PBC_Tracker", "B1_Materiality", "E2_Analytics"]),
     ("3. Risk assessment", "ISA 315R; ISA 240", ["B8_Risk_Factors", "B7_Inherent_Risk", "B9_Fraud_Risk", "B2_Risk_Register",
-                                               "B3_Controls_IT", "B4_Team_Discussion", "B11_RMM_Assessment"]),
+                                               "B3_Controls_IT", "B4_Team_Discussion", "B11_RMM_Assessment", "H9_COSO_Components"]),
     ("4. Risk response & controls", "ISA 330; ISA 240.32; ISA 530", ["B5_Risk_Response", "B10_Controls_DI", "D1_Audit_Programme",
                                                                       "D3_Sampling", "B6_Fraud_Journals"]),
     ("5. Substantive fieldwork", "ISA 500-series; ISA 540R; ISA 550; ISA 620", ["C1_TB_Lead", "C5_Mapping_FS", "C2_AJE", "C3_FS_USD_KHR",
@@ -138,13 +138,13 @@ PHASES = [
                                                                                "E10_Unadjusted_Summary", "E3_Going_Concern",
                                                                                "E7_GC_Assessment", "E6_Disclosure", "E5_Review_Log",
                                                                                "E4_Completion", "E8_Finalisation"]),
-    ("7. Reporting", "ISA 700-series; ISA 260R; ISA 265", ["E9_Opinion", "H5_Findings_5Cs", "H6_5Cs_Report"]),
+    ("7. Reporting", "ISA 700-series; ISA 260R; ISA 265", ["E9_Opinion", "H10_Decision_Useful", "H5_Findings_5Cs", "H6_5Cs_Report"]),
     ("8. Engagement quality review", "ISQM 2; ISA 220R.36", ["F1_EQR"]),
     ("9. Post-audit & monitoring", "ISA 230.14–16; ISQM 1.35–54", ["F2_Post_Audit"]),
     ("10. QA & compliance", "ISA 230; ISQM 1; ISQM 2; IESBA Code", ["G1_QA_Readiness", "G2_WP_Register", "G3_WP_Standards",
                                                                     "G4_ISA_Map", "H0_Dashboard", "H1_Process_Map",
                                                                     "H2_ISA_Compliance", "H3_ISQM_Compliance",
-                                                                    "H4_IESBA_Compliance", "H7_Review_Points", "H8_Calc"]),
+                                                                    "H4_IESBA_Compliance", "H7_Review_Points", "H11_Concept_Review", "H8_Calc"]),
 ]
 NEW = {  # H-series: content (Index) and objective (G2)
     "H0_Dashboard": ("Audit process and compliance dashboard", "Summarise file status, risks, controls, misstatements, quality gates and compliance by live link"),
@@ -156,6 +156,9 @@ NEW = {  # H-series: content (Index) and objective (G2)
     "H6_5Cs_Report": ("Printable 5Cs finding report", "Present a single management letter point in 5Cs format for communication"),
     "H7_Review_Points": ("Compliance review points raised on this file", "Record gaps found in the compliance review and track clearance"),
     "H8_Calc": ("Calculations behind the dashboard", "Supporting calculations for H0 (no judgement)"),
+    "H9_COSO_Components": ("COSO five components and 17 principles mapped to ISA 315R", "Evaluate whether each component and principle of internal control is present and functioning"),
+    "H10_Decision_Useful": ("Decision-useful reporting: what happened, why, what next", "Apply the three reporting questions and the qualitative characteristics to the FY2026 FS"),
+    "H11_Concept_Review": ("Concept review against the standards", "Check teaching concepts (COSO; decision-useful reporting) against COSO, ISAs and the Conceptual Framework"),
 }
 for p in PHASES:
     for wp in p[2]:
@@ -171,6 +174,9 @@ ies = new_sheet("H4_IESBA_Compliance")
 fnd = new_sheet("H5_Findings_5Cs")
 rep = new_sheet("H6_5Cs_Report")
 rp = new_sheet("H7_Review_Points")
+coso = new_sheet("H9_COSO_Components")
+dur = new_sheet("H10_Decision_Useful")
+cref = new_sheet("H11_Concept_Review")
 calc = new_sheet("H8_Calc")
 
 # =====================================================================================  additive rows on Index, G2, G4
@@ -259,9 +265,9 @@ ISA = [
     ("ISA 240", "Fraud (version effective before 15 Dec 2026)", "Team discussion; fraud risk factors; presumed revenue risk; management override — journals, estimate bias, unusual transactions; documentation", "Yes", "B9_Fraud_Risk", "B4_Team_Discussion; B6_Fraud_Journals; E4 #11, #27", "Adequate", "", "ISA 240 (Revised) applies from FY2027 (F2 #12)"),
     ("ISA 250 (Revised)", "Laws and regulations", "Understand the legal framework; procedures on laws with direct effect; identified or suspected non-compliance; reporting responsibilities", "Yes", "D1_Audit_Programme", "Programme section 17 (W1); E4 #10, #26", "Adequate", "", "Open tax audit disclosed as contingent liability"),
     ("ISA 260 (Revised)", "Communication with those charged with governance", "Planned scope and timing; significant findings; independence (where required); written communications", "Yes", "E4_Completion", "Planning letter 20 Nov 2026; clearance meeting 12 Mar 2027 — Letters file C", "Outside workbook", "RP-04", ""),
-    ("ISA 265", "Communicating deficiencies in internal control", "Determine significant deficiencies; communicate them in writing to TCWG on a timely basis; communicate other deficiencies to management (265.8–11)", "Yes", "B10_Controls_DI", "H5_Findings_5Cs; management letter 29 Mar 2027 — Letters file F", "Partly", "RP-01; RP-09", "Timing of written communication and completeness of points"),
+    ("ISA 265", "Communicating deficiencies in internal control", "Determine significant deficiencies; communicate them in writing to TCWG on a timely basis; communicate other deficiencies to management (265.8–11)", "Yes", "B10_Controls_DI", "H5_Findings_5Cs; H9; management letter 29 Mar 2027 — Letters file F", "Partly", "RP-01; RP-09; RP-12", "Timing of written communication and completeness of points"),
     ("ISA 300", "Planning an audit", "Overall strategy and audit plan; changes during the audit; initial-audit activities incl. predecessor communication (300.7–13)", "Yes", "A2_Team_Budget", "Strategy and plan memorandum — file 5; E5_Review_Log s3", "Outside workbook", "RP-04", "Strategy memo not in this workbook"),
-    ("ISA 315 (Revised 2019)", "Identifying and assessing the risks of material misstatement", "Understanding of entity, framework and system of internal control incl. IT; inherent risk factors; significant risks; D&I of controls; stand-back; documentation (315R.38)", "Yes", "B2_Risk_Register", "B3, B7, B8, B10, B11, C0", "Adequate", "", ""),
+    ("ISA 315 (Revised 2019)", "Identifying and assessing the risks of material misstatement", "Understanding of entity, framework and system of internal control incl. IT; inherent risk factors; significant risks; D&I of controls; stand-back; documentation (315R.38)", "Yes", "B2_Risk_Register", "B3, B7, B8, B10, B11, C0; H9 (COSO five components)", "Partly", "RP-12", "Five components understood; B3 observations on risk process and monitoring not evaluated as deficiencies"),
     ("ISA 320", "Materiality", "Overall, performance and specific materiality; revision as the audit progresses; documentation (320.10–14)", "Yes", "B1_Materiality", "E8_Finalisation", "Adequate", "", "500 / 300 / trivial 25 / related parties 50"),
     ("ISA 330", "Responses to assessed risks", "Overall responses; further procedures responsive to each assessed risk; tests of controls; substantive procedures for material classes; linkage and results documented (330.28–30)", "Yes", "B5_Risk_Response", "D1_Audit_Programme; B10_Controls_DI", "Partly", "RP-03", "B5 concludes on 10 of the 15 risks in B2"),
     ("ISA 402", "Service organisations", "Not applicable — no service organisation used", "No", "—", "Strategy memo s3.2", "N/A", "", ""),
@@ -285,7 +291,7 @@ ISA = [
     ("ISA 705 (Revised)", "Modifications to the opinion", "Considered — not required after corrections (E9 decision rules)", "Considered", "E9_Opinion", "E1_Misstatements", "Adequate", "", ""),
     ("ISA 706 (Revised)", "Emphasis of Matter / Other Matter paragraphs", "Other Matter paragraph — predecessor auditor; Emphasis of Matter considered and not required (E5 s2)", "Yes", "E9_Opinion", "E5_Review_Log", "Adequate", "", ""),
     ("ISA 710", "Comparative information", "Corresponding figures audited by predecessor — Other Matter paragraph (710.13)", "Yes", "C4_Opening_Bal", "E9_Opinion row 31", "Adequate", "", ""),
-    ("ISA 720 (Revised)", "Other information", "Read and consider the Directors' report; final version obtained before the report date", "Yes", "E4_Completion", "A4 PBC row 36", "Adequate", "", ""),
+    ("ISA 720 (Revised)", "Other information", "Read and consider the Directors' report; final version obtained before the report date", "Yes", "E4_Completion", "A4 PBC row 36; H10 (forward-looking information)", "Adequate", "", ""),
     ("ISA 800 / 805 / 810 (Revised)", "Special purpose frameworks; single statements; summary FS", "Not applicable — general purpose financial statements", "No", "—", "", "N/A", "", ""),
 ]
 wp_header(isa, "H2 — ISA compliance matrix: every ISA, evidence and status (ISA 200.18; ISA 230; G4)",
@@ -592,6 +598,11 @@ RP = [
      "G2 has no row-5 sign-off line and does not list itself, so H1 shows it as 'Not in register'. All other original WPs are signed.",
      "The register that evidences sign-off is itself not evidenced as reviewed.",
      "Add a row-5 sign-off to G2 and a G2 row for the register, then clear this point."),
+    ("RP-12", "B3_Controls_IT; B10_Controls_DI; H9; H10", "ISA 315R.24, 27; ISA 265.8", "Medium",
+     "The auditor must determine, from the evaluation of each of the five components, whether control deficiencies have been identified, and communicate those that merit attention.",
+     "H9 assesses COSO principles 6–9, 16 and 17 (risk assessment process and monitoring) as partly met, deficient or not evidenced, and H10 finds 4 of 6 signs of non-decision-useful management reporting. B3 records these observations but B10 evaluates only control activities.",
+     "Deficiencies in the risk assessment process and monitoring components may be left unevaluated and uncommunicated, although they contributed to AJE 1–2.",
+     "Evaluate the B3 component observations in B10 (ISA 315R.27); add a management-letter observation on project-level reporting (what happened, why, what next) for FY2027, linked to ML 2."),
 ]
 wp_header(rp, "H7 — Compliance review points raised on this file (ISA 220 (Revised).29–34; ISQM 1.31)",
           "Points found when the file was mapped to the ISAs, ISQM 1 / ISQM 2 and the IESBA Code (H2–H4). Each point gives the "
@@ -601,7 +612,8 @@ SHORT = {"RP-01": "Management letter dated after checklist shows it sent", "RP-0
          "RP-05": "H-series working papers await sign-off", "RP-06": "EQR completed before partner's final review",
          "RP-07": "Independence declaration omits s310, s430, s522–525", "RP-08": "No statement on differences of opinion",
          "RP-09": "Control-environment deficiency not communicated", "RP-10": "IESBA changes for FY2027 not planned",
-         "RP-11": "G2 register has no sign-off of its own"}
+         "RP-11": "G2 register has no sign-off of its own",
+         "RP-12": "Risk-process and monitoring deficiencies not evaluated"}
 rows = [[x[0], SHORT[x[0]], x[1], x[2], x[3], x[4], x[5], x[6], x[7], "AM" if x[3] != "High" else "EP", "Open", None, None] for x in RP]
 R_FIRST, R_LAST = table(rp, ["Ref", "Issue", "Working paper(s)", "Standard", "Severity", "Criteria", "Condition (what we found)", "Consequence",
                              "Recommendation", "Owner", "Status", "Cleared by", "Date cleared"],
@@ -612,6 +624,296 @@ status_cf(rp, f"K{R_FIRST}:K{R_LAST}", {"Open": AMBER, "Cleared": GREEN})
 dv = DataValidation(type="list", formula1='"Open,Cleared"', allow_blank=True); rp.add_data_validation(dv); dv.add(f"K{R_FIRST}:K{LAST}")
 dv = DataValidation(type="list", formula1='"High,Medium,Low"', allow_blank=True); rp.add_data_validation(dv); dv.add(f"E{R_FIRST}:E{LAST}")
 RR = lambda col: f"H7_Review_Points!${col}${R_FIRST}:${col}${LAST}"
+
+# =====================================================================================  H9 COSO five components / 17 principles
+COSO_ST = ["Present & functioning", "Partly", "Deficiency", "Significant deficiency", "Not evidenced"]
+COSO = [
+    ("Control environment", "ISA 315R.21", 1, "Demonstrates commitment to integrity and ethical values",
+     "Tone at the top; code of conduct; adherence evaluated; deviations addressed", "B3_Controls_IT",
+     "Code of conduct exists but is not signed annually; owners' integrity checks clear at acceptance (A1 #2).", "Partly", "RP-09"),
+    ("Control environment", "ISA 315R.21", 2, "Board exercises oversight responsibility",
+     "Board independent of management, with relevant expertise, oversees internal control", "B3_Controls_IT",
+     "Board of four meets quarterly with one non-executive; no audit committee or internal audit; dominant shareholder-director (C0, B3).", "Deficiency", "RP-09"),
+    ("Control environment", "ISA 315R.21", 3, "Establishes structures, reporting lines, authorities and responsibilities",
+     "Clear authority limits and segregation of responsibilities", "B10_Controls_DI",
+     "Purchase approval matrix works (C5); related party transactions are approved by the interested director (C15).", "Deficiency", "ML 4"),
+    ("Control environment", "ISA 315R.21", 4, "Demonstrates commitment to competence",
+     "Attracts, develops and retains competent people for financial reporting roles", "B2_Risk_Register",
+     "Finance team has no experience of the IFRS for SMEs 3rd edition and prepared no technical paper (R06); late adjustments are common (B3).", "Partly", ""),
+    ("Control environment", "ISA 315R.21", 5, "Holds individuals accountable",
+     "Accountability for internal control responsibilities; performance measures", "B10_Controls_DI",
+     "Site manager engages, records and pays casual labour alone (C10); project cost reviews are not evidenced (C2).", "Deficiency", "ML 5; ML 2"),
+    ("Risk assessment", "ISA 315R.22–23", 6, "Specifies suitable objectives",
+     "Financial reporting objectives clear enough to identify risks (framework, materiality)", "B3_Controls_IT",
+     "Risk process is informal (Board discusses risk when approving tenders); accounting policy paper only produced on request and late (A4 row 12).", "Partly", ""),
+    ("Risk assessment", "ISA 315R.22–23", 7, "Identifies and analyses risks",
+     "Risks to objectives identified across the entity and analysed for likelihood and impact", "B3_Controls_IT",
+     "No documented process for loss-making contracts or estimation uncertainty (B3); C-06 onerous contract only found by the audit (AJE 2).", "Deficiency", "ML 2; RP-12"),
+    ("Risk assessment", "ISA 315R.22–23", 8, "Assesses fraud risk",
+     "Considers incentives, opportunities, rationalisations and management override", "B9_Fraud_Risk",
+     "No management fraud risk assessment evidenced; the auditor's assessment (B9) and journal testing (B6) addressed override risk.", "Not evidenced", "RP-12"),
+    ("Risk assessment", "ISA 315R.22–23", 9, "Identifies and assesses significant change",
+     "Changes in standards, business model, leadership and systems", "B2_Risk_Register",
+     "Early adoption of IFRS for SMEs 3rd edition without a transition paper until the audit consultation (R06; E5 s2).", "Deficiency", "RP-12"),
+    ("Control activities", "ISA 315R.26", 10, "Selects and develops control activities",
+     "Mix of preventive and detective, manual and automated controls; segregation of duties", "B10_Controls_DI",
+     "9 of 20 controls implemented as designed; treasury controls effective and relied on (C11, C12); cost review, journals, matching and accruals weak.", "Deficiency", "ML 2; ML 3; V 1; V 2"),
+    ("Control activities", "ISA 315R.26", 11, "Selects and develops general controls over technology",
+     "Access security, change management and IT operations controls", "B10_Controls_DI",
+     "Shared admin logins, an active leaver account and no closing-date password (C18, C19); backups never restore-tested (C20).", "Significant deficiency", "ML 1; ML 6"),
+    ("Control activities", "ISA 315R.26", 12, "Deploys through policies and procedures",
+     "Policies say what is expected; procedures put them into action, timely and by competent people", "B10_Controls_DI",
+     "No financial close checklist (C14); three-way match not enforced (C6); no written provisioning policies.", "Deficiency", "ML 3; V 1"),
+    ("Information & communication", "ISA 315R.25", 13, "Obtains or generates and uses relevant, quality information",
+     "Reliable information from internal and external sources, including IT and spreadsheets", "B3_Controls_IT",
+     "Job costing, stage of completion, fixed asset register and KHR translation are in Excel with no version control or review (B3; D9).", "Deficiency", "ML 3"),
+    ("Information & communication", "ISA 315R.25", 14, "Communicates internally",
+     "Objectives, responsibilities and concerns communicated inside the entity (incl. separate lines)", "B3_Controls_IT",
+     "Board and CFO receive monthly management accounts; code of conduct not re-communicated; no whistle-blowing channel evidenced.", "Partly", ""),
+    ("Information & communication", "ISA 315R.25", 15, "Communicates externally",
+     "With banks, regulators, customers, tax authority and auditors", "E3_Going_Concern",
+     "Covenant reporting to the banks met; monthly tax returns filed through an external agent; confirmations and lawyers' replies received.", "Present & functioning", ""),
+    ("Monitoring activities", "ISA 315R.24", 16, "Conducts ongoing and/or separate evaluations",
+     "Ongoing monitoring built into processes and/or separate evaluations such as internal audit", "B3_Controls_IT",
+     "CFO compares monthly accounts with budget; project-level variance review not evidenced; no internal audit function.", "Deficiency", "RP-12"),
+    ("Monitoring activities", "ISA 315R.24", 17, "Evaluates and communicates deficiencies",
+     "Deficiencies communicated on time to those responsible for corrective action, incl. senior management and the Board", "F2_Post_Audit",
+     "No internal process tracks deficiencies; prior management letters obtained (A4 row 10) but their follow-up is not evidenced; ML 1–6 to be followed up at FY2027 interim (F2 #7).", "Not evidenced", "RP-12"),
+]
+COMPONENTS = ["Control environment", "Risk assessment", "Control activities", "Information & communication", "Monitoring activities"]
+wp_header(coso, "H9 — Five components of internal control (COSO 2013) mapped to ISA 315 (Revised 2019).21–27",
+          "COSO's Internal Control – Integrated Framework has 5 components and 17 principles; internal control is effective only when each "
+          "component and relevant principle is present and functioning and the five operate together. ISA 315R uses the same five components "
+          "to understand the system of internal control. This is a by-product of the audit (B3, B10) — NOT an opinion on internal control: "
+          "no ICFR attestation applies to PTC and the ISA 700 report says the audit is not for that purpose. Column H (blue) is the reviewer's assessment.", 9)
+rows = [[x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7], x[8]] for x in COSO]
+C9_FIRST, C9_LAST = table(coso, ["COSO component", "ISA 315R component (para)", "Principle #", "COSO principle", "What it means",
+                                 "PTC evidence (WP)", "Observation on PTC", "Assessment", "Linked finding / review point"],
+                          rows, [20, 16, 9, 34, 36, 18, 56, 18, 18], center_cols=(2, 3, 8, 9), height=48)
+dv = DataValidation(type="list", formula1='"' + ",".join(COSO_ST) + '"', allow_blank=True)
+coso.add_data_validation(dv); dv.add(f"H{C9_FIRST}:H{C9_LAST}")
+COSO_COL = {"Present & functioning": GREEN, "Partly": AMBER, "Deficiency": "E65100", "Significant deficiency": RED, "Not evidenced": GREY}
+status_cf(coso, f"H{C9_FIRST}:H{C9_LAST}", COSO_COL)
+for rr in range(C9_FIRST, C9_LAST + 1):
+    coso.cell(rr, 6).hyperlink = f"#'{coso.cell(rr, 6).value}'!A1"
+s0 = C9_LAST + 2
+put(coso, s0, 1, "Component conclusion (all relevant principles must be present and functioning)", font(11, True, SLATE))
+hdrs = ["Component", "Principles"] + COSO_ST + ["Component conclusion"]
+for j, h in enumerate(hdrs, 1):
+    put(coso, s0 + 1, j, h, font(10, True, WHITE), align("center", wrap=True), bg=SLATE, border=BOX)
+coso.row_dimensions[s0 + 1].height = 44
+CR9 = lambda col: f"${col}${C9_FIRST}:${col}${C9_LAST}"
+for i, comp in enumerate(COMPONENTS):
+    r = s0 + 2 + i
+    put(coso, r, 1, comp, font(10, True), border=BOX)
+    put(coso, r, 2, f'=COUNTIF({CR9("A")},A{r})', font(10), align("center"), border=BOX)
+    for j, s in enumerate(COSO_ST):
+        put(coso, r, 3 + j, f'=COUNTIFS({CR9("A")},$A{r},{CR9("H")},"{s}")', font(10), align("center"), border=BOX)
+    put(coso, r, 8, f'=IF(F{r}>0,"Significant deficiency in component",IF(E{r}+G{r}>0,"Deficiencies to remediate",IF(D{r}>0,"Present — improvement needed","Present and functioning")))',
+        font(10, True), align("center", wrap=True), border=BOX, bg=KEY)
+    coso.row_dimensions[r].height = 32
+CS_FIRST, CS_LAST = s0 + 2, s0 + 6
+r = CS_LAST + 1
+put(coso, r, 1, "Total", font(10, True), border=BOX, bg=HEAD)
+for j in range(2, 8):
+    put(coso, r, j, f"=SUM({L(j)}{CS_FIRST}:{L(j)}{CS_LAST})", font(10, True), align("center"), border=BOX, bg=HEAD)
+status_cf(coso, f"H{CS_FIRST}:H{CS_LAST}", {"Significant deficiency in component": RED, "Deficiencies to remediate": "E65100",
+                                            "Present — improvement needed": AMBER, "Present and functioning": GREEN})
+r += 2
+put(coso, r, 1, "Are all five components present, functioning and operating together?", font(10, True), align(wrap=True, v="top"), to=(r + 2, 3))
+put(coso, r, 4, f'=IF(COUNTIF(H{CS_FIRST}:H{CS_LAST},"Present and functioning")=5,"Yes — no deficiencies identified by the audit",'
+    f'"Not demonstrated: "&COUNTIF(H{CS_FIRST}:H{CS_LAST},"Significant*")&" component(s) with an ISA 265 significant deficiency and "'
+    f'&COUNTIF(H{CS_FIRST}:H{CS_LAST},"Deficiencies*")&" with other deficiencies. Whether any is a COSO major deficiency (internal control '
+    f'not effective) is management\'s evaluation — the audit gives no opinion on internal control (ISA 700). Deficiencies are evaluated in B10 '
+    f'and communicated through H5 (ISA 265).")', font(10, True, RED), align(wrap=True), to=(r + 2, 9), bg=KEY)
+COSO_ANS = f"H9_COSO_Components!$D${r}"
+put(coso, r + 3, 1, "Preventive vs detective (next topic in the series): every control in B10 is already classified by type in column E "
+    "(e.g. C5 PO approval = preventive; C12 bank reconciliation = detective; C20 backup = corrective). A sound system needs both.",
+    font(9, italic=True, color=MUTED), align(wrap=True), to=(r + 4, 9))
+
+# =====================================================================================  H10 Decision-useful reporting
+wp_header(dur, "H10 — Decision-useful reporting: what happened, why, what next (Conceptual Framework; ISA 700; ISA 720; ISA 570)",
+          "The objective of general purpose financial reporting is information useful to users' decisions, so compliant financial statements and "
+          "decision-useful reporting are meant to be the same thing. 'What happened' sits in the audited FS; 'why' in the notes and management "
+          "commentary; 'what next' mainly in the Directors' report and forecasts, which the auditor reads as other information (ISA 720) and "
+          "uses as evidence for going concern (ISA 570) — but does not audit or opine on.", 7)
+put(dur, 6, 1, "A. Three questions applied to PTC FY2026 (live links)", font(11, True, SLATE))
+QH = ["Question", "Measure or matter", "PTC FY2026", "Source WP", "Where it belongs", "Auditor's responsibility", "Comment"]
+Q3 = [
+    ("1. What happened?", "Revenue (USD'000)", "=E8_Finalisation!B11", "E8_Finalisation", "Statement of comprehensive income", "Audited — ISA 700", "#,##0"),
+    ("1. What happened?", "Revenue growth on 2025", "=E2_Analytics!C7", "E2_Analytics", "Directors' report / commentary", "Read and consider — ISA 720", "0.0%"),
+    ("1. What happened?", "Profit before tax (USD'000)", "=E8_Finalisation!B12", "E8_Finalisation", "Statement of comprehensive income", "Audited — ISA 700", "#,##0"),
+    ("1. What happened?", "Total assets / net current assets", '=TEXT(E8_Finalisation!B13,"#,##0")&" / "&TEXT(E3_Going_Concern!B10,"#,##0")', "E3_Going_Concern", "Statement of financial position", "Audited — ISA 700", None),
+    ("1. What happened?", "Audit opinion", '=E9_Opinion!B40&" + Other Matter (predecessor)"', "E9_Opinion", "Auditor's report", "Formed by the auditor — ISA 700 / 706 / 710", None),
+    ("2. Why did it happen?", "Gross margin (final v 2025) and driver", '=TEXT(E2_Analytics!C8,"0.0%")&" v "&TEXT(E2_Analytics!D8,"0.0%")&" — "&E2_Analytics!F8', "E2_Analytics", "Management commentary", "Analytical procedures — ISA 520", None),
+    ("2. Why did it happen?", "PBT margin: draft → final", '=TEXT(E2_Analytics!B9,"0.0%")&" draft → "&TEXT(E2_Analytics!C9,"0.0%")&" final after AJE 1–3 of "&TEXT(E1_Misstatements!D10,"#,##0")', "E1_Misstatements", "Corrected in the FS", "Misstatements — ISA 450", None),
+    ("2. Why did it happen?", "PBT against approved forecast (USD'000)", "=E8_Finalisation!B12-B1_Materiality!C8", "B1_Materiality", "Management commentary", "Read and consider — ISA 720", "#,##0;(#,##0);-"),
+    ("2. Why did it happen?", "Main drivers corrected by the audit", '=E1_Misstatements!B7&" ("&E1_Misstatements!D7&"); "&E1_Misstatements!B8&" ("&E1_Misstatements!D8&"); "&E1_Misstatements!B9&" ("&E1_Misstatements!D9&")"', "E1_Misstatements", "Notes — estimates and judgements", "Estimates — ISA 540", None),
+    ("2. Why did it happen?", "Productivity", "=E2_Analytics!F16", "E2_Analytics", "Management commentary", "Read and consider — ISA 720", None),
+    ("3. What happens next?", "Remaining order book (USD'000)", '=TEXT(E3_Going_Concern!B11,"#,##0")&" — "&E3_Going_Concern!E11', "E3_Going_Concern", "Directors' report", "Evidence for ISA 570; read under ISA 720", None),
+    ("3. What happens next?", "Lowest liquidity headroom, downside case (USD'000)", "=E7_GC_Assessment!F51", "E7_GC_Assessment", "Going concern basis note", "Evaluated — ISA 570", "#,##0"),
+    ("3. What happens next?", "Cost overrun that exhausts headroom (reverse stress)", '=TEXT(E7_GC_Assessment!B53,"0.0%")&" v worst historical 4%"', "E7_GC_Assessment", "Auditor's evaluation only", "Evaluated — ISA 570", None),
+    ("3. What happens next?", "Covenants: current ratio / gearing / interest cover", '=E3_Going_Concern!D7&" / "&E3_Going_Concern!D8&" / "&E3_Going_Concern!D9', "E3_Going_Concern", "Borrowings note", "Audited — classification of borrowings", None),
+    ("3. What happens next?", "Control weaknesses to remediate", f'=COUNTIF({FR("O")},"Written*")&" written + "&COUNTIF({FR("O")},"Verbal*")&" verbal points; follow-up at FY2027 interim"', "H5_Findings_5Cs", "Management letter", "Communicated — ISA 265", None),
+    ("3. What happens next?", "Contingency and standards changes", '="Open tax audit 2022–2023 (contingent liability); ISA 240 (Revised) and ISA 570 (Revised 2024) apply from FY2027"', "F2_Post_Audit", "Contingencies note; audit planning", "Audited (note) / firm planning", None),
+]
+for j, h in enumerate(QH, 1):
+    put(dur, 7, j, h, font(10, True, WHITE), align("center", wrap=True), bg=SLATE, border=BOX)
+for col, w in zip("ABCDEFG", [22, 34, 52, 20, 28, 30, 28]):
+    dur.column_dimensions[col].width = w
+dur.row_dimensions[7].height = 32
+QCOL = {"1": BLUE, "2": AMBER, "3": TEAL}
+for i, (q, m, f_, src, where, resp, fm) in enumerate(Q3):
+    r = 8 + i
+    put(dur, r, 1, q, font(10, True, WHITE), align("left", "top", wrap=True), bg=QCOL[q[0]], border=BOX)
+    put(dur, r, 2, m, font(10), align("left", "top", wrap=True), border=BOX)
+    put(dur, r, 3, f_, font(10, True), align("left", "top", wrap=True), fmt=fm, border=BOX)
+    c = put(dur, r, 4, src, font(10, color="0563C1", underline="single"), align("left", "top"), border=BOX)
+    c.hyperlink = f"#'{src}'!A1"
+    put(dur, r, 5, where, font(10), align("left", "top", wrap=True), border=BOX)
+    put(dur, r, 6, resp, font(10), align("left", "top", wrap=True), border=BOX)
+    put(dur, r, 7, None, font(10, color=INPUT), align("left", "top", wrap=True), border=BOX)
+    dur.row_dimensions[r].height = 46
+QA_LAST = 8 + len(Q3) - 1
+
+b0 = QA_LAST + 2
+put(dur, b0, 1, "B. Qualitative characteristics of useful information — compliance check on the FY2026 financial statements", font(11, True, SLATE))
+put(dur, b0 + 1, 1, "Report deadline (A1 #13)", font(10, True))
+put(dur, b0 + 1, 2, date(2027, 3, 26), font(10, color=INPUT), fmt="dd-mmm-yyyy")
+put(dur, b0 + 1, 3, "Input from A1 #13: report needed by 26 March 2027 for the tax return and covenant reporting.", font(9, italic=True, color=MUTED))
+DL = f"$B${b0+1}"
+QC = [
+    ("Relevance (incl. materiality)", "Capable of making a difference to users' decisions; materiality judged by nature or size",
+     '="Disclosure checklist items included "&E8_Finalisation!B28&" / 15; specific materiality for related parties "&B1_Materiality!C19', "E6_Disclosure", "Met"),
+    ("Faithful representation", "Complete, neutral and free from error — the fundamental base; insight without it misleads",
+     '="Corrected "&TEXT(E1_Misstatements!D10,"#,##0")&"; uncorrected "&TEXT(E1_Misstatements!D16,"#,##0")&" ("&TEXT(E1_Misstatements!D19,"0%")&" of materiality) — "&E1_Misstatements!D21', "E1_Misstatements", "Met after correction"),
+    ("Neutrality / absence of bias", "Information not slanted to be more favourable",
+     "=E9_Opinion!B43", "E9_Opinion", "Met — bias noted"),
+    ("Comparability", "Consistent policies; comparatives presented",
+     '="Corresponding figures audited by predecessor (Other Matter, ISA 710); legacy contracts keep prior policy and are disclosed (E5 s2)"', "C4_Opening_Bal", "Met"),
+    ("Verifiability", "Independent observers could reach consensus",
+     '="QA self-check met "&COUNTIF(G1_QA_Readiness!E7:E43,"Met")&" / 37; confirmations: "&D6_Confirmations!B14', "G1_QA_Readiness", "Met"),
+    ("Timeliness", "Available in time to influence decisions",
+     f'=IF(E8_Finalisation!B44<={DL},"Report signed "&TEXT(E8_Finalisation!B44,"dd-mmm-yyyy")&", before the "&TEXT({DL},"dd-mmm-yyyy")&" deadline","Report signed AFTER the deadline")', "E8_Finalisation", "Met"),
+    ("Understandability", "Classified, characterised and presented clearly",
+     '="KHR translation re-performed (C3); other information read — "&E4_Completion!E20', "E4_Completion", "Met"),
+]
+for j, h in enumerate(["Characteristic", "Meaning", "PTC evidence (live)", "Source WP", "Assessment", "Basis"], 1):
+    put(dur, b0 + 2, j, h, font(10, True, WHITE), align("center", wrap=True), bg=SLATE, border=BOX)
+for i, (ch_, mean, f_, src, a) in enumerate(QC):
+    r = b0 + 3 + i
+    put(dur, r, 1, ch_, font(10, True), align("left", "top", wrap=True), border=BOX)
+    put(dur, r, 2, mean, font(10), align("left", "top", wrap=True), border=BOX)
+    put(dur, r, 3, f_, font(10), align("left", "top", wrap=True), border=BOX)
+    c = put(dur, r, 4, src, font(10, color="0563C1", underline="single"), align("left", "top"), border=BOX)
+    c.hyperlink = f"#'{src}'!A1"
+    put(dur, r, 5, a, font(10, True, INPUT), align("center", "top", wrap=True), border=BOX)
+    put(dur, r, 6, "Conceptual Framework ch. 2; IFRS for SMEs Section 2", font(9, color=MUTED), align("left", "top", wrap=True), border=BOX)
+    dur.row_dimensions[r].height = 46
+QC_FIRST, QC_LAST = b0 + 3, b0 + 2 + len(QC)
+dur.conditional_formatting.add(f"E{QC_FIRST}:E{QC_LAST}", FormulaRule(formula=[f'LEFT($E{QC_FIRST},3)="Met"'], fill=fill("C8E6C9")))
+
+c0 = QC_LAST + 2
+put(dur, c0, 1, "C. Signs that management's own reporting is not decision-useful — applied to PTC's monthly reporting (ISA 315R.24 monitoring)", font(11, True, SLATE))
+SIGNS = [
+    ("Lots of numbers, little explanation", "CFO compares monthly accounts with budget; project-level variance review is not evidenced (B3).", "B3_Controls_IT", "Yes"),
+    ("Heavy focus on historical information only", "Two contract budgets unchanged since tender; costs to complete not re-forecast (B10 C2).", "B10_Controls_DI", "Yes"),
+    ("Minimal analysis of key variances", "Three months of cost review packs had no queries or sign-off (B10 C2).", "B10_Controls_DI", "Yes"),
+    ("No clear link to strategy or risks", "Risk process informal; no process for loss-making contracts (B3).", "B3_Controls_IT", "Yes"),
+    ("Board still asking basic questions", "Not evidenced in the minutes read (D10; E4 #24).", "D10_Subsequent_Events", "Not evidenced"),
+    ("Reports prepared only for compliance", "Not evidenced; draft FS prepared late in Excel and late adjustments are common (B3).", "B3_Controls_IT", "Not evidenced"),
+]
+for j, h in enumerate(["Sign", "PTC observation", "Source WP", "Present?"], 1):
+    put(dur, c0 + 1, j, h, font(10, True, WHITE), align("center", wrap=True), bg=SLATE, border=BOX)
+for i, (sg, ob, src, pres) in enumerate(SIGNS):
+    r = c0 + 2 + i
+    put(dur, r, 1, sg, font(10, True), align("left", "top", wrap=True), border=BOX)
+    put(dur, r, 2, ob, font(10), align("left", "top", wrap=True), to=(r, 3), border=BOX)
+    c = put(dur, r, 4, src, font(10, color="0563C1", underline="single"), align("left", "top"), border=BOX)
+    c.hyperlink = f"#'{src}'!A1"
+    put(dur, r, 5, pres, font(10, True, INPUT), align("center", "top"), border=BOX)
+    dur.row_dimensions[r].height = 30
+SG_FIRST, SG_LAST = c0 + 2, c0 + 1 + len(SIGNS)
+dv = DataValidation(type="list", formula1='"Yes,No,Not evidenced"', allow_blank=True); dur.add_data_validation(dv); dv.add(f"E{SG_FIRST}:E{SG_LAST}")
+status_cf(dur, f"E{SG_FIRST}:E{SG_LAST}", {"Yes": RED, "No": GREEN, "Not evidenced": GREY})
+put(dur, c0 + 1, 5, "Present?", font(10, True, WHITE), align("center"), bg=SLATE, border=BOX)
+put(dur, c0 + 1, 4, "Source WP", font(10, True, WHITE), align("center"), bg=SLATE, border=BOX)
+r = SG_LAST + 1
+put(dur, r, 1, "Conclusion", font(10, True))
+put(dur, r, 2, f'=COUNTIF(E{SG_FIRST}:E{SG_LAST},"Yes")&" of "&COUNTA(A{SG_FIRST}:A{SG_LAST})&" signs present: monthly reporting says what happened but not '
+    f'why or what next at contract level. Linked to ML 2 and RP-12; a management-letter observation, not an audit opinion matter."',
+    font(10, True), align(wrap=True), to=(r + 1, 7), bg=KEY)
+DUR_SIGNS = f'COUNTIF(H10_Decision_Useful!$E${SG_FIRST}:$E${SG_LAST},"Yes")'
+d0 = r + 3
+put(dur, d0, 1, "D. Boundaries for the auditor", font(11, True, SLATE))
+for i, t in enumerate([
+    "Management, not the auditor, is responsible for making reports decision-useful; the auditor may recommend improvements in the management letter (ISA 265) without taking management responsibility (IESBA Part 4A).",
+    "The opinion covers the financial statements only. Forward-looking 'what next' information in the Directors' report is other information: read, consider for material inconsistency with the FS and the auditor's knowledge, and report under ISA 720 — not audited.",
+    "A different 'story' from the same numbers is acceptable only if the narrative is balanced and consistent with the FS; inconsistency or bias must be challenged (ISA 720; ISA 540; ISA 700.12).",
+    "Sustainability information (IFRS S1/S2) is outside IFRS for SMEs financial statements and outside this audit opinion; assurance on it is a separate engagement.",
+]):
+    put(dur, d0 + 1 + i, 1, "•  " + t, font(9), align(wrap=True, v="top"), to=(d0 + 1 + i, 7))
+    dur.row_dimensions[d0 + 1 + i].height = 28
+
+# =====================================================================================  H11 Concept review
+CR_ROWS = [
+    ("COSO / ICFR post", "Under the COSO Internal Control – Integrated Framework there are five components.", "Accurate — incomplete",
+     "COSO 2013 has 5 components supported by 17 principles. Internal control is effective only when each component and each relevant principle is present and functioning, and the five components operate together in an integrated way.",
+     "COSO Internal Control – Integrated Framework (2013)", "H9"),
+    ("COSO / ICFR post", "Control environment sets the tone through integrity, ethical values, accountability and oversight.", "Accurate — incomplete",
+     "Add principles 3 (structures, reporting lines, authority) and 4 (commitment to competence). For PTC the dominant shareholder-director and lack of an audit committee are the key weaknesses.",
+     "COSO principles 1–5; ISA 315R.21", "H9 rows 1–5"),
+    ("COSO / ICFR post", "Risk assessment identifies and analyses risks to objectives.", "Accurate — incomplete",
+     "Also requires suitable objectives to be specified (P6), fraud risk to be assessed (P8) and significant change to be identified (P9). In an ISA audit this is the 'entity's risk assessment process'.",
+     "COSO principles 6–9; ISA 315R.22–23", "H9 rows 6–9"),
+    ("COSO / ICFR post", "Control activities establish policies and procedures — approvals, reconciliations, access restrictions.", "Needs qualification",
+     "Control activities are the actions set out in policies and deployed through procedures (P10, P12). Access restrictions are general IT controls (P11) and should be named separately; PTC's significant deficiency is here (ML 1).",
+     "COSO principles 10–12; ISA 315R.26", "H9 rows 10–12; H5 ML 1"),
+    ("COSO / ICFR post", "Information & communication ensures information is communicated across the organisation.", "Accurate — incomplete",
+     "Covers quality information (P13), internal communication (P14) and external communication (P15). ISA 315R calls it the 'information system and communication', which includes spreadsheets and IT used for financial reporting.",
+     "COSO principles 13–15; ISA 315R.25", "H9 rows 13–15"),
+    ("COSO / ICFR post", "Monitoring evaluates controls and ensures deficiencies are addressed in a timely manner.", "Accurate — incomplete",
+     "Monitoring uses ongoing and/or separate evaluations (P16) and communicates deficiencies on time to those responsible for corrective action, including senior management and the Board (P17).",
+     "COSO principles 16–17; ISA 315R.24", "H9 rows 16–17"),
+    ("COSO / ICFR post", "These components work together to reduce the risk of material misstatement (framed as ICFR).", "Needs qualification",
+     "An ICFR opinion is required only where law demands it (e.g. SOX 404 / PCAOB AS 2201). In an ISA audit the auditor obtains an understanding of the five components to assess risks (ISA 315R), communicates deficiencies (ISA 265) and expresses no opinion on internal control (ISA 700 auditor's responsibilities). No ICFR attestation applies to PTC.",
+     "ISA 315R.21–27; ISA 265; ISA 700 (Revised)", "H9 note; B10; H5"),
+    ("COSO / ICFR post", "Next in the series: preventive vs detective controls.", "Accurate",
+     "Both types are needed; corrective controls (e.g. backup and restore) are a third type. B10 column E already classifies each PTC control.",
+     "COSO principle 10", "B10 column E"),
+    ("Reporting post", "Your financial statements may be accurate but unhelpful — compliance ticked.", "Needs qualification",
+     "Compliance and decision-usefulness are not opposites: the objective of general purpose financial reporting is information useful for users' decisions, and the framework requires relevant, faithfully represented information. Boilerplate that obscures material information fails the framework in substance.",
+     "Conceptual Framework ch. 1–2; IFRS for SMEs Section 2", "H10 section B"),
+    ("Reporting post", "Compliance reporting is focused on historical numbers and designed for external compliance.", "Needs qualification",
+     "Financial statements are historical by nature, but they already use forward-looking judgement: estimates (ISA 540), going concern (IFRS for SMEs Section 3; ISA 570) and events after the reporting period (ISA 560). Most 'what happens next' content belongs in management commentary or the Directors' report.",
+     "IFRS for SMEs Sections 3, 32; ISA 540; ISA 570; ISA 560", "H10 section A"),
+    ("Reporting post", "Three questions: what happened, why, what happens next.", "Accurate — add boundary",
+     "Useful teaching structure. Map each answer to where it is reported and what the auditor does: FS (audited), notes and commentary (audited / read), forecasts and plans (other information read under ISA 720; used as ISA 570 evidence).",
+     "ISA 700; ISA 720 (Revised); ISA 570", "H10 section A"),
+    ("Reporting post", "Key question: do the numbers give a true and fair view of performance?", "Accurate",
+     "Applies to fair presentation frameworks; the opinion is 'give a true and fair view' or 'present fairly, in all material respects'. PTC: unmodified opinion with an Other Matter paragraph.",
+     "ISA 700 (Revised)", "E9; H10"),
+    ("Reporting post", "Same numbers, a different story.", "Needs caution",
+     "The narrative may add insight but must be balanced and consistent with the FS. A material inconsistency in the Directors' report must be resolved (ISA 720), and optimism in estimates is management bias the auditor evaluates (ISA 540; ISA 700.12).",
+     "ISA 720 (Revised); ISA 540 (Revised); ISA 700.12", "H10 section D; E9 row 43"),
+    ("Reporting post", "Linkages to strategy, risks and sustainability factors.", "Needs qualification",
+     "Sustainability disclosures (IFRS S1/S2) are outside IFRS for SMEs financial statements and outside the audit opinion; assurance on them is a separate engagement.",
+     "IFRS S1/S2; scope of ISA 700", "H10 section D"),
+    ("Reporting post", "Accurate numbers build the foundation; insight makes them useful.", "Accurate",
+     "Faithful representation is a fundamental qualitative characteristic: insight built on misstated numbers misleads. PTC's draft margin rose against expectation and analytics (E2) directed testing to AJE 1–3.",
+     "Conceptual Framework ch. 2; ISA 520", "E2; E1; H10"),
+]
+wp_header(cref, "H11 — Concept review: COSO five components and decision-useful reporting checked against the standards",
+          "Each statement from the two teaching posts is checked against COSO 2013, the ISAs, ISQM and the Conceptual Framework. "
+          "The 'compliant wording' column is the version to teach; the last column shows where the concept is applied in this file.", 7)
+rows = [[i + 1, x[0], x[1], x[2], x[3], x[4], x[5]] for i, x in enumerate(CR_ROWS)]
+K_FIRST, K_LAST = table(cref, ["#", "Source", "Statement in the post", "Verdict", "Compliant wording for teaching", "Authority", "Applied in file"],
+                        rows, [5, 16, 40, 16, 70, 28, 18], center_cols=(1, 4), height=76)
+for rr in range(K_FIRST, K_LAST + 1):
+    for cc_ in range(1, 8):
+        cref.cell(rr, cc_).font = font(10, cc_ == 4)
+status_cf(cref, f"D{K_FIRST}:D{K_LAST}", {"Accurate": GREEN, "Accurate — incomplete": "7CB342", "Accurate — add boundary": "7CB342",
+                                          "Needs qualification": AMBER, "Needs caution": RED})
 
 # =====================================================================================  H8 Calc
 put(calc, 1, 1, "Funan Consulting — Audit Working Papers", font(9, True, GREY))
@@ -699,6 +1001,9 @@ kpis = [
     ("Significant deficiency points", f'=COUNTIF({FR("F")},"Significant deficiency")', None),
     ("Team members reconfirmed independence", "=COUNTA(A3_Independence!$H$7:$H$16)", None),
     ("Team members declared", "=COUNTA(A3_Independence!$A$7:$A$16)", None),
+    ("COSO principles present & functioning", f'=COUNTIF(H9_COSO_Components!$H${C9_FIRST}:$H${C9_LAST},"Present & functioning")', None),
+    ("COSO components with significant deficiency", f'=COUNTIF(H9_COSO_Components!$H${CS_FIRST}:$H${CS_LAST},"Significant*")', None),
+    ("Unhelpful-reporting signs present", "=" + DUR_SIGNS, None),
 ]
 for i, (k, f_, fm) in enumerate(kpis):
     r = r4 + 1 + i
@@ -741,14 +1046,16 @@ nav = [("H0_Dashboard", "Dashboard"), ("Index", "File index"), ("H1_Process_Map"
        ("H5_Findings_5Cs", "5Cs management letter"), ("H6_5Cs_Report", "5Cs report (print)"), ("H7_Review_Points", "Review points"),
        ("A1_Acceptance", "A  Acceptance & team"), ("B2_Risk_Register", "B  Risk assessment"), ("C1_TB_Lead", "C  TB, FS & notes"),
        ("D1_Audit_Programme", "D  Programme & testing"), ("E8_Finalisation", "E  Completion"), ("E9_Opinion", "E9 Opinion"),
-       ("F1_EQR", "F  EQR & post-audit"), ("G1_QA_Readiness", "G  QA & standards")]
+       ("F1_EQR", "F  EQR & post-audit"), ("G1_QA_Readiness", "G  QA & standards"),
+       ("H9_COSO_Components", "COSO 5 components"), ("H10_Decision_Useful", "Decision-useful reporting"),
+       ("H11_Concept_Review", "Concept review")]
 for i, (sh, lab) in enumerate(nav):
     r = 6 + 2 * i
     c = put(dash, r, 2, "  ▸  " + lab, font(10, True, WHITE if i == 0 else "D0D7DE"), bg=TEAL if i == 0 else SLATE)
     c.hyperlink = f"#'{sh}'!A1"
     dash.row_dimensions[r].height = 20
-put(dash, 41, 2, "Live links to the working papers. Blue cells on H2–H4 and H7 are reviewer judgements. "
-    "Fictional training client — illustrative data.", font(8, italic=True, color="AEB7C2"), align(wrap=True, v="top"), to=(45, 2))
+put(dash, 47, 2, "Live links to the working papers. Blue cells on H2–H4 and H7 are reviewer judgements. "
+    "Fictional training client — illustrative data.", font(8, italic=True, color="AEB7C2"), align(wrap=True, v="top"), to=(52, 2))
 
 cards = [
     ("WORKING PAPERS", f"={KP['WPs signed off']}", "0", TEAL, f'="signed off of "&{KP["WPs in register"]}&" · "&{KP["WPs awaiting sign-off"]}&" awaiting"'),
@@ -870,7 +1177,7 @@ ch.legend.position = "b"
 clean(ch, 8.2, 6.6)
 dash.add_chart(ch, f"{L(cc(27))}{T1+1}")
 line_item(T1 + 14, 27, 31, 34, "Significant deficiencies (ISA 265)", f"={KP['Significant deficiencies']}", "0", RED)
-line_item(T1 + 15, 27, 31, 34, "Other deficiencies", f"={KP['Other deficiencies']}", "0", AMBER)
+line_item(T1 + 15, 27, 31, 34, "COSO principles functioning (H9)", f'={KP["COSO principles present & functioning"]}&" of 17"', None, RED)
 line_item(T1 + 16, 27, 31, 34, "Controls relied on — operating effectively", f"={KP['Controls relied on (operating effectively)']}", "0", GREEN)
 
 # P5 materiality & misstatements
@@ -956,8 +1263,8 @@ for k in range(len(RP)):
             align("left" if col in "BD" else "center", wrap=True, shrink=col == "B"), to=(r, cc(b)))
     for c in range(cc(0), cc(17)):
         dash.cell(r, c).border = BOTTOM
-status_cf(dash, f"{L(cc(14))}{T3+2}:{L(cc(14))}{T3+12}", {"High": RED, "Medium": AMBER, "Low": GREEN}, size=8)
-status_cf(dash, f"{L(cc(16))}{T3+2}:{L(cc(16))}{T3+12}", {"Open": AMBER, "Cleared": GREEN}, size=8)
+status_cf(dash, f"{L(cc(14))}{T3+2}:{L(cc(14))}{T3+13}", {"High": RED, "Medium": AMBER, "Low": GREEN}, size=8)
+status_cf(dash, f"{L(cc(16))}{T3+2}:{L(cc(16))}{T3+13}", {"Open": AMBER, "Cleared": GREEN}, size=8)
 
 # P10 timeline
 panel(T3, 18, 17, 15, " 10. Engagement timetable (A2 milestones)")
