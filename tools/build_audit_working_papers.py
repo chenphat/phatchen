@@ -31,7 +31,7 @@ wb = Workbook()
 names = {}
 def dname(n, ref): names[n] = ref
 
-order = ["Dashboard", "LayersMap", "Setup", "WP_Index", "L1_Strategy", "L2_Planning",
+order = ["Dashboard", "LayersMap", "Setup", "WP_Index", "L1_Strategy", "Acceptance_QM", "Team_Resources", "PBC_List", "L2_Planning",
          "Risk_315R", "Fraud_240R", "GoingConcern_570R", "L3_Methodology", "Sampling", "L4_Execution", "IC_Assessment", "L5_Findings", "Deficiencies_265", "SUAD", "L6_Oversight", "DashData", "Standards", "Lists"]
 ws0 = wb.active; ws0.title = order[0]
 S = {order[0]: ws0}
@@ -75,6 +75,8 @@ lists = {
     "Nature": ["Overstatement", "Understatement", "Classification", "Disclosure"],
     "CtlType": ["Preventive", "Detective"],
     "DefType": ["Design", "Implementation", "Operating"],
+    "NewCont": ["Continuing", "New"],
+    "PBCStatus": ["Not received", "Partially received", "Received", "Accepted", "Re-request"],
 }
 put(L, "A1", "Validation lists (do not edit)", font(11, True))
 for j, (k, vals) in enumerate(lists.items()):
@@ -112,6 +114,9 @@ setup = [
     ("Audit fee - this client (MNT '000)", 120000, "Engagement letter", "AuditFee"),
     ("Non-assurance fees - this client (MNT '000)", 30000, "Tax compliance (IESBA 604)", "NASFee"),
     ("Early adoption: ISA 240 (Revised) & ISA 570 (Revised 2024)", "Yes", "Effective for periods beginning on/after 15-Dec-2026; IAASB encourages early adoption", "EarlyAdopt"),
+    ("Engagement status (Continuing / New)", "Continuing", "Drives new-client procedures (AC4)", "EngStatus"),
+    ("Years as audit client", 4, "Long association considerations (IESBA 540)", "YearsClient"),
+    ("Standard working hours per month", 168, "Capacity planning (TR4)", "StdHrs"),
 ]
 put(st, "B4", "Input", font(b=True, c="FFFFFF"), MD); put(st, "C4", "Value", font(b=True, c="FFFFFF"), MD)
 put(st, "D4", "Note / source", font(b=True, c="FFFFFF"), MD)
@@ -214,15 +219,14 @@ ws = S["L1_Strategy"]
 r = sheet_header(ws, "AUDIT STRATEGY LAYER", 1,
                  "Decide whether to accept/continue the engagement, agree terms, confirm independence and set the overall audit strategy and direction.",
                  "ISQM 1 para 30; ISA 210; ISA 220 (Revised); ISA 300; ISA 260; IESBA Code Parts 1, 3 & 4A")
-r = section(ws, r, "A1", "Engagement acceptance & continuance", "ISQM 1.30 | ISA 220R.22-24")
-r = checklist(ws, r, [
-    ("Integrity of owners, key management and TCWG assessed (no information indicating lack of integrity)", "ISQM 1.30(a)(ii)", "Yes", "Background & media searches performed; no adverse findings"),
-    ("Firm has competence, capabilities, time and resources to perform the engagement", "ISQM 1.30(a)(i); ISA 220R.25", "Yes", "Team includes IFRS & retail sector experience"),
-    ("Relevant ethical requirements incl. independence can be complied with", "ISA 220R.16-21; IESBA 400", "Yes", "See A3 & A4"),
-    ("Significant matters from prior engagement / previous auditor considered", "ISA 220R.23; IESBA 320", "Yes", "Predecessor communication not required (continuing)"),
-    ("Financial & reputational risk of the client evaluated (fee level, going concern, litigation)", "ISQM 1.30(c)", "Yes", "Low-moderate risk rating"),
-    ("Acceptance/continuance approved by Engagement Partner (and risk partner where high risk)", "ISQM 1.30; ISA 220R.22", "Yes", "Approved 10-Sep-25"),
-], "A1")
+r = section(ws, r, "A1", "Engagement acceptance & continuance - summary (full: Acceptance_QM AC1-AC7)", "ISQM 1.30 | ISA 220R.22-24")
+r = table_head(ws, r, ["", "Summary", "Value"])
+for lab, f_ in [("Engagement risk rating", "=AC_Rating"), ("Fatal factors rated high", "=AC_Fatal"), ("Decision", "=AC_Decision"),
+                ("Team resources conclusion", "=TR_Conclusion")]:
+    cell(ws, f"B{r}", lab); cell(ws, f"C{r}", f_, link=True); ws.merge_cells(f"C{r}:J{r}"); r += 1
+c = cell(ws, f"B{r}", '=HYPERLINK("#Acceptance_QM!A1","Open acceptance & continuance working paper >")'); c.font = Font(name=F, size=9, color="1565C0", underline="single")
+r += 2
+
 r = section(ws, r, "A2", "Terms of engagement & preconditions for an audit", "ISA 210")
 r = checklist(ws, r, [
     ("Financial reporting framework is acceptable", "ISA 210.6(a)", "Yes", "IFRS - general purpose framework"),
@@ -255,7 +259,7 @@ for i, row in enumerate(team, 1):
     cell(ws, f"L{r}", "510-524; 540", center=True)
     r += 1
 dv(ws, f"D{t0}:H{r-1}", "YesNo")
-dname("Ind_Assess", f"L1_Strategy!$K${t0}:$K${r-1}")
+dname("Ind_Assess", f"L1_Strategy!$K${t0}:$K${r-1}"); dname("Ind_Name", f"L1_Strategy!$B${t0}:$B${r-1}")
 dname("Ind_Date", f"L1_Strategy!$J${t0}:$J${r-1}")
 put(ws, f"B{r}", "Declarations received", font(9, True), PALE, bd=BOX)
 put(ws, f"C{r}", f'=COUNT(J{t0}:J{r-1})&" of "&COUNTA(B{t0}:B{r-1})', font(9, True), PALE, bd=BOX)
@@ -868,7 +872,7 @@ qa = [("Working papers reviewed before report date", 1.0, "=DD_PctComplete", PCT
       ("TCWG communications completed", 1.0, "=DD_CommPct", PCT, "F1"),
       ("Controls tested & effective", 0.8, "=DD_CtlPct", PCT, "D2"),
       ("Confirmations received (excl. outstanding)", 0.85, "=DD_ConfPct", PCT, "D4"),
-      ("Partner hours as % of total actual hours", 0.1, 0.09, PCT, "Time system"),
+      ("Partner hours as % of total actual hours", 0.1, "=TR_PartnerPct", PCT, "TR3"),
       ("High-severity issues open", 0, "=DD_OpenHigh", "0", "E3"),
       ("Actual hours vs budget", 1.0, "=DD_HrsPct", PCT, "WP_Index")]
 a0 = r
@@ -2093,6 +2097,395 @@ for i, (d_, cls, resp, stt, ev_, ref) in enumerate(py_, 1):
     ws.merge_cells(f"I{r}:J{r}"); cell(ws, f"K{r}", ref, center=True); ws.row_dimensions[r].height = 28; r += 1
 ws.freeze_panes = "C8"
 
+# ======================================================================
+# ACCEPTANCE / TEAM RESOURCES / PBC
+# ======================================================================
+from openpyxl.chart import BarChart as _Bar, Reference as _Ref
+from openpyxl.chart.label import DataLabelList as _DLL
+
+def mini_chart(ws, title, cats, data, anchor, color=LT, horizontal=True, w=14, h=7, pct=False):
+    ch = _Bar(); ch.type = "bar" if horizontal else "col"; ch.title = title; ch.roundedCorners = False
+    ch.add_data(data, titles_from_data=True); ch.set_categories(cats); ch.legend = None
+    ch.width, ch.height = w, h; ch.x_axis.delete = False; ch.y_axis.delete = False; ch.y_axis.majorGridlines = None
+    if horizontal: ch.x_axis.scaling.orientation = "maxMin"
+    if pct: ch.y_axis.number_format = "0%"
+    ch.series[0].graphicalProperties.solidFill = color; ch.series[0].graphicalProperties.line.solidFill = color
+    ch.dataLabels = _DLL(showVal=True, showSerName=False, showCatName=False, showLegendKey=False, showPercent=False)
+    ch.title.overlay = False
+    ws.add_chart(ch, anchor)
+
+# ---------------- ACCEPTANCE ----------------
+ws = S["Acceptance_QM"]
+r = sheet_header(ws, "CLIENT ACCEPTANCE & CONTINUANCE", "1",
+                 "Decide whether to accept or continue the client relationship and the specific engagement, based on integrity, competence & resources, ethics, and engagement risk, with documented approval before agreeing terms.",
+                 "ISQM 1.30-31 & A64-A75; ISA 220 (Revised).22-24; ISA 210.6-12; ISA 300.6; IESBA Code 320 (client & engagement acceptance), 360 (NOCLAR), 400 series")
+r = section(ws, r, "AC1", "Engagement profile", "ISQM 1.30(a) | ISA 220R.22")
+prof = [("Client", "=Set_Client"), ("Engagement status", "=Set_EngStatus"), ("Years as audit client", "=Set_YearsClient"),
+        ("Entity type", "=Set_EntityType"), ("Financial reporting framework", "=Set_Framework"), ("Services provided", "Statutory audit; corporate tax compliance (separate team)"),
+        ("Audit fee / total client fees (MNT '000)", '=TEXT(Set_AuditFee,"#,##0")&" / "&TEXT(Set_AuditFee+Set_NASFee,"#,##0")'),
+        ("Engagement partner / EQ reviewer", '=Set_EP&" / "&Set_EQR')]
+for lab, v in prof:
+    cell(ws, f"B{r}", lab); c = cell(ws, f"C{r}", v, link=str(v).startswith("="), is_input=not str(v).startswith("=")); ws.merge_cells(f"C{r}:H{r}"); r += 1
+r += 1
+
+r = section(ws, r, "AC2", "Engagement risk assessment - acceptance/continuance factors", "ISQM 1.30(c), A67-A70")
+r = table_head(ws, r, ["#", "Risk factor", "Weight", "Rating (1 low - 3 high)", "Weighted", "Fatal if high?", "Evidence / basis", "", "", "", "Ref"])
+ws.merge_cells(f"G{r-1}:J{r-1}")
+facs = [("Integrity of owners, key management & TCWG", 3, 1, "Yes", "Background & media checks clean; no adverse PY matters", "AC3"),
+        ("Financial condition & going concern indicators", 2, 2, "No", "Profitable; covenant headroom narrows under stress", "GC3"),
+        ("Industry & business risk (retail, imported goods, FX)", 2, 2, "No", "MNT depreciation; key supplier sanctions review", "B1"),
+        ("Complexity of accounting & estimates (NRV, ECL, IFRS 16)", 2, 2, "No", "NRV judgemental; leases at branches", "RA3"),
+        ("Quality of governance & internal control environment", 2, 2, "No", "No audit committee; informal risk assessment", "IC1"),
+        ("Regulatory, legal & litigation exposure", 1, 1, "No", "One immaterial customer claim", "D7"),
+        ("Public interest / PIE status & users of FS", 2, 1, "No", "Non-PIE; bank is main external user", "Setup"),
+        ("Related parties & unusual transactions", 2, 2, "No", "Director loan identified in CY", "B7"),
+        ("AML / KYC & sanctions concerns", 3, 1, "Yes", "Beneficial owners verified; no PEP/sanctions hits", "AC3"),
+        ("Fee level, recoverability & overdue fees", 1, 1, "No", "PY fees settled 30-Sep-25", "A4"),
+        ("Pressure on deadline / scope limitations imposed", 2, 1, "No", "Reasonable timetable; full access", "A2"),
+        ("Independence & ethical threats", 3, 1, "Yes", "Threats reduced to acceptable level (A4)", "A3-A5"),
+        ("Firm competence, capabilities & capacity (Team_Resources)", 3, 1, "Yes", "See TR6 conclusion", "TR6")]
+f0 = r
+for i, (fac, w, rt, fatal, ev_, ref) in enumerate(facs, 1):
+    cell(ws, f"A{r}", i, center=True); cell(ws, f"B{r}", fac); cell(ws, f"C{r}", w, "0", True, center=True)
+    cell(ws, f"D{r}", rt, "0", True, center=True); cell(ws, f"E{r}", f"=C{r}*D{r}", "0", center=True)
+    cell(ws, f"F{r}", fatal, is_input=True, center=True); cell(ws, f"G{r}", ev_, is_input=True); ws.merge_cells(f"G{r}:J{r}")
+    cell(ws, f"K{r}", ref, center=True); ws.row_dimensions[r].height = 26; r += 1
+f1 = r - 1
+dv(ws, f"F{f0}:F{f1}", "YesNo")
+ws.conditional_formatting.add(f"D{f0}:D{f1}", CellIsRule(operator="equal", formula=["3"], fill=fill("FFCDD2")))
+ws.conditional_formatting.add(f"D{f0}:D{f1}", CellIsRule(operator="equal", formula=["2"], fill=fill("FFE0B2")))
+s0 = r
+summ = [("Weighted score", f"=SUM(E{f0}:E{f1})", "0"), ("Maximum possible", f"=SUM(C{f0}:C{f1})*3", "0"),
+        ("Risk score %", f"=IFERROR((C{s0}-SUM(C{f0}:C{f1}))/(C{s0+1}-SUM(C{f0}:C{f1})),0)", "0%"),
+        ("ENGAGEMENT RISK RATING", f'=IF(C{s0+2}<0.4,"Low",IF(C{s0+2}<0.65,"Medium","High"))', None),
+        ("Fatal factors rated high", f'=COUNTIFS(F{f0}:F{f1},"Yes",D{f0}:D{f1},3)', "0")]
+for i, (lab, v, nf) in enumerate(summ):
+    b = put(ws, f"B{r}", lab, font(9, True), PALE, bd=BOX); c = put(ws, f"C{r}", v, font(10, True, DK), PALE, nf, CEN, BOX); r += 1
+dname("AC_Rating", f"Acceptance_QM!$C${s0+3}"); dname("AC_Fatal", f"Acceptance_QM!$C${s0+4}"); dname("AC_ScorePct", f"Acceptance_QM!$C${s0+2}")
+ws.conditional_formatting.add(f"C{s0+3}", CellIsRule(operator="equal", formula=['"High"'], fill=fill("FFCDD2")))
+ws.conditional_formatting.add(f"C{s0+3}", CellIsRule(operator="equal", formula=['"Medium"'], fill=fill("FFE0B2")))
+note(ws, r, "Risk score % rescales the weighted score between minimum (all 1s) and maximum (all 3s). Low < 40% | Medium 40-65% | High > 65%. A 'fatal' factor rated 3 requires the engagement to be declined or escalated to the risk/managing partner.")
+r += 2
+
+r = section(ws, r, "AC3", "Know-your-client (KYC), AML & sanctions screening", "IESBA 320.3 | local AML law | ISQM 1.30(a)(ii)")
+r = checklist(ws, r, [
+    ("Legal identity verified (state registration certificate, charter)", "AML / KYC", "Yes", "Certificate no. on file"),
+    ("Ultimate beneficial owners (>= 25%) identified & verified", "AML / KYC", "Yes", "2 family shareholders - IDs verified"),
+    ("Directors & key management screened for PEP status", "AML / KYC", "Yes", "No PEPs"),
+    ("Entity, owners & key counterparties screened against sanctions lists", "AML / KYC", "Yes", "Key supplier under review - monitored (GC1)"),
+    ("Adverse media / litigation search performed", "ISQM 1.A65", "Yes", "No adverse findings"),
+    ("Nature of business & source of funds understood and consistent", "AML / KYC", "Yes", ""),
+], "AC3")
+
+r = section(ws, r, "AC4", "New-client procedures (predecessor auditor & opening balances)", "IESBA 320.8 | ISA 510 | ISA 300.13")
+put(ws, f"B{r}", '=IF(Set_EngStatus="New","NEW ENGAGEMENT - complete all items below","CONTINUING ENGAGEMENT - section not applicable (mark N/A)")', font(9, True, "B71C1C")); ws.merge_cells(f"B{r}:J{r}"); r += 1
+r = checklist(ws, r, [
+    ("Client permission obtained to communicate with predecessor auditor", "IESBA 320.8", "N/A", "Continuing - year 4"),
+    ("Predecessor asked about facts/circumstances relevant to acceptance (integrity, disagreements, NOCLAR)", "IESBA 320.8 & A1-A2; 360", "N/A", ""),
+    ("Reasons for change of auditor understood", "IESBA 320", "N/A", ""),
+    ("Access to predecessor's working papers arranged for opening balances", "ISA 510.6; ISA 300.13", "N/A", ""),
+    ("Prior-period audit report reviewed (modifications, EOM)", "ISA 510.6(c)", "N/A", ""),
+], "AC4")
+
+r = section(ws, r, "AC5", "Continuance-specific considerations", "ISQM 1.30 | ISA 220R.23")
+r = checklist(ws, r, [
+    ("Significant matters arising in the current or previous engagement & implications for continuance considered", "ISA 220R.23", "Yes", "PY NRV adjustment; CY cut-off - not affecting continuance"),
+    ("Changes in ownership, management, governance or nature of business assessed", "ISQM 1.A66", "Yes", "No changes"),
+    ("Disagreements with management or scope limitations in PY", "ISQM 1.30(c)", "Yes", "None"),
+    ("Long association with engagement partner / senior personnel evaluated", "IESBA 540", "Yes", "EP year 4 - non-PIE"),
+    ("Fee dispute or significant overdue fees", "IESBA 410.7", "Yes", "Resolved"),
+    ("Previously communicated significant deficiencies remediated? (affects risk)", "ISA 265.A28", "Yes", "NRV point not remediated - CD04"),
+], "AC5")
+
+r = section(ws, r, "AC6", "Competence, capabilities & resources check", "ISQM 1.30(a)(i), 32 | ISA 220R.25-28")
+for lab, v in [("Team resources conclusion (TR6)", "=TR_Conclusion"), ("Competency gaps (TR2)", "=TR_Gaps"), ("Team members over-allocated (TR4)", "=TR_Over"),
+               ("Specialists required", "IT auditor (ISA 620 - firm employee); technical dept consultation on NRV")]:
+    cell(ws, f"B{r}", lab); c = cell(ws, f"C{r}", v, link=str(v).startswith("="), is_input=not str(v).startswith("=")); ws.merge_cells(f"C{r}:J{r}"); r += 1
+r += 1
+
+r = section(ws, r, "AC7", "Decision & approvals", "ISQM 1.30-31 | ISA 220R.22, 24")
+a0 = r
+dec = [("Preconditions for an audit present (A2)?", "Yes", True), ("Independence & ethical requirements can be met (A3-A5)?", "Yes", True),
+       ("Engagement risk rating (AC2)", "=AC_Rating", False), ("Required approval level", f'=IF(C{a0+2}="High","EP + risk partner + managing partner",IF(C{a0+2}="Medium","EP + risk partner","Engagement partner"))', False),
+       ("EQ review required?", f'=IF(OR(ISNUMBER(SEARCH("PIE",Set_EntityType))*NOT(ISNUMBER(SEARCH("Non-PIE",Set_EntityType))),C{a0+2}="High"),"Required (ISQM 1.34(f))","Firm policy: "&IF(Set_EQR<>"","appointed - "&Set_EQR,"not required"))', False),
+       ("DECISION", f'=IF(OR(C{a0}="No",C{a0+1}="No",AC_Fatal>0),"DECLINE / escalate - fatal factor or precondition not met",IF(C{a0+2}="High","ACCEPT subject to enhanced approval & safeguards","ACCEPT / CONTINUE"))', False),
+       ("Approved by (EP)", "B. Bat-Erdene", True), ("Approved by (risk partner, if required)", "D. Tsetseg", True),
+       ("Approval date", D(2025, 9, 10), True), ("Engagement letter date (A2)", D(2025, 9, 22), True),
+       ("Sequence check", f'=IF(C{a0+8}="","Approval pending",IF(C{a0+8}<=C{a0+9},"Approved before terms agreed - OK","APPROVAL AFTER ENGAGEMENT LETTER - breach of ISQM 1.30"))', False)]
+for i, (lab, v, isin) in enumerate(dec):
+    b = cell(ws, f"B{r}", lab); c = cell(ws, f"C{r}", v, DATE if isinstance(v, D) else None, isin, link=(i == 2), center=True)
+    if lab == "DECISION": b.font = font(9, True); c.font = font(11, True, DK); b.fill = fill(PALE); c.fill = fill(PALE)
+    ws.merge_cells(f"C{r}:H{r}"); r += 1
+for k in (0, 1): dv(ws, f"C{a0+k}", "YesNo")
+dname("AC_Decision", f"Acceptance_QM!$C${a0+5}")
+
+# ---------------- TEAM RESOURCES ----------------
+ws = S["Team_Resources"]
+r = sheet_header(ws, "ENGAGEMENT TEAM - COMPETENCIES, CAPACITY & AVAILABILITY", "1",
+                 "Confirm the engagement team collectively has the competence, capabilities and sufficient time to perform the engagement, and plan direction, supervision and review.",
+                 "ISQM 1.32 (resources) & A92-A105; ISA 220 (Revised).25-28 (resources), 29-34 (direction, supervision & review); IESBA 113 (competence); IES 8")
+for k in range(ci("M"), ci("U") + 1): ws.column_dimensions[gl(k)].width = 11
+widths(ws, {"B": 22, "C": 16})
+team_rows = [("B. Bat-Erdene", "Engagement partner", "Partner", "CPA (MN), ACCA", 18, 9, 5, 5, 3, 3, 4, 4, 46, 40),
+             ("D. Ganbold", "EQ reviewer", "Partner", "CPA (MN)", 20, 6, 5, 5, 3, 3, 4, 4, 42, 40),
+             ("S. Oyunaa", "Manager", "Manager", "ACCA", 9, 5, 4, 4, 3, 3, 4, 3, 38, 40),
+             ("T. Enkhjin", "Senior", "Senior", "ACCA (part-qualified)", 4, 3, 3, 3, 3, 3, 3, 3, 31, 30),
+             ("M. Saruul", "Staff", "Associate", "Graduate", 2, 1, 2, 2, 2, 3, 1, 2, 18, 20),
+             ("N. Temuulen", "Staff", "Associate", "Graduate", 1, 0, 2, 2, 1, 2, 1, 1, 12, 20),
+             ("IT auditor (firm)", "Specialist", "Manager", "CISA", 8, 2, 2, 3, 5, 4, 1, 3, 44, 40)]
+r = section(ws, r, "TR1", "Competency matrix (proficiency 1 = basic ... 5 = expert)", "ISA 220R.25-26 | ISQM 1.32(a)")
+heads = ["#", "Team member", "Role", "Grade", "Qualification", "Years audit exp.", "Years retail exp.", "IFRS", "ISA / methodology",
+         "IT audit", "Data analytics", "Estimates / valuation", "Fraud & forensic", "Avg proficiency", "Required (role)", "Meets role?",
+         "CPD hrs done", "CPD required", "CPD status", "Independence (A3)"]
+r = table_head(ws, r, heads)
+HDR1 = r - 1
+m0 = r
+for i, row in enumerate(team_rows, 1):
+    cell(ws, f"A{r}", i, center=True)
+    for j, v in enumerate(row[:4]): cell(ws, f"{chr(66+j)}{r}", v, is_input=True, center=j > 0)
+    for j, v in enumerate(row[4:12]): cell(ws, f"{chr(70+j)}{r}", v, "0", True, center=True)
+    cell(ws, f"N{r}", f"=AVERAGE(H{r}:M{r})", "0.0", center=True)
+    cell(ws, f"O{r}", f'=IFERROR(INDEX(RoleReq_Lvl,MATCH(C{r},RoleReq_Role,0)),3)', "0.0", center=True)
+    cell(ws, f"P{r}", f'=IF(C{r}="Specialist",IF(MAX(H{r}:M{r})>=4,"Yes - specialist","Gap"),IF(N{r}>=O{r},"Yes","Development need"))', center=True)
+    cell(ws, f"Q{r}", row[12], "0", True, center=True); cell(ws, f"R{r}", row[13], "0", True, center=True)
+    cell(ws, f"S{r}", f'=IF(Q{r}>=R{r},"Met","Short "&R{r}-Q{r}&" hrs")', center=True)
+    cell(ws, f"T{r}", f'=IFERROR(INDEX(Ind_Assess,MATCH(B{r},Ind_Name,0)),"Not on A3")', link=True, center=True)
+    r += 1
+m1 = r - 1
+for col in "HIJKLM":
+    for lv, colr in ((5, "1B5E20"), (4, "66BB6A"), (3, "C8E6C9"), (2, "FFF9C4"), (1, "FFE0B2")):
+        ws.conditional_formatting.add(f"{col}{m0}:{col}{m1}", CellIsRule(operator="equal", formula=[str(lv)], fill=fill(colr), font=Font(name=F, bold=lv == 5, color="FFFFFF" if lv == 5 else "000000")))
+ws.conditional_formatting.add(f"P{m0}:P{m1}", FormulaRule(formula=[f'LEFT($P{m0},3)<>"Yes"'], fill=fill("FFE0B2")))
+ws.conditional_formatting.add(f"S{m0}:S{m1}", FormulaRule(formula=[f'LEFT($S{m0},5)="Short"'], fill=fill("FFCDD2")))
+ws.conditional_formatting.add(f"T{m0}:T{m1}", FormulaRule(formula=[f'$T{m0}<>"Independent"'], fill=fill("FFE0B2")))
+dname("TM_Name", f"Team_Resources!$B${m0}:$B${m1}"); dname("TM_Meets", f"Team_Resources!$P${m0}:$P${m1}"); dname("TM_CPD", f"Team_Resources!$S${m0}:$S${m1}")
+r += 1
+put(ws, f"B{r}", "Required average proficiency by role (firm policy)", font(9, True)); r += 1
+rq0 = r
+for role, lv in [("Engagement partner", 4), ("EQ reviewer", 4), ("Manager", 3.5), ("Senior", 3), ("Staff", 2), ("Specialist", 4)]:
+    cell(ws, f"B{r}", role); cell(ws, f"C{r}", lv, "0.0", True, center=True); r += 1
+dname("RoleReq_Role", f"Team_Resources!$B${rq0}:$B${r-1}"); dname("RoleReq_Lvl", f"Team_Resources!$C${rq0}:$C${r-1}")
+r += 1
+
+r = section(ws, r, "TR2", "Engagement competency needs vs team coverage", "ISA 220R.26 | ISQM 1.32 | ISA 620")
+r = table_head(ws, r, ["#", "Competency needed", "Linked risk / area", "Skill column", "Required level", "Best in team", "Covered by", "Status", "Mitigation (training, specialist, consultation)", "", "", ""])
+ws.merge_cells(f"I{r-1}:L{r-1}")
+needs = [("IFRS 15 revenue & cut-off", "R01", "IFRS", 4, ""), ("IFRS 16 leases (branches)", "R11", "IFRS", 4, ""),
+         ("IFRS 9 expected credit losses", "R05", "Estimates / valuation", 3, ""),
+         ("Inventory NRV estimates (ISA 540R)", "R03", "Estimates / valuation", 5, "Consult firm technical department; independent NRV range (C4)"),
+         ("ITGCs & IPE testing", "IC3", "IT audit", 4, ""), ("JE analytics / CAATs", "FR4", "Data analytics", 3, ""),
+         ("Fraud risk & suspected fraud (ISA 240R)", "FR1-FR7", "Fraud & forensic", 4, ""), ("ISA methodology & ISQM", "All", "ISA / methodology", 4, "")]
+n0 = r
+for i, (nd, lnk, col_name, req, mit) in enumerate(needs, 1):
+    cell(ws, f"A{r}", i, center=True); cell(ws, f"B{r}", nd); cell(ws, f"C{r}", lnk, center=True)
+    cell(ws, f"D{r}", col_name, is_input=True, center=True); cell(ws, f"E{r}", req, "0", True, center=True)
+    cell(ws, f"F{r}", f"=MAX(INDEX($H${m0}:$M${m1},0,MATCH(D{r},$H${HDR1}:$M${HDR1},0)))", "0", center=True)
+    cell(ws, f"G{r}", f"=INDEX($B${m0}:$B${m1},MATCH(F{r},INDEX($H${m0}:$M${m1},0,MATCH(D{r},$H${HDR1}:$M${HDR1},0)),0))", center=True)
+    cell(ws, f"H{r}", f'=IF(F{r}>=E{r},"Covered",IF(I{r}<>"","Gap - mitigated","GAP - action required"))', center=True)
+    cell(ws, f"I{r}", mit, is_input=True); ws.merge_cells(f"I{r}:L{r}"); r += 1
+ws.conditional_formatting.add(f"H{n0}:H{r-1}", CellIsRule(operator="equal", formula=['"GAP - action required"'], fill=fill("FFCDD2"), font=Font(name=F, bold=True, color="B71C1C")))
+ws.conditional_formatting.add(f"H{n0}:H{r-1}", CellIsRule(operator="equal", formula=['"Gap - mitigated"'], fill=fill("FFE0B2")))
+ws.conditional_formatting.add(f"H{n0}:H{r-1}", CellIsRule(operator="equal", formula=['"Covered"'], fill=fill("C8E6C9")))
+dname("TR_NeedStatus", f"Team_Resources!$H${n0}:$H${r-1}")
+r += 1
+
+r = section(ws, r, "TR3", "Budget allocation, actual hours & utilisation by member", "ISA 220R.25(b) | ISQM 1.32")
+r = table_head(ws, r, ["#", "Team member", "Role", "Budget share %", "Budget hours", "Actual share %", "Actual hours", "Remaining", "Burn % (actual/budget)", "Status", "Charge-out rate (MNT '000/hr)", "Cost at actual"])
+alloc = [(0.09, 0.09, 450), (0.03, 0.01, 450), (0.18, 0.19, 280), (0.32, 0.35, 160), (0.18, 0.20, 90), (0.12, 0.08, 90), (0.08, 0.08, 300)]
+b0 = r
+for i, (row, (bs, as_, rate)) in enumerate(zip(team_rows, alloc), 1):
+    cell(ws, f"A{r}", i, center=True); cell(ws, f"B{r}", f"=INDEX(TM_Name,{i})", link=True); cell(ws, f"C{r}", row[1], center=True)
+    cell(ws, f"D{r}", bs, "0%", True, center=True); cell(ws, f"E{r}", f"=D{r}*DD_HrsBud", "0", center=True)
+    cell(ws, f"F{r}", as_, "0%", True, center=True); cell(ws, f"G{r}", f"=F{r}*DD_HrsAct", "0", center=True)
+    cell(ws, f"H{r}", f"=E{r}-G{r}", '0;(0);"-"', center=True); cell(ws, f"I{r}", f"=IFERROR(G{r}/E{r},0)", "0%", center=True)
+    cell(ws, f"J{r}", f'=IF(I{r}>1.1,"Overrun",IF(I{r}>0.95,"At budget",IF(I{r}<0.5,"Behind / not started","On track")))', center=True)
+    cell(ws, f"K{r}", rate, NUM, True, center=True); cell(ws, f"L{r}", f"=G{r}*K{r}", NUM); r += 1
+put(ws, f"B{r}", "TOTAL / reconciliation to WP_Index", font(9, True), PALE, bd=BOX)
+for col, f_, nf in (("D", f"=SUM(D{b0}:D{r-1})", "0%"), ("E", f"=SUM(E{b0}:E{r-1})", "0"), ("F", f"=SUM(F{b0}:F{r-1})", "0%"),
+                    ("G", f"=SUM(G{b0}:G{r-1})", "0"), ("L", f"=SUM(L{b0}:L{r-1})", NUM)):
+    put(ws, f"{col}{r}", f_, font(9, True), PALE, nf, CEN, BOX)
+put(ws, f"J{r}", f'=IF(AND(ABS(D{r}-1)<0.001,ABS(F{r}-1)<0.001),"Shares = 100% - reconciled","SHARES MUST TOTAL 100%")', font(9, True, MD), PALE, bd=BOX)
+put(ws, f"I{r+1}", "Fee recovery (audit fee / cost at actual)", font(9), bd=BOX); put(ws, f"L{r+1}", f"=IFERROR(Set_AuditFee/L{r},0)", font(9, True), nf="0%", bd=BOX)
+dname("TR_PartnerPct", f"Team_Resources!$F${b0}")
+ws.conditional_formatting.add(f"J{b0}:J{r-1}", CellIsRule(operator="equal", formula=['"Overrun"'], fill=fill("FFCDD2")))
+r += 3
+
+r = section(ws, r, "TR4", "Capacity plan - monthly hours scheduled & capacity usage (incl. other engagements)", "ISA 220R.25 | ISQM 1.32(a)")
+months = ["Sep-25", "Oct-25", "Nov-25", "Dec-25", "Jan-26", "Feb-26", "Mar-26", "Apr-26", "May-26"]
+prof_std = [0.08, 0.12, 0.12, 0.14, 0.06, 0.22, 0.20, 0.03, 0.03]
+prof = {"EQ reviewer": [0, 0, 0, 0, 0, 0, 0.9, 0.1, 0], "Specialist": [0, 0.3, 0.4, 0.3, 0, 0, 0, 0, 0],
+        "Engagement partner": [0.15, 0.1, 0.05, 0.05, 0.05, 0.15, 0.35, 0.05, 0.05]}
+other = [0.75, 0.80, 0.70, 0.65, 0.60, 0.65, 0.75]
+avail = [0.90, 0.90, 0.90, 0.85, 0.90, 0.90, 0.90]
+heads = ["#", "Team member", "Availability % (leave/training)", "Other engagements % of std"] + months + ["Total scheduled", "Peak usage", "Status"]
+r = table_head(ws, r, heads)
+cap0 = r
+TOT = 545
+for i, (row, (bs, _, _)) in enumerate(zip(team_rows, alloc)):
+    cell(ws, f"A{r}", i + 1, center=True); cell(ws, f"B{r}", f"=INDEX(TM_Name,{i+1})", link=True)
+    cell(ws, f"C{r}", avail[i], "0%", True, center=True); cell(ws, f"D{r}", other[i], "0%", True, center=True)
+    p_ = prof.get(row[1], prof_std)
+    for k in range(9): cell(ws, f"{gl(5+k)}{r}", round(bs * TOT * p_[k]), "0", True, center=True)
+    cell(ws, f"N{r}", f"=SUM(E{r}:M{r})", "0", center=True); r += 1
+cap1 = r - 1
+# usage grid
+r += 1
+put(ws, f"B{r}", "Capacity usage % = (scheduled on this engagement + other engagements) / available hours   [standard hours per month: Setup]", font(9, True)); ws.merge_cells(f"B{r}:P{r}"); r += 1
+r = table_head(ws, r, ["#", "Team member", "", ""] + months + ["", "Peak usage", "Status"])
+u0 = r
+for i in range(cap1 - cap0 + 1):
+    src = cap0 + i
+    cell(ws, f"A{r}", i + 1, center=True); cell(ws, f"B{r}", f"=B{src}", link=True)
+    for k in range(9):
+        col = gl(5 + k)
+        cell(ws, f"{col}{r}", f"=IFERROR(({col}{src}+$D{src}*Set_StdHrs)/($C{src}*Set_StdHrs),0)", "0%", center=True)
+    cell(ws, f"O{r}", f"=MAX(E{r}:M{r})", "0%", center=True)
+    cell(ws, f"P{r}", f'=IF(O{r}>1,"Over-allocated",IF(O{r}>0.85,"Near capacity","Available capacity"))', center=True)
+    cell(ws, f"O{src}", f"=O{r}", "0%", center=True); cell(ws, f"P{src}", f"=P{r}", center=True)
+    r += 1
+u1 = r - 1
+ws.conditional_formatting.add(f"E{u0}:M{u1}", CellIsRule(operator="greaterThan", formula=["1"], fill=fill("EF9A9A"), font=Font(name=F, bold=True, color="B71C1C")))
+ws.conditional_formatting.add(f"E{u0}:M{u1}", CellIsRule(operator="between", formula=["0.85", "1"], fill=fill("FFE0B2")))
+ws.conditional_formatting.add(f"E{u0}:M{u1}", CellIsRule(operator="lessThan", formula=["0.85"], fill=fill("C8E6C9")))
+for rng in (f"P{u0}:P{u1}", f"P{cap0}:P{cap1}"):
+    ws.conditional_formatting.add(rng, CellIsRule(operator="equal", formula=['"Over-allocated"'], fill=fill("FFCDD2"), font=Font(name=F, bold=True, color="B71C1C")))
+    ws.conditional_formatting.add(rng, CellIsRule(operator="equal", formula=['"Available capacity"'], fill=fill("C8E6C9")))
+dname("TR_Peak", f"Team_Resources!$O${u0}:$O${u1}"); dname("TR_PeakStatus", f"Team_Resources!$P${u0}:$P${u1}")
+put(ws, f"B{r}", "Total scheduled vs budget hours", font(9, True), PALE, bd=BOX)
+put(ws, f"N{r}", f"=SUM(N{cap0}:N{cap1})", font(9, True), PALE, "0", CEN, BOX)
+put(ws, f"O{r}", "=DD_HrsBud", font(9, True, "008000"), PALE, "0", CEN, BOX)
+put(ws, f"P{r}", f'=IF(ABS(N{r}-O{r})/O{r}<=0.05,"Within 5% of budget","Re-plan schedule vs budget")', font(9, True, MD), PALE, bd=BOX)
+r += 2
+mini_chart(ws, "Peak capacity usage by team member", _Ref(ws, min_col=2, min_row=u0, max_row=u1), _Ref(ws, min_col=15, min_row=u0 - 1, max_row=u1),
+           f"R{cap0}", color="2E7D32", pct=True, w=13, h=7)
+
+r = section(ws, r, "TR5", "Direction, supervision & review plan", "ISA 220R.29-34 | ISA 230.9")
+r = table_head(ws, r, ["#", "Area / layer", "Preparer", "First-level reviewer", "Partner review", "Timing", "", "Review evidence"])
+ws.merge_cells(f"F{r-1}:G{r-1}")
+for i, (a, p_, rv, pr, tm, ev_) in enumerate([("Strategy & acceptance", "S. Oyunaa", "B. Bat-Erdene", "Yes", "Before engagement letter", "Sign-off A1-A7, AC7"),
+        ("Planning, risk & fraud", "S. Oyunaa", "B. Bat-Erdene", "Yes", "Before fieldwork", "RA3, FR3, B3"),
+        ("Controls testing & sampling", "T. Enkhjin", "S. Oyunaa", "Key judgements", "End of interim", "IC4, S1"),
+        ("Substantive procedures", "T. Enkhjin / staff", "S. Oyunaa", "Significant risks", "During final", "D1-D9"),
+        ("Findings & misstatements", "S. Oyunaa", "B. Bat-Erdene", "Yes", "Before TCWG meeting", "SUAD, DF2"),
+        ("Completion & report", "S. Oyunaa", "B. Bat-Erdene + EQR", "Yes", "Before report date", "F5-F7")], 1):
+    cell(ws, f"A{r}", i, center=True); cell(ws, f"B{r}", a); cell(ws, f"C{r}", p_, is_input=True, center=True); cell(ws, f"D{r}", rv, is_input=True, center=True)
+    cell(ws, f"E{r}", pr, is_input=True, center=True); cell(ws, f"F{r}", tm, is_input=True); ws.merge_cells(f"F{r}:G{r}"); cell(ws, f"H{r}", ev_, center=True); r += 1
+put(ws, f"B{r}", "Partner hours as % of actual (TR3)", font(9, True), PALE, bd=BOX); put(ws, f"C{r}", "=TR_PartnerPct", font(9, True, DK), PALE, "0%", CEN, BOX)
+r += 2
+
+r = section(ws, r, "TR6", "Conclusion on sufficiency & appropriateness of resources", "ISA 220R.25-28 | ISQM 1.32")
+c0 = r
+cons = [("Competency gaps requiring action (TR2)", '=COUNTIF(TR_NeedStatus,"GAP - action required")', "0"),
+        ("Gaps mitigated (specialist / consultation)", '=COUNTIF(TR_NeedStatus,"Gap - mitigated")', "0"),
+        ("Members below role proficiency", '=COUNTIF(TM_Meets,"Development need")+COUNTIF(TM_Meets,"Gap")', "0"),
+        ("Members short of CPD", '=COUNTIF(TM_CPD,"Short*")', "0"),
+        ("Members over-allocated in any month (TR4)", '=COUNTIF(TR_PeakStatus,"Over-allocated")', "0"),
+        ("CONCLUSION", f'=IF(OR(C{c0}>0,C{c0+4}>1),"RESOURCES INSUFFICIENT - reassign staff / reschedule before proceeding",IF(OR(C{c0+1}>0,C{c0+2}>0,C{c0+3}>0,C{c0+4}>0),"Sufficient with actions: mitigate gaps, coach juniors, rebalance peak month","Sufficient & appropriate"))', None)]
+for lab, v, nf in cons:
+    b = cell(ws, f"B{r}", lab); c = cell(ws, f"C{r}", v, nf, center=(nf is not None))
+    if lab == "CONCLUSION": b.font = font(9, True); c.font = font(10, True, DK); b.fill = fill(PALE); c.fill = fill(PALE); ws.merge_cells(f"C{r}:L{r}")
+    r += 1
+dname("TR_Gaps", f"Team_Resources!$C${c0}"); dname("TR_Over", f"Team_Resources!$C${c0+4}"); dname("TR_Conclusion", f"Team_Resources!$C${c0+5}")
+
+# ---------------- PBC ----------------
+ws = S["PBC_List"]
+r = sheet_header(ws, "PREPARED-BY-CLIENT (PBC) REQUEST LIST & PROGRESS", "4",
+                 "Agree with management the information and documents to be provided, track receipt against due dates, assess reliability of information produced by the entity, and escalate delays.",
+                 "ISA 210.6(b)(iii) & A23 (access to information); ISA 500.7-9 (information produced by the entity); ISA 300.A13; ISA 260.16(b) (significant difficulties); ISA 705.7 (scope limitation)")
+for k in range(ci("M"), ci("P") + 1): ws.column_dimensions[gl(k)].width = 12
+widths(ws, {"B": 34, "C": 14, "D": 9, "N": 26})
+r = section(ws, r, "PBC1", "PBC request list & tracker", "ISA 210.6(b)(iii) | ISA 500.9")
+r = table_head(ws, r, ["#", "Document / information requested", "Area", "WP ref", "Client owner", "Auditor owner", "Requested", "Due", "Received",
+                       "Status", "IPE tested? (ISA 500.9)", "Ageing", "Follow-ups", "Comment"])
+R_, I_, Y, N_ = D(2025, 10, 20), D(2026, 1, 12), "Yes", "No"
+pbc = [("Final trial balance & general ledger (CY)", "General", "D1", "Chief Accountant", "T. Enkhjin", I_, D(2026, 1, 30), D(2026, 1, 29), "Accepted", Y, 0, ""),
+       ("Draft financial statements & notes (IFRS)", "General", "F6", "CFO", "S. Oyunaa", I_, D(2026, 2, 20), D(2026, 2, 27), "Accepted", "N/A", 1, "1 week late"),
+       ("Bank statements & reconciliations at 31-Dec", "Cash", "D4", "Chief Accountant", "M. Saruul", I_, D(2026, 1, 20), D(2026, 1, 19), "Accepted", Y, 0, ""),
+       ("Aged receivables listing (by customer)", "Receivables", "S4", "Credit Manager", "T. Enkhjin", I_, D(2026, 1, 20), D(2026, 1, 21), "Accepted", Y, 0, "Footed & agreed to GL"),
+       ("ECL provision matrix & loss-rate support", "Receivables", "C4", "CFO", "S. Oyunaa", I_, D(2026, 2, 6), D(2026, 2, 16), "Accepted", Y, 2, ""),
+       ("Inventory count sheets & final priced listing", "Inventory", "D5", "Warehouse Mgr", "T. Enkhjin", R_, D(2026, 1, 15), D(2026, 1, 14), "Accepted", Y, 0, ""),
+       ("Inventory ageing & NRV calculation", "Inventory", "C4", "CFO", "S. Oyunaa", I_, D(2026, 2, 6), D(2026, 2, 24), "Accepted", Y, 3, "Late - escalated to CFO"),
+       ("Fixed asset register & additions invoices", "PPE", "D3", "Chief Accountant", "M. Saruul", I_, D(2026, 1, 30), D(2026, 2, 2), "Accepted", Y, 1, ""),
+       ("Lease contracts & IFRS 16 calculations", "PPE", "D3", "CFO", "S. Oyunaa", I_, D(2026, 2, 6), D(2026, 2, 6), "Accepted", Y, 0, ""),
+       ("Aged payables & supplier statements", "Payables", "D3", "AP Supervisor", "N. Temuulen", I_, D(2026, 1, 30), D(2026, 1, 30), "Accepted", Y, 0, ""),
+       ("Post year-end payments listing (Jan-Feb 26)", "Payables", "S1.5", "AP Supervisor", "N. Temuulen", I_, D(2026, 3, 2), D(2026, 3, 4), "Accepted", Y, 1, ""),
+       ("Loan agreements & covenant calculations", "Borrowings", "D4", "CFO", "S. Oyunaa", I_, D(2026, 1, 30), D(2026, 1, 28), "Accepted", "N/A", 0, ""),
+       ("Payroll registers & bureau reports (Dec-25)", "Payroll", "C8", "HR Manager", "M. Saruul", I_, D(2026, 1, 30), D(2026, 2, 3), "Accepted", Y, 1, ""),
+       ("Sales invoices & dispatch notes - cut-off sample", "Revenue", "D3", "Sales Admin", "T. Enkhjin", I_, D(2026, 2, 13), D(2026, 2, 13), "Accepted", "N/A", 0, ""),
+       ("Credit notes issued after year end", "Revenue", "D3", "Sales Admin", "T. Enkhjin", I_, D(2026, 2, 13), D(2026, 2, 18), "Accepted", Y, 1, ""),
+       ("Manual journal entry listing (full year) & user list", "Journals", "FR4", "IT Manager", "IT auditor (firm)", I_, D(2026, 1, 30), D(2026, 2, 9), "Accepted", Y, 2, "Completeness re-run"),
+       ("ERP user access listing & access review evidence", "IT", "IC3", "IT Manager", "IT auditor (firm)", R_, D(2025, 11, 14), D(2025, 11, 21), "Accepted", Y, 1, "Q2/Q3 reviews missing - CD02"),
+       ("Board & shareholder minutes (2025 to date)", "Governance", "B6", "CEO", "S. Oyunaa", I_, D(2026, 1, 30), D(2026, 1, 30), "Partially received", "N/A", 1, "Mar-26 minutes pending"),
+       ("Related party list & directors' declarations", "Related parties", "B7", "CEO", "S. Oyunaa", I_, D(2026, 2, 13), None, "Re-request", "N/A", 3, "Director loan not on list - FR5.3"),
+       ("Corporate income tax return & computations", "Tax", "D3", "Chief Accountant", "M. Saruul", I_, D(2026, 2, 20), D(2026, 2, 19), "Received", "N/A", 0, ""),
+       ("Going concern assessment & 15-month cash forecast", "Going concern", "GC2", "CFO", "S. Oyunaa", I_, D(2026, 2, 27), D(2026, 3, 3), "Accepted", Y, 1, ""),
+       ("Legal confirmations - list of lawyers & claims", "Litigation", "D7", "CEO", "S. Oyunaa", I_, D(2026, 2, 27), D(2026, 2, 27), "Received", "N/A", 0, "Letter to counsel outstanding"),
+       ("Subsequent events schedule & Jan-Feb management accounts", "Subsequent events", "D8", "CFO", "T. Enkhjin", I_, D(2026, 3, 13), D(2026, 3, 16), "Received", Y, 1, ""),
+       ("Management responses to deficiencies letter", "Findings", "DF2", "CFO", "S. Oyunaa", D(2026, 3, 20), D(2026, 3, 27), None, "Not received", "N/A", 0, ""),
+       ("Signed management representation letter", "Completion", "F2", "CEO / CFO", "S. Oyunaa", D(2026, 3, 18), D(2026, 3, 30), None, "Not received", "N/A", 0, "Dated at report date"),
+       ("Other information - Directors' report", "Completion", "F8", "CEO", "S. Oyunaa", I_, D(2026, 3, 13), None, "Not received", "N/A", 2, "")]
+p0 = r
+for i, row in enumerate(pbc, 1):
+    (doc, area, wp, cown, aown, rq, due, rec, stt, ipe, fu, com) = row
+    cell(ws, f"A{r}", i, center=True); cell(ws, f"B{r}", doc, is_input=True); cell(ws, f"C{r}", area, is_input=True, center=True)
+    cell(ws, f"D{r}", wp, center=True); cell(ws, f"E{r}", cown, is_input=True, center=True); cell(ws, f"F{r}", aown, is_input=True, center=True)
+    cell(ws, f"G{r}", rq, DATE, True, center=True); cell(ws, f"H{r}", due, DATE, True, center=True); cell(ws, f"I{r}", rec, DATE, True, center=True)
+    cell(ws, f"J{r}", stt, is_input=True, center=True); cell(ws, f"K{r}", ipe, is_input=True, center=True)
+    cell(ws, f"L{r}", f'=IF(I{r}<>"",IF(I{r}<=H{r},"On time","Late "&(I{r}-H{r})&"d"),IF(Set_AsOf>H{r},"OVERDUE "&(Set_AsOf-H{r})&"d","Not yet due"))', center=True)
+    cell(ws, f"M{r}", fu, "0", True, center=True); cell(ws, f"N{r}", com, is_input=True)
+    ws.row_dimensions[r].height = 26; r += 1
+p1 = r - 1
+dv(ws, f"J{p0}:J{p1}", "PBCStatus"); dv(ws, f"K{p0}:K{p1}", "YesNo")
+dname("PBC_Area", f"PBC_List!$C${p0}:$C${p1}"); dname("PBC_Status", f"PBC_List!$J${p0}:$J${p1}"); dname("PBC_Age", f"PBC_List!$L${p0}:$L${p1}")
+dname("PBC_IPE", f"PBC_List!$K${p0}:$K${p1}"); dname("PBC_Doc", f"PBC_List!$B${p0}:$B${p1}")
+stc = {"Accepted": "81C784", "Received": "C8E6C9", "Partially received": "FFE0B2", "Re-request": "FFCDD2", "Not received": "EEEEEE"}
+for k, v in stc.items():
+    ws.conditional_formatting.add(f"J{p0}:J{p1}", CellIsRule(operator="equal", formula=[f'"{k}"'], fill=fill(v)))
+ws.conditional_formatting.add(f"L{p0}:L{p1}", FormulaRule(formula=[f'LEFT($L{p0},7)="OVERDUE"'], fill=fill("FFCDD2"), font=Font(name=F, bold=True, color="B71C1C")))
+ws.conditional_formatting.add(f"L{p0}:L{p1}", FormulaRule(formula=[f'LEFT($L{p0},4)="Late"'], fill=fill("FFE0B2")))
+note(ws, r, "Status: Not received > Partially received > Received (logged) > Accepted (reviewed as complete & appropriate) | Re-request = rejected / incomplete. "
+            "Information produced by the entity (IPE) used as audit evidence must be evaluated for accuracy & completeness (ISA 500.9).", "N")
+r += 2
+
+r = section(ws, r, "PBC2", "PBC procedures - planning, quality, follow-up & escalation", "ISA 210 | ISA 300 | ISA 500.9 | ISA 260")
+r = checklist(ws, r, [
+    ("PBC list agreed with management at planning, with owners, formats & due dates (linked to timeline B10)", "ISA 300.A13; ISA 210.A23", "Yes", "Issued 20-Oct-25 and 12-Jan-26"),
+    ("Engagement letter confirms management's responsibility to provide information & unrestricted access", "ISA 210.6(b)(iii)", "Yes", "A2"),
+    ("Each item reviewed on receipt for completeness, period, format & consistency with TB before acceptance", "ISA 500.7", "Yes", "Status 'Accepted' only after review"),
+    ("IPE accuracy & completeness tested (footing, agreement to GL, re-running reports, ITGC reliance)", "ISA 500.9", "Yes", "See column K; ITGC access deficiency -> substantive IPE tests"),
+    ("Overdue items followed up; repeated delays escalated to CFO, then to TCWG", "ISA 260.16(b)", "Yes", "NRV & RP items escalated"),
+    ("Delays/refusals evaluated as potential scope limitation or indicator of fraud risk", "ISA 705.7, 11; ISA 240R", None, "RP list re-request outstanding"),
+    ("Client documents retained securely; confidential data handled per firm policy", "ISQM 1; IESBA 114", "Yes", "Secure client portal"),
+], "PBC2")
+
+r = section(ws, r, "PBC3", "PBC progress dashboard", "Engagement management")
+r = table_head(ws, r, ["", "Status", "Count", "% of total"])
+s0 = r
+for st_ in ["Accepted", "Received", "Partially received", "Re-request", "Not received"]:
+    cell(ws, f"B{r}", st_); cell(ws, f"C{r}", f"=COUNTIF(PBC_Status,B{r})", "0", center=True)
+    cell(ws, f"D{r}", f"=IFERROR(C{r}/COUNTA(PBC_Doc),0)", "0%", center=True); r += 1
+s1 = r - 1
+k0 = r + 1
+kp = [("Total items requested", "=COUNTA(PBC_Doc)", "0"), ("Received or accepted", '=COUNTIF(PBC_Status,"Accepted")+COUNTIF(PBC_Status,"Received")', "0"),
+      ("% received", f"=IFERROR(C{k0+1}/C{k0},0)", "0%"), ("Received on time", '=COUNTIF(PBC_Age,"On time")', "0"),
+      ("On-time rate (of received)", f'=IFERROR(C{k0+3}/(C{k0+3}+COUNTIF(PBC_Age,"Late*")),0)', "0%"),
+      ("Overdue now", '=COUNTIF(PBC_Age,"OVERDUE*")', "0"), ("IPE items tested", '=COUNTIF(PBC_IPE,"Yes")', "0")]
+r += 1
+for lab, v, nf in kp:
+    cell(ws, f"B{r}", lab); cell(ws, f"C{r}", v, nf, center=True); r += 1
+dname("PBC_N", f"PBC_List!$C${k0}"); dname("PBC_PctRec", f"PBC_List!$C${k0+2}"); dname("PBC_Overdue", f"PBC_List!$C${k0+5}")
+dname("PBC_OnTime", f"PBC_List!$C${k0+4}"); dname("PBC_IPEn", f"PBC_List!$C${k0+6}")
+r += 1
+r = table_head(ws, r, ["", "Area", "Items", "Outstanding"])
+areas = []
+for row in pbc:
+    if row[1] not in areas: areas.append(row[1])
+for a in areas:
+    cell(ws, f"B{r}", a); cell(ws, f"C{r}", f"=COUNTIF(PBC_Area,B{r})", "0", center=True)
+    cell(ws, f"D{r}", f'=COUNTIFS(PBC_Area,B{r},PBC_Status,"<>Accepted",PBC_Status,"<>Received")', "0", center=True); r += 1
+mini_chart(ws, "PBC items by status", _Ref(ws, min_col=2, min_row=s0, max_row=s1), _Ref(ws, min_col=3, min_row=s0 - 1, max_row=s1), f"F{s0}", color="1565C0", w=12, h=6.5)
+ws.freeze_panes = "C8"
+
 # ---------------- WP INDEX ----------------
 wpi = S["WP_Index"]
 widths(wpi, {"A": 7, "B": 13, "C": 46, "D": 30, "E": 14, "F": 11, "G": 14, "H": 11, "I": 13, "J": 9, "K": 9, "L": 9, "M": 12})
@@ -2108,7 +2501,23 @@ for j, h in enumerate(heads):
     put(wpi, f"{chr(65+j)}5", h, font(9, True, "FFFFFF"), DK, al=CEN, bd=BOX)
 wpi.row_dimensions[5].height = 28
 wps = [
- ("A1", "Strategy", "Engagement acceptance & continuance", "ISQM 1.30; ISA 220R.22-24", "Reviewed", 6, 6),
+ ("A1", "Strategy", "Acceptance & continuance summary", "ISQM 1.30; ISA 220R.22-24", "Reviewed", 1, 1),
+ ("AC1", "Strategy", "Engagement profile", "ISQM 1.30(a)", "Closed", 1, 1),
+ ("AC2", "Strategy", "Engagement risk assessment (weighted)", "ISQM 1.30(c)", "Reviewed", 2, 2),
+ ("AC3", "Strategy", "KYC / AML & sanctions screening", "IESBA 320; AML law", "Reviewed", 2, 2),
+ ("AC4", "Strategy", "New-client & predecessor procedures", "IESBA 320.8; ISA 510", "Closed", 0.5, 0.5),
+ ("AC5", "Strategy", "Continuance considerations", "ISA 220R.23", "Reviewed", 1, 1),
+ ("AC6", "Strategy", "Competence & resources check", "ISQM 1.30(a)(i)", "Reviewed", 0.5, 0.5),
+ ("AC7", "Strategy", "Decision & approvals", "ISQM 1.30-31", "Closed", 1, 1),
+ ("TR1", "Strategy", "Team competency matrix", "ISA 220R.25-26; IES 8", "Reviewed", 1, 1),
+ ("TR2", "Strategy", "Competency needs vs coverage", "ISA 220R.26", "Reviewed", 1, 1),
+ ("TR3", "Strategy", "Budget, actual hours & utilisation", "ISA 220R.25(b)", "In progress", 1, 1),
+ ("TR4", "Strategy", "Monthly capacity plan", "ISQM 1.32", "Reviewed", 2, 2),
+ ("TR5", "Strategy", "Direction, supervision & review plan", "ISA 220R.29-34", "Reviewed", 1, 1),
+ ("TR6", "Strategy", "Resources conclusion", "ISA 220R.25-28", "Reviewed", 0.5, 0.5),
+ ("PBC1", "Planning", "PBC request list & tracker", "ISA 210.6(b)(iii); ISA 500.9", "In progress", 4, 4),
+ ("PBC2", "Planning", "PBC procedures & escalation", "ISA 300; ISA 260.16(b)", "Prepared", 1, 1),
+ ("PBC3", "Execution", "PBC progress dashboard", "Engagement management", "In progress", 1, 1),
  ("A2", "Strategy", "Terms of engagement & preconditions", "ISA 210", "Closed", 3, 2.5),
  ("A3", "Strategy", "Independence declarations - team", "IESBA Part 4A; ISA 220R.16-21", "Prepared", 4, 5),
  ("A4", "Strategy", "Threats & safeguards register", "IESBA 120; 300", "Reviewed", 3, 3),
@@ -2317,12 +2726,12 @@ widths(sd, {"A": 16, "B": 58, "C": 16, "D": 40})
 put(sd, "A1", "STANDARDS LIBRARY - ISA / ISQM / IESBA mapped to audit layers", font(13, True, "FFFFFF"), DK); sd.merge_cells("A1:D1")
 for j, h in enumerate(["Standard", "Title", "Layer", "Working papers"]):
     put(sd, f"{chr(65+j)}3", h, font(9, True, "FFFFFF"), MD, al=CEN, bd=BOX)
-stds = [("ISQM 1", "Quality Management for Firms that Perform Audits or Reviews", "Strategy / Oversight", "A1, E3, F10"),
+stds = [("ISQM 1", "Quality Management for Firms that Perform Audits or Reviews", "Strategy / Oversight", "A1, AC1-AC7, TR1-TR6, E3, F10"),
         ("ISQM 2", "Engagement Quality Reviews", "Oversight", "F5"),
         ("IESBA Code", "International Code of Ethics for Professional Accountants (incl. Independence Standards)", "Strategy", "A3, A4, A5"),
         ("ISA 200", "Overall Objectives of the Independent Auditor", "All", "-"),
-        ("ISA 210", "Agreeing the Terms of Audit Engagements", "Strategy", "A2"),
-        ("ISA 220 (Revised)", "Quality Management for an Audit of Financial Statements", "Strategy / Oversight", "A1, A3, B10, F5, F6"),
+        ("ISA 210", "Agreeing the Terms of Audit Engagements", "Strategy", "A2, AC7, PBC1-PBC2"),
+        ("ISA 220 (Revised)", "Quality Management for an Audit of Financial Statements", "Strategy / Oversight", "A1, A3, AC1-AC7, TR1-TR6, B10, F5, F6"),
         ("ISA 230", "Audit Documentation", "All", "WP_Index, D1, E3, F9"),
         ("ISA 240 (Revised)", "Auditor's Responsibilities Relating to Fraud in an Audit of FS (issued Jul-2025; effective periods beginning on/after 15-Dec-2026)", "Planning / Execution / Oversight", "B5, FR1-FR7, D6"),
         ("ISA 250 (Revised)", "Consideration of Laws and Regulations", "Planning", "B6"),
@@ -2334,7 +2743,7 @@ stds = [("ISQM 1", "Quality Management for Firms that Perform Audits or Reviews"
         ("ISA 330", "Auditor's Responses to Assessed Risks", "Methodology / Execution", "C1, D2, D3, IC4-IC6"),
         ("ISA 402", "Audit Considerations Relating to Service Organizations", "Methodology", "C8"),
         ("ISA 450", "Evaluation of Misstatements Identified during the Audit", "Findings", "E1, SUAD1-SUAD4"),
-        ("ISA 500", "Audit Evidence", "Execution", "D1, D3"),
+        ("ISA 500", "Audit Evidence (incl. 500.9 information produced by the entity)", "Execution", "D1, D3, PBC1-PBC3"),
         ("ISA 501", "Audit Evidence - Specific Considerations", "Execution", "D5, D7"),
         ("ISA 505", "External Confirmations", "Execution", "D4"),
         ("ISA 510", "Initial Audit Engagements - Opening Balances", "Planning", "B9"),
@@ -2373,7 +2782,7 @@ for rr in range(1, 63):
             lm[f"{col}{rr}"].fill = fill("101010")
 boxes = {
     "Strategy": ("G5", ["Audit objective definition", "Scope alignment", "Stakeholder expectations", "Audit direction setting"],
-                 ["Acceptance & continuance (A1)", "Engagement letter (A2)", "Independence (A3-A5)", "Overall strategy (A6)"], "L1_Strategy"),
+                 ["Acceptance & continuance (AC1-AC7)", "Engagement letter (A2) & independence (A3-A5)", "Team competency & capacity (TR1-TR6)", "Overall strategy (A6) & PBC list"], "L1_Strategy"),
     "Planning": ("B19", ["Understanding entity & IC", "Materiality setting", "Inherent risk factors & spectrum", "Fraud & going concern lens"],
                  ["IRF risk register & spectrum (RA1-RA6)", "Fraud lens - ISA 240R (FR1-FR3)", "Going concern - ISA 570R (GC1-GC3)", "Internal controls (IC1-IC3)"], "L2_Planning"),
     "Execution": ("L19", ["Fieldwork execution", "Control testing", "Data validation", "Process walkthrough"],
@@ -2440,11 +2849,11 @@ for cc in range(2, 26): db.cell(4, cc).fill = fill(DK)
 db.row_dimensions[4].height = 5
 
 # Nav panel
-for rr in range(6, 60):
+for rr in range(6, 68):
     for cc in (2, 3): db.cell(rr, cc).fill = fill(DK)
-navs = [("Overview", "LayersMap"), ("Setup", "Setup"), ("WP Index", "WP_Index"), ("1 Strategy", "L1_Strategy"),
+navs = [("Overview", "LayersMap"), ("Setup", "Setup"), ("WP Index", "WP_Index"), ("1 Strategy", "L1_Strategy"), ("   Acceptance", "Acceptance_QM"), ("   Team", "Team_Resources"), ("   PBC", "PBC_List"),
         ("2 Planning", "L2_Planning"), ("   Risk 315R", "Risk_315R"), ("   Fraud 240R", "Fraud_240R"), ("   GC 570R", "GoingConcern_570R"), ("3 Methodology", "L3_Methodology"), ("   Sampling", "Sampling"), ("4 Execution", "L4_Execution"),
-        ("   IC Testing", "IC_Assessment"), ("5 Findings", "L5_Findings"), ("   Deficiencies 265", "Deficiencies_265"), ("   SUAD", "SUAD"), ("6 Oversight", "L6_Oversight"), ("Standards", "Standards")]
+        ("   IC Testing", "IC_Assessment"), ("5 Findings", "L5_Findings"), ("   Deficiencies", "Deficiencies_265"), ("   SUAD", "SUAD"), ("6 Oversight", "L6_Oversight"), ("Standards", "Standards")]
 for k, (lab, sh) in enumerate(navs):
     rr = 7 + k * 3
     c = put(db, f"C{rr}", f'=HYPERLINK("#{sh}!A1","{lab}")', font(10, True, DK if k == 0 else "FFFFFF"),
@@ -2563,11 +2972,20 @@ B3 = [("Risks with IRF = 3", "=DD_HighIRF", "0", '="of "&DD_TotalRisks&" | "&DD_
 for k, t in enumerate(B3):
     tile(56, 5 + k * 3, 3 if k < 5 else 6, *t, accent="6A1B9A")
 db["T57"].font = font(9, True, DK)
-put(db, "E61", "=\"Misstatement evaluation: \"&MS_Eval", font(9, True, "B71C1C"), BG); db.merge_cells("E61:Y61")
-put(db, "E62", "All figures update live from the layer working papers. Illustrative data for teaching - replace in Setup & layer sheets.", font(8, i=True, c="757575"), BG)
-db.merge_cells("E62:Y62")
+B4 = [("Engagement Risk", "=AC_Rating", "@", '="Acceptance score "&TEXT(AC_ScorePct,"0%")&" (AC2)"'),
+      ("Acceptance Decision", '=IF(LEFT(AC_Decision,6)="ACCEPT","Accepted","Decline")', "@", '="Approved before EL (AC7)"'),
+      ("Peak Capacity Use", "=MAX(TR_Peak)", "0%", '=TR_Over&" member(s) over-allocated (TR4)"'),
+      ("Competency Gaps", "=TR_Gaps", "0", '=COUNTIF(TR_NeedStatus,"Gap - mitigated")&" gap(s) mitigated (TR2)"'),
+      ("PBC Received", "=PBC_PctRec", "0%", '=PBC_Overdue&" overdue | on-time "&TEXT(PBC_OnTime,"0%")'),
+      ("Resources Conclusion (TR6)", "=TR_Conclusion", "@", '="Partner involvement "&TEXT(TR_PartnerPct,"0%")&" of actual hours"')]
+for k, t in enumerate(B4):
+    tile(61, 5 + k * 3, 3 if k < 5 else 6, *t, accent="F9A825")
+db["T62"].font = font(8, True, DK)
+put(db, "E66", "=\"Misstatement evaluation: \"&MS_Eval", font(9, True, "B71C1C"), BG); db.merge_cells("E66:Y66")
+put(db, "E67", "All figures update live from the layer working papers. Illustrative data for teaching - replace in Setup & layer sheets.", font(8, i=True, c="757575"), BG)
+db.merge_cells("E67:Y67")
 db.freeze_panes = "A5"
-db.print_area = "A1:Y62"
+db.print_area = "A1:Y67"
 
 # ---------------- defined names ----------------
 for n, ref in names.items():
