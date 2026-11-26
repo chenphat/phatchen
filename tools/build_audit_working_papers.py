@@ -32,7 +32,7 @@ names = {}
 def dname(n, ref): names[n] = ref
 
 order = ["Dashboard", "LayersMap", "Setup", "WP_Index", "L1_Strategy", "L2_Planning",
-         "L3_Methodology", "Sampling", "L4_Execution", "IC_Assessment", "L5_Findings", "SUAD", "L6_Oversight", "DashData", "Standards", "Lists"]
+         "Risk_315R", "Fraud_240R", "GoingConcern_570R", "L3_Methodology", "Sampling", "L4_Execution", "IC_Assessment", "L5_Findings", "SUAD", "L6_Oversight", "DashData", "Standards", "Lists"]
 ws0 = wb.active; ws0.title = order[0]
 S = {order[0]: ws0}
 for n in order[1:]: S[n] = wb.create_sheet(n)
@@ -110,6 +110,7 @@ setup = [
     ("Total firm fee income (MNT '000)", 2400000, "For IESBA 410 fee-dependency test", "FirmFees"),
     ("Audit fee - this client (MNT '000)", 120000, "Engagement letter", "AuditFee"),
     ("Non-assurance fees - this client (MNT '000)", 30000, "Tax compliance (IESBA 604)", "NASFee"),
+    ("Early adoption: ISA 240 (Revised) & ISA 570 (Revised 2024)", "Yes", "Effective for periods beginning on/after 15-Dec-2026; IAASB encourages early adoption", "EarlyAdopt"),
 ]
 put(st, "B4", "Input", font(b=True, c="FFFFFF"), MD); put(st, "C4", "Value", font(b=True, c="FFFFFF"), MD)
 put(st, "D4", "Note / source", font(b=True, c="FFFFFF"), MD)
@@ -330,14 +331,14 @@ r = checklist(ws, r, [
 ws = S["L2_Planning"]
 r = sheet_header(ws, "AUDIT PLANNING LAYER", 2,
                  "Understand the entity and its system of internal control, set materiality and identify & assess risks of material misstatement.",
-                 "ISA 300; ISA 315 (Revised 2019); ISA 320; ISA 240; ISA 250; ISA 550; ISA 570 (Revised); ISA 510")
+                 "ISA 300; ISA 315 (Revised 2019); ISA 320; ISA 240 (Revised); ISA 250; ISA 550; ISA 570 (Revised 2024); ISA 510")
 r = section(ws, r, "B1", "Understanding the entity, its environment & framework", "ISA 315R.19")
 r = checklist(ws, r, [
     ("Organisational structure, ownership, governance and business model understood", "ISA 315R.19(a)(i)", "Yes", "Family-owned; Board of 5; retail of consumer goods"),
     ("Industry, regulatory and other external factors (incl. tax, inflation, FX) understood", "ISA 315R.19(a)(ii)", "Yes", "MNT depreciation affects imported inventory cost"),
     ("Measures used to assess financial performance (KPIs, bonuses) understood", "ISA 315R.19(a)(iii)", "Yes", "Mgmt bonus linked to EBITDA - fraud risk factor"),
     ("Applicable framework, accounting policies & reasons for changes understood", "ISA 315R.19(b)", "Yes", "IFRS 16 & IFRS 15 policies unchanged"),
-    ("Inherent risk factors considered (complexity, subjectivity, change, uncertainty, bias)", "ISA 315R.19(c)", "Yes", "Applied in B4 register"),
+    ("Inherent risk factors considered (complexity, subjectivity, change, uncertainty, bias)", "ISA 315R.19(c)", "Yes", "Applied in Risk_315R RA3 (IRF ratings)"),
 ], "B1")
 r = section(ws, r, "B2", "Understanding the components of the system of internal control", "ISA 315R.21-26")
 r = checklist(ws, r, [
@@ -378,45 +379,20 @@ dname("Mat_OM", f"L2_Planning!$C${m0+4}"); dname("Mat_PM", f"L2_Planning!$C${m0+
 dname("Mat_CT", f"L2_Planning!$C${m0+8}"); dname("Mat_Bench", f"L2_Planning!$C${m0}")
 r += len(mat) + 1
 
-r = section(ws, r, "B4", "Risk assessment register - risks of material misstatement", "ISA 315R.28-37 | ISA 330")
-r = table_head(ws, r, ["ID", "Risk description", "FS area", "Assertion(s)", "Likelihood (1-5)", "Magnitude (1-5)",
-                       "Inherent risk score", "Spectrum of IR", "Significant risk?", "Control risk", "Planned response", "WP ref"])
-risks = [("Fraud in revenue recognition - cut-off around year end (presumed)", "Revenue", "Occurrence, Cut-off", 4, 5, "Yes", "Not tested", "Extended cut-off testing 10 days either side; credit notes after YE", "D3"),
-         ("Management override of controls (presumed)", "All", "All", 4, 5, "Yes", "Not tested", "JE testing, estimates bias review, unusual transactions", "D6"),
-         ("Inventory NRV - slow-moving imported goods with MNT depreciation", "Inventory", "Valuation", 4, 4, "No", "Not tested", "Ageing analysis, post-YE selling prices, NRV recompute", "D3"),
-         ("Inventory existence across 3 branches & warehouse", "Inventory", "Existence", 3, 4, "No", "Rely", "Attend counts at warehouse + 2 branches; test counts", "D5"),
-         ("Receivables recoverability (ECL - IFRS 9)", "Trade receivables", "Valuation", 3, 3, "No", "Not tested", "Ageing, after-date cash, ECL matrix recompute", "D4"),
-         ("Completeness of accruals & payables", "Payables & accruals", "Completeness", 3, 3, "No", "Rely", "Search for unrecorded liabilities", "D3"),
-         ("PPE capitalisation vs repairs", "PPE", "Existence, Classification", 2, 3, "No", "Not tested", "Vouch additions > PM/2; physical inspection", "D3"),
-         ("Borrowings covenant compliance & classification", "Borrowings", "Presentation", 2, 4, "No", "Not tested", "Covenant recalculation; bank confirmation", "D4"),
-         ("Related party transactions not identified / disclosed", "Disclosures", "Completeness", 3, 2, "No", "Not tested", "RP inquiries, board minutes, ledger scans", "B7"),
-         ("Cash and bank balances", "Cash", "Existence", 1, 2, "No", "Rely", "Bank confirmations & reconciliations", "D4")]
-r0 = r
-for i, row in enumerate(risks, 1):
-    cell(ws, f"A{r}", f"R{i:02d}", center=True); cell(ws, f"B{r}", row[0], is_input=True)
-    cell(ws, f"C{r}", row[1], is_input=True); cell(ws, f"D{r}", row[2], is_input=True)
-    cell(ws, f"E{r}", row[3], is_input=True, center=True); cell(ws, f"F{r}", row[4], is_input=True, center=True)
-    cell(ws, f"G{r}", f"=E{r}*F{r}", center=True)
-    cell(ws, f"H{r}", f'=IF(I{r}="Yes","Significant",IF(G{r}>=12,"Higher",IF(G{r}>=6,"Moderate","Low")))', center=True)
-    cell(ws, f"I{r}", row[5], is_input=True, center=True); cell(ws, f"J{r}", row[6], is_input=True, center=True)
-    cell(ws, f"K{r}", row[7], is_input=True); cell(ws, f"L{r}", row[8], center=True)
-    ws.row_dimensions[r].height = 36; r += 1
-dv(ws, f"I{r0}:I{r-1}", "YesNo")
-dname("Risk_Spectrum", f"L2_Planning!$H${r0}:$H${r-1}")
-ws.conditional_formatting.add(f"H{r0}:H{r-1}", CellIsRule(operator="equal", formula=['"Significant"'], fill=fill("FFCDD2"), font=Font(name=F, bold=True, color="B71C1C")))
-ws.conditional_formatting.add(f"H{r0}:H{r-1}", CellIsRule(operator="equal", formula=['"Higher"'], fill=fill("FFE0B2")))
-put(ws, f"B{r}", "Scoring: Likelihood x Magnitude. >=12 Higher, 6-11 Moderate, <6 Low; 'Significant' where judged at the upper end of the spectrum (ISA 315R.12(l)) incl. presumed fraud risks (ISA 240.26-27, 31).", font(8, i=True, c="616161"), al=WRAP)
-ws.merge_cells(f"B{r}:L{r}"); ws.row_dimensions[r].height = 24
+r = section(ws, r, "B4", "Risk assessment - summary (full register: Risk_315R RA1-RA6)", "ISA 315 (Revised 2019).28-38")
+r = table_head(ws, r, ["", "Summary", "Value"])
+for lab, f_ in [('Risks of material misstatement assessed', '=COUNTA(Risk_ID)'), ('FS-level risks', '=COUNTIF(Risk_Level,"FS level")'), ('Significant risks', '=COUNTIF(Risk_Spectrum,"Significant")'), ('High / Elevated', '=COUNTIF(Risk_Spectrum,"High")&" / "&COUNTIF(Risk_Spectrum,"Elevated")'), ('Moderate / Low', '=COUNTIF(Risk_Spectrum,"Moderate")&" / "&COUNTIF(Risk_Spectrum,"Low")'), ('Risks with an inherent risk factor rated 3 (high)', '=COUNTIF(Risk_MaxIRF,3)'), ('Fraud risks', '=COUNTIF(Risk_Fraud,"Yes")'), ('Assessments needing justification (consistency check)', '=COUNTIF(Risk_Check,"<>OK")'), ('Significant SCOTABDs / material-not-significant (stand-back)', '=COUNTIF(SCOT_Class,"Significant*")&" / "&COUNTIF(SCOT_Class,"Material*")')]:
+    cell(ws, f"B{r}", lab); cell(ws, f"C{r}", f_, link=True); ws.merge_cells(f"C{r}:J{r}"); r += 1
+c = cell(ws, f"B{r}", '=HYPERLINK("#Risk_315R!A1","Open risk register - inherent risk factors & spectrum >")'); c.font = Font(name=F, size=9, color="1565C0", underline="single")
 r += 2
 
-r = section(ws, r, "B5", "Fraud risk assessment", "ISA 240")
-r = checklist(ws, r, [
-    ("Engagement team discussion on susceptibility of FS to fraud held & documented", "ISA 240.16", "Yes", "Planning meeting 15-Oct-25, all team attended"),
-    ("Inquiries of management, TCWG and others regarding fraud", "ISA 240.18-22", "Yes", "No known fraud reported"),
-    ("Fraud risk factors (incentive/pressure, opportunity, rationalisation) evaluated", "ISA 240.24", "Yes", "EBITDA-linked bonus = incentive"),
-    ("Presumption of fraud risk in revenue recognition evaluated (rebuttal documented if rebutted)", "ISA 240.26-27, 47", "Yes", "Not rebutted - R01"),
-    ("Responses to management override: JE testing, estimates review, unusual transactions", "ISA 240.32-33", "Yes", "See D6"),
-], "B5")
+r = section(ws, r, "B5", "Fraud - summary (full working paper: Fraud_240R FR1-FR7)", "ISA 240 (Revised)")
+r = table_head(ws, r, ["", "Summary", "Value"])
+for lab, f_ in [('Fraud risk factors present', '=COUNTIF(FRF_Present,"Yes")'), ('Risks of material misstatement due to fraud', '=COUNTIF(Risk_Fraud,"Yes")'), ('Journal entries tested / exceptions', '=JE_Tested&" / "&JE_Exc'), ('Fraud or suspected fraud matters (incl. allegations)', '=COUNTA(Fraud_Status)'), ('Open fraud matters', '=COUNTIF(Fraud_Status,"<>Closed")')]:
+    cell(ws, f"B{r}", lab); cell(ws, f"C{r}", f_, link=True); ws.merge_cells(f"C{r}:J{r}"); r += 1
+c = cell(ws, f"B{r}", '=HYPERLINK("#Fraud_240R!A1","Open ISA 240 (Revised) working paper >")'); c.font = Font(name=F, size=9, color="1565C0", underline="single")
+r += 2
+
 r = section(ws, r, "B6", "Laws & regulations", "ISA 250 (Revised)")
 r = checklist(ws, r, [
     ("Understanding of legal & regulatory framework applicable to entity obtained", "ISA 250.13", "Yes", "Tax, labour, consumer protection, AML"),
@@ -432,12 +408,13 @@ r = checklist(ws, r, [
     ("Significant RP transactions outside normal course of business evaluated", "ISA 550.23", "N/A", "None identified"),
     ("RP disclosures (IAS 24) adequate", "ISA 550.25", None, "Final review"),
 ], "B7")
-r = section(ws, r, "B8", "Going concern - preliminary assessment", "ISA 570 (Revised).10-11")
-r = checklist(ws, r, [
-    ("Events or conditions casting significant doubt considered at planning", "ISA 570.10", "Yes", "Profitable; positive operating cash flow"),
-    ("Management's preliminary assessment obtained & discussed", "ISA 570.10(a)", "Yes", "12-month cash forecast"),
-    ("Borrowing facilities & covenants reviewed for maturity within 12 months", "ISA 570.A3", "Yes", "Loan matures 2028; covenants met"),
-], "B8")
+r = section(ws, r, "B8", "Going concern - risk assessment summary (full: GoingConcern_570R)", "ISA 570 (Revised 2024)")
+r = table_head(ws, r, ["", "Summary", "Value"])
+for lab, f_ in [('Events or conditions identified', '=GC_EventsN'), ("Months covered by management's assessment from FS approval", '=GC_Months'), ('Reporting outcome', '=GC_Outcome')]:
+    cell(ws, f"B{r}", lab); cell(ws, f"C{r}", f_, link=True); ws.merge_cells(f"C{r}:J{r}"); r += 1
+c = cell(ws, f"B{r}", '=HYPERLINK("#GoingConcern_570R!A1","Open ISA 570 (Revised 2024) working paper >")'); c.font = Font(name=F, size=9, color="1565C0", underline="single")
+r += 2
+
 r = section(ws, r, "B9", "Opening balances (initial engagements)", "ISA 510")
 r = checklist(ws, r, [
     ("Engagement is an initial audit engagement", "ISA 510.2", "No", "Continuing engagement - year 4"),
@@ -561,7 +538,7 @@ r = checklist(ws, r, [("Entity uses service organisations relevant to the audit 
 ws = S["L4_Execution"]
 r = sheet_header(ws, "AUDIT EXECUTION LAYER", 4,
                  "Perform fieldwork: lead schedules, tests of controls, substantive tests, confirmations, count attendance, JE testing and subsequent events.",
-                 "ISA 230; ISA 330; ISA 500; ISA 501; ISA 505; ISA 240.33; ISA 560; ISA 710")
+                 "ISA 230; ISA 330; ISA 500; ISA 501; ISA 505; ISA 240 (Revised); ISA 560; ISA 710")
 r = section(ws, r, "D1", "Lead schedule / trial balance (MNT '000)", "ISA 500 | ISA 230")
 r = table_head(ws, r, ["Code", "Account", "FS caption", "Class", "CY unadjusted", "Corrected adj. (E1)", "CY final", "PY final",
                        "Variance", "Var %", "Explain?", "WP ref"])
@@ -683,13 +660,13 @@ r = checklist(ws, r, [
     ("Test counts performed floor-to-sheet and sheet-to-floor", "ISA 501.4(a)(iv)", "Yes", "60 items, 1 minor difference corrected"),
     ("Final inventory records reconcile to count results; cut-off documents captured", "ISA 501.4(b)", "Yes", "Last GRN/GDN numbers recorded"),
 ], "D5")
-r = section(ws, r, "D6", "Journal entry testing (management override)", "ISA 240.33(a) | ISA 330.20")
+r = section(ws, r, "D6", "Journal entry testing (management override)", "ISA 240 (Revised) - mgmt override (see FR4) | ISA 330.20")
 r = checklist(ws, r, [
-    ("Completeness of JE population reconciled to TB", "ISA 240.A43", "Yes", "48,320 JEs; agreed to TB movement"),
-    ("Inquiries of individuals about inappropriate/unusual activity in JE process", "ISA 240.33(a)(i)", "Yes", ""),
-    ("JEs & adjustments at period end selected & tested", "ISA 240.33(a)(ii)", "Yes", "All post-closing entries tested"),
-    ("Risk criteria applied: weekend/holiday, round amounts, unusual users, seldom-used accounts, post-close", "ISA 240.A44-A45", "Yes", "112 entries selected via data analytics"),
-    ("Significant transactions outside normal course of business evaluated for business rationale", "ISA 240.33(c)", "Yes", "None noted"),
+    ("Completeness of JE population reconciled to TB", "ISA 240R - JE testing", "Yes", "48,320 JEs; agreed to TB movement"),
+    ("Inquiries of individuals about inappropriate/unusual activity in JE process", "ISA 240R - JE testing", "Yes", ""),
+    ("JEs & adjustments at period end selected & tested", "ISA 240R - JE testing", "Yes", "All post-closing entries tested"),
+    ("Risk criteria applied: weekend/holiday, round amounts, unusual users, seldom-used accounts, post-close", "ISA 240R - JE testing (FR4)", "Yes", "112 entries selected via data analytics"),
+    ("Significant transactions outside normal course of business evaluated for business rationale", "ISA 240R - unusual transactions", "Yes", "None noted"),
 ], "D6")
 r = section(ws, r, "D7", "Litigation & claims", "ISA 501.9-12")
 r = checklist(ws, r, [("Inquiry of management & in-house legal; review minutes and legal expense ledger", "ISA 501.9", "Yes", "One customer claim noted"),
@@ -789,7 +766,7 @@ r = checklist(ws, r, [
 ws = S["L6_Oversight"]
 r = sheet_header(ws, "AUDIT OVERSIGHT & COMPLETION LAYER", 6,
                  "Communicate with TCWG, obtain representations, complete engagement quality review, form the opinion and monitor quality (ISQM 1).",
-                 "ISA 260; ISA 580; ISA 570; ISA 701; ISA 700/705/706; ISA 720; ISA 220 (Revised); ISQM 1; ISQM 2")
+                 "ISA 260; ISA 580; ISA 570 (Revised 2024); ISA 701; ISA 700/705/706; ISA 720; ISA 220 (Revised); ISQM 1; ISQM 2")
 r = section(ws, r, "F1", "Communications with those charged with governance", "ISA 260 (Revised) | ISA 265")
 r = table_head(ws, r, ["#", "Matter required to be communicated", "Standard ref", "Required?", "Form", "Date", "Status", "Ref"])
 comms = [("Auditor's responsibilities in relation to the FS audit", "ISA 260.14", "Yes", "Written", D(2025, 10, 20), "Done"),
@@ -799,7 +776,7 @@ comms = [("Auditor's responsibilities in relation to the FS audit", "ISA 260.14"
          ("Uncorrected misstatements & request for correction", "ISA 450.12-13", "Yes", "Written", None, "Pending"),
          ("Significant deficiencies in internal control", "ISA 265.9", "Yes", "Written", D(2026, 3, 20), "Done"),
          ("Statement on independence & threats/safeguards", "ISA 260.17; IESBA 400", "Yes", "Written", None, "Pending"),
-         ("Fraud or suspected fraud identified", "ISA 240.42", "N/A", "", None, "N/A"),
+         ("Fraud-related matters incl. suspected fraud & allegations (FR6)", "ISA 240R - communications", "Yes", "Written", None, "Pending"),
          ("Non-compliance with laws & regulations", "ISA 250.23", "N/A", "", None, "N/A"),
          ("Expected modifications / EOM in auditor's report", "ISA 705.30; 706.12", "Yes", "Meeting", None, "Pending")]
 h0 = r
@@ -818,15 +795,16 @@ r = checklist(ws, r, [
     ("Management responsibility for preparation of FS per framework", "ISA 580.10", None, "Draft letter sent 18-Mar-26"),
     ("All relevant information & access provided; all transactions recorded", "ISA 580.11", None, ""),
     ("Uncorrected misstatements immaterial - schedule attached", "ISA 450.14", None, ""),
-    ("Fraud, laws & regulations, related parties, subsequent events, going concern", "ISA 240.40; 250.17; 550.26; 560.9; 570.16(e)", None, ""),
+    ("Fraud, laws & regulations, related parties, subsequent events, going concern", "ISA 240R; 250.17; 550.26; 560.9; 570R", None, ""),
     ("Dated as near as practicable to, but not after, the auditor's report date", "ISA 580.14", None, ""),
 ], "F2")
-r = section(ws, r, "F3", "Going concern - final conclusion", "ISA 570 (Revised).16-24")
-r = checklist(ws, r, [
-    ("Management's assessment covers at least 12 months from FS date", "ISA 570.13", "Yes", ""),
-    ("Material uncertainty related to going concern exists", "ISA 570.18", "No", "No events/conditions identified"),
-    ("Disclosures adequate (incl. 'close call' disclosures)", "ISA 570.19-20", "Yes", ""),
-], "F3")
+r = section(ws, r, "F3", "Going concern - final conclusion (detail: GoingConcern_570R GC4-GC6)", "ISA 570 (Revised 2024)")
+r = table_head(ws, r, ["", "Summary", "Value"])
+for lab, f_ in [('Going concern basis appropriate?', '=GC_Basis'), ('Material uncertainty exists?', '=GC_MU'), ('Close call?', '=GC_Close'), ('Reporting outcome', '=GC_Outcome')]:
+    cell(ws, f"B{r}", lab); cell(ws, f"C{r}", f_, link=True); ws.merge_cells(f"C{r}:J{r}"); r += 1
+c = cell(ws, f"B{r}", '=HYPERLINK("#GoingConcern_570R!A1","Open going concern working paper >")'); c.font = Font(name=F, size=9, color="1565C0", underline="single")
+r += 2
+
 r = section(ws, r, "F4", "Key audit matters (if communicated)", "ISA 701")
 r = table_head(ws, r, ["#", "Matter", "Why a KAM (significant attention)", "", "", "How addressed in the audit", "", "", "", "Include?"])
 ws.merge_cells(f"C{r-1}:E{r-1}"); ws.merge_cells(f"F{r-1}:I{r-1}")
@@ -865,17 +843,17 @@ o0 = r
 opin = [("Uncorrected misstatements material? (SUAD dual aggregate)", '=IF(ABS(MS_Agg)>=Mat_OM,"Yes","No")', "ISA 450.11 / 705.6(a)", False),
         ("Inability to obtain sufficient appropriate evidence (scope limitation)?", "No", "ISA 705.6(b)", True),
         ("If modified - effects pervasive?", "No", "ISA 705.A5", True),
-        ("Material uncertainty related to going concern? (F3)", "No", "ISA 570.22", True),
+        ("Material uncertainty related to going concern? (GC4)", "=GC_MU", "ISA 570 (Revised 2024)", False),
         ("Emphasis of matter required?", "No", "ISA 706.8", True),
         ("PROPOSED OPINION", None, "ISA 705 decision matrix", False),
         ("Additional report section", None, "", False)]
 for i, (lab, v, basis, isin) in enumerate(opin):
     rr = r + i
     if lab == "PROPOSED OPINION":
-        v = (f'=IF(AND(C{o0+1}="Yes",C{o0+2}="Yes"),"Disclaimer of opinion",IF(AND(C{o0}="Yes",C{o0+2}="Yes"),"Adverse opinion",'
-             f'IF(OR(C{o0}="Yes",C{o0+1}="Yes"),"Qualified opinion","Unmodified opinion")))')
+        v = (f'=IF(GC_Basis="No","Adverse opinion (ISA 570R)",IF(AND(C{o0+1}="Yes",C{o0+2}="Yes"),"Disclaimer of opinion",IF(AND(C{o0}="Yes",C{o0+2}="Yes"),"Adverse opinion",'
+             f'IF(OR(C{o0}="Yes",C{o0+1}="Yes"),"Qualified opinion","Unmodified opinion"))))')
     if lab.startswith("Additional"):
-        v = (f'=IF(C{o0+3}="Yes","Material Uncertainty Related to Going Concern section",IF(C{o0+4}="Yes","Emphasis of Matter paragraph","None"))')
+        v = (f'=IF(C{o0+3}="Yes","Material Uncertainty Related to Going Concern section",IF(C{o0+4}="Yes","Emphasis of Matter paragraph","Going Concern section - no material uncertainty (ISA 570R)"))')
     b = cell(ws, f"B{rr}", lab); c = cell(ws, f"C{rr}", v, None, isin, link=(i == 0), center=True)
     if lab.isupper(): b.font = font(9, True); c.font = font(11, True, DK); b.fill = fill(PALE); c.fill = fill(PALE)
     cell(ws, f"D{rr}", basis); ws.merge_cells(f"D{rr}:J{rr}")
@@ -1486,6 +1464,482 @@ ws.conditional_formatting.add(f"H{z0}:I{r-1}", FormulaRule(formula=[f'LEFT(H{z0}
 put(ws, f"B{r}", "Net check (must be zero)", font(9, True), PALE, bd=BOX); put(ws, f"E{r}", f"=SUM(E{z0}:E{r-1})", font(9, True), PALE, NUM, bd=BOX)
 ws.freeze_panes = "C8"
 
+# ======================================================================
+# ISA 315 (Revised 2019) / ISA 240 (Revised) / ISA 570 (Revised 2024)
+# ======================================================================
+from openpyxl.utils import column_index_from_string as ci, get_column_letter as gl
+SPECTRUM = ["Low", "Moderate", "Elevated", "High", "Significant"]
+SPEC_COL = {"Low": "C8E6C9", "Moderate": "FFF59D", "Elevated": "FFCC80", "High": "EF6C00", "Significant": "C62828"}
+
+def note(ws, r, text, last="L", h=24):
+    put(ws, f"B{r}", text, font(8, i=True, c="616161"), al=WRAP); ws.merge_cells(f"B{r}:{last}{r}"); ws.row_dimensions[r].height = h
+
+# ---------------- RISK 315R ----------------
+ws = S["Risk_315R"]
+r = sheet_header(ws, "RISK IDENTIFICATION & ASSESSMENT - INHERENT RISK FACTORS & SPECTRUM", "2",
+                 "Identify risks of material misstatement at FS and assertion level, assess inherent risk using the inherent risk factors and the spectrum of inherent risk, assess control risk separately, and apply the stand-back requirement.",
+                 "ISA 315 (Revised 2019) paras 12 (definitions), 28-38 & Appendix 2 (inherent risk factors); ISA 330.5-7, 18; ISA 240 (Revised) fraud lens")
+for k in range(ci("M"), ci("Y") + 1): ws.column_dimensions[gl(k)].width = 11
+widths(ws, {"B": 38, "C": 18, "D": 16, "E": 10, "F": 8, "X": 34, "T": 26, "W": 18})
+
+r = section(ws, r, "RA1", "Inherent risk factors (IRFs) & spectrum of inherent risk - methodology", "ISA 315R.12(f), 31 & App. 2")
+r = table_head(ws, r, ["", "Inherent risk factor", "What it means (ISA 315R App. 2)", "", "", "", "", "Rating scale"])
+ws.merge_cells(f"C{r-1}:G{r-1}"); ws.merge_cells(f"H{r-1}:L{r-1}")
+irfs = [("Complexity", "Difficulty in applying the framework or processing data - many sources, complex calculations or models"),
+        ("Subjectivity", "Inherent limitations in preparing information objectively - range of possible outcomes requiring management judgement"),
+        ("Change", "Events or conditions changing the business, industry, framework or IT that affect amounts or disclosures"),
+        ("Uncertainty", "Information cannot be measured precisely from direct observation - estimation uncertainty"),
+        ("Susceptibility to management bias / other fraud risk factors", "Conditions creating opportunity for intentional or unintentional bias; incentives, pressures, opportunities, attitudes (link Fraud_240R FR2)")]
+for i, (n_, d_) in enumerate(irfs):
+    cell(ws, f"B{r}", n_); cell(ws, f"C{r}", d_); ws.merge_cells(f"C{r}:G{r}")
+    cell(ws, f"H{r}", "0 = not present | 1 = low | 2 = moderate | 3 = high" if i == 0 else ""); ws.merge_cells(f"H{r}:L{r}")
+    ws.row_dimensions[r].height = 28; r += 1
+r += 1
+r = table_head(ws, r, ["", "Spectrum position", "Likelihood x Magnitude (1-25)", "Meaning / typical response"])
+ws.merge_cells(f"D{r-1}:L{r-1}")
+for band, rng, mean in [("Low", "1 - 4", "Not a RMM, or remote; may still need ISA 330.18 procedures if material"),
+                        ("Moderate", "5 - 9", "Standard substantive procedures; controls reliance possible"),
+                        ("Elevated", "10 - 14", "More persuasive evidence; extend sample sizes / reduce reliance on analytics"),
+                        ("High", "15 - 19", "Most persuasive evidence; tests of details close to period end; experienced staff"),
+                        ("Significant", "Auditor judgement: close to upper end; ALWAYS for fraud risks", "Specific response required: understand controls (315R.26(a)(i)), substantive procedures specifically responsive (330.21), no reliance on PY control evidence (330.15)")]:
+    c = cell(ws, f"B{r}", band, center=True); c.fill = fill(SPEC_COL[band])
+    if band in ("High", "Significant"): c.font = font(9, True, "FFFFFF")
+    cell(ws, f"C{r}", rng, center=True); cell(ws, f"D{r}", mean); ws.merge_cells(f"D{r}:L{r}"); ws.row_dimensions[r].height = 26; r += 1
+note(ws, r, "Inherent risk is assessed by assessing the likelihood AND magnitude of misstatement, taking into account how and the degree to which IRFs affect susceptibility (ISA 315R.31). "
+            "Significant risk = inherent risk close to the upper end of the spectrum (315R.12(l)). Control risk is assessed separately (315R.34); where controls are not tested, control risk is maximum and RMM = inherent risk.")
+r += 2
+
+r = section(ws, r, "RA2", "Significant classes of transactions, account balances & disclosures (SCOTABDs)", "ISA 315R.29 | ISA 330.18")
+r = table_head(ws, r, ["#", "Account / disclosure", "Class", "Final balance (abs)", "> PM?", "Qualitative significance", "Risks mapped (RA3)",
+                       "Relevant assertions", "", "Classification", "", ""])
+ws.merge_cells(f"H{r-1}:I{r-1}"); ws.merge_cells(f"J{r-1}:L{r-1}")
+qual = {"Revenue": "KPI-linked bonus; fraud presumption", "Inventory": "Imported goods; NRV judgement", "Property, plant & equipment": "IFRS 16 right-of-use assets",
+        "Retained earnings (opening)": "Agreed to PY", "Income tax payable": "Tax inspection history"}
+asr = {"Revenue": "Occurrence, Cut-off, Accuracy", "Trade receivables": "Existence, Valuation", "Inventory": "Existence, Valuation",
+       "Property, plant & equipment": "Existence, Valuation, Classification", "Accruals": "Completeness", "Borrowings": "Presentation, Completeness",
+       "Cash": "Existence", "Cost of sales": "Accuracy, Classification", "Trade payables": "Completeness"}
+s0 = r
+for i, row in enumerate(tbrows):
+    acct = row[1]
+    cell(ws, f"A{r}", i + 1, center=True); cell(ws, f"B{r}", f"=INDEX(TB_Acct,{i+1})", link=True)
+    cell(ws, f"C{r}", f"=INDEX(TB_Class,{i+1})", link=True, center=True)
+    cell(ws, f"D{r}", f"=ABS(INDEX(TB_Final,{i+1}))", NUM, link=True)
+    cell(ws, f"E{r}", f'=IF(D{r}>Mat_PM,"Yes","No")', center=True)
+    cell(ws, f"F{r}", qual.get(acct, ""), is_input=True)
+    cell(ws, f"G{r}", f"=COUNTIF(Risk_SCOT,B{r})", "0", center=True)
+    cell(ws, f"H{r}", asr.get(acct, ""), is_input=True); ws.merge_cells(f"H{r}:I{r}")
+    cell(ws, f"J{r}", f'=IF(G{r}>0,"Significant - RMM identified",IF(E{r}="Yes","Material, not significant - stand-back & ISA 330.18","Not material"))', center=True)
+    ws.merge_cells(f"J{r}:L{r}"); r += 1
+cell(ws, f"A{r}", len(tbrows) + 1, center=True); cell(ws, f"B{r}", "Disclosures - related parties"); cell(ws, f"C{r}", "Disclosure", center=True)
+cell(ws, f"D{r}", 25000, NUM, True); cell(ws, f"E{r}", "Qualitative", center=True); cell(ws, f"F{r}", "Material by nature (IAS 24)", is_input=True)
+cell(ws, f"G{r}", f"=COUNTIF(Risk_SCOT,B{r})", "0", center=True); cell(ws, f"H{r}", "Completeness, Presentation", is_input=True); ws.merge_cells(f"H{r}:I{r}")
+cell(ws, f"J{r}", f'=IF(G{r}>0,"Significant - RMM identified","Material, not significant - stand-back & ISA 330.18")', center=True); ws.merge_cells(f"J{r}:L{r}")
+r += 1
+dname("SCOT_Class", f"Risk_315R!$J${s0}:$J${r-1}")
+ws.conditional_formatting.add(f"J{s0}:J{r-1}", FormulaRule(formula=[f'LEFT($J{s0},11)="Significant"'], fill=fill("FFE0B2")))
+ws.conditional_formatting.add(f"J{s0}:J{r-1}", FormulaRule(formula=[f'LEFT($J{s0},8)="Material"'], fill=fill("FFF9C4")))
+r += 1
+
+r = section(ws, r, "RA3", "Risk register - inherent risk factors, spectrum & combined RMM", "ISA 315R.28, 31-34 | ISA 330.7")
+heads = ["ID", "Risk of material misstatement (what could go wrong)", "SCOTABD", "Relevant assertion(s)", "Level", "Fraud risk?",
+         "IRF: Complexity", "IRF: Subjectivity", "IRF: Change", "IRF: Uncertainty", "IRF: Bias / fraud", "IRF score (/15)", "Max IRF",
+         "Dominant IRF", "Likelihood (1-5)", "Magnitude (1-5)", "L x M", "Judged significant? (upper end)", "Spectrum of inherent risk",
+         "Consistency check", "Substantive alone insufficient? (315R.33)", "Control risk", "Combined RMM", "Planned response (ISA 330)", "WP ref"]
+r = table_head(ws, r, heads)
+HDR = r - 1
+risks2 = [
+    ("Revenue recorded before goods dispatched to meet targets (cut-off) - presumed fraud risk", "Revenue", "Occurrence, Cut-off", "Assertion", "Yes", (1, 1, 1, 0, 3), 4, 5, "Yes", "No", "Not tested", "Extended cut-off 10 days either side; credit notes post-YE; analytics by day", "D3, FR3"),
+    ("Management override of controls - journals, estimates, unusual transactions (presumed)", "All (FS level)", "All", "FS level", "Yes", (1, 2, 0, 1, 3), 4, 5, "Yes", "No", "Not tested", "JE testing with CAATs; retrospective estimates review; business rationale of unusual transactions", "D6, FR4"),
+    ("Inventory NRV understated for slow-moving imported goods (MNT depreciation)", "Inventory", "Valuation", "Assertion", "No", (2, 3, 2, 3, 2), 4, 4, "No", "No", "Not tested", "Ageing, post-YE selling prices, independent NRV range (ISA 540R)", "D3, C4"),
+    ("Inventory does not exist at 3 branches & warehouse", "Inventory", "Existence", "Assertion", "No", (1, 0, 1, 0, 1), 3, 4, "No", "No", "Rely", "Count attendance + test counts; cycle-count controls (C05)", "D5"),
+    ("Receivables overstated - ECL under-provided (IFRS 9)", "Trade receivables", "Valuation", "Assertion", "No", (2, 2, 1, 2, 2), 3, 3, "No", "No", "Not tested", "MUS confirmations; after-date cash; ECL matrix recompute", "D4, S4"),
+    ("Accruals & payables incomplete at year end", "Accruals", "Completeness", "Assertion", "No", (1, 1, 0, 1, 2), 3, 3, "No", "No", "Rely", "Search for unrecorded liabilities (S1.5)", "D3"),
+    ("Repairs capitalised as PPE / additions not existing", "Property, plant & equipment", "Existence, Classification", "Assertion", "No", (1, 1, 1, 0, 1), 2, 3, "No", "No", "Not tested", "MUS on additions; inspection", "D3, S1.3"),
+    ("Borrowings misclassified; covenant breach not disclosed", "Borrowings", "Presentation", "Assertion", "No", (2, 1, 1, 1, 1), 2, 4, "No", "No", "Not tested", "Bank confirmation; covenant recalculation (GC3)", "D4, GC3"),
+    ("Related party transactions / balances not identified or disclosed", "Disclosures - related parties", "Completeness, Presentation", "Assertion", "No", (1, 1, 0, 0, 3), 3, 2, "No", "No", "Not tested", "RP inquiries, minutes, ledger scans", "B7"),
+    ("Cash balances do not exist", "Cash", "Existence", "Assertion", "No", (0, 0, 0, 0, 1), 1, 2, "No", "No", "Rely", "Bank confirmations & reconciliations", "D4"),
+    ("Right-of-use assets & lease liabilities misstated (IFRS 16 - branch leases)", "Property, plant & equipment", "Valuation, Accuracy", "Assertion", "No", (3, 2, 1, 1, 1), 2, 3, "No", "No", "Not tested", "Recompute lease models; discount rate review", "D3"),
+]
+q0 = r
+for i, (dsc, scot, asr_, lvl, frd, irf, L_, M_, sig, subo, cr, resp, wp) in enumerate(risks2, 1):
+    cell(ws, f"A{r}", f"R{i:02d}", center=True); cell(ws, f"B{r}", dsc, is_input=True)
+    cell(ws, f"C{r}", scot, is_input=True); cell(ws, f"D{r}", asr_, is_input=True)
+    cell(ws, f"E{r}", lvl, is_input=True, center=True); cell(ws, f"F{r}", frd, is_input=True, center=True)
+    for j, v in enumerate(irf): cell(ws, f"{chr(71+j)}{r}", v, "0", True, center=True)
+    cell(ws, f"L{r}", f"=SUM(G{r}:K{r})", "0", center=True); cell(ws, f"M{r}", f"=MAX(G{r}:K{r})", "0", center=True)
+    cell(ws, f"N{r}", f'=IF(M{r}=0,"None",SUBSTITUTE(INDEX($G${HDR}:$K${HDR},MATCH(M{r},G{r}:K{r},0)),"IRF: ",""))', center=True)
+    cell(ws, f"O{r}", L_, "0", True, center=True); cell(ws, f"P{r}", M_, "0", True, center=True)
+    cell(ws, f"Q{r}", f"=O{r}*P{r}", "0", center=True)
+    cell(ws, f"R{r}", sig, is_input=True, center=True)
+    cell(ws, f"S{r}", f'=IF(R{r}="Yes","Significant",IF(Q{r}>=15,"High",IF(Q{r}>=10,"Elevated",IF(Q{r}>=5,"Moderate","Low"))))', center=True)
+    cell(ws, f"T{r}", f'=IF(AND(F{r}="Yes",R{r}<>"Yes"),"Fraud risk must be a significant risk (ISA 240R)",IF(AND(R{r}<>"Yes",Q{r}>=20),"Score at upper end - consider significant",'
+                      f'IF(AND(M{r}=3,Q{r}<5),"High IRF but low IR - justify",IF(AND(R{r}="Yes",Q{r}<10),"Significant but low L x M - justify","OK"))))')
+    cell(ws, f"U{r}", subo, is_input=True, center=True); cell(ws, f"V{r}", cr, is_input=True, center=True)
+    cell(ws, f"W{r}", f'=IF(S{r}="Significant","High - significant risk",IF(OR(S{r}="High",S{r}="Elevated"),IF(V{r}="Rely","Medium","High"),IF(S{r}="Moderate",IF(V{r}="Rely","Low","Medium"),"Low")))', center=True)
+    cell(ws, f"X{r}", resp, is_input=True); cell(ws, f"Y{r}", wp, center=True)
+    ws.row_dimensions[r].height = 40; r += 1
+q1 = r - 1
+for col in ("F", "R", "U"): dv(ws, f"{col}{q0}:{col}{q1}", "YesNo")
+dname("Risk_ID", f"Risk_315R!$A${q0}:$A${q1}"); dname("Risk_SCOT", f"Risk_315R!$C${q0}:$C${q1}")
+dname("Risk_Fraud", f"Risk_315R!$F${q0}:$F${q1}"); dname("Risk_MaxIRF", f"Risk_315R!$M${q0}:$M${q1}")
+dname("Risk_L", f"Risk_315R!$O${q0}:$O${q1}"); dname("Risk_M", f"Risk_315R!$P${q0}:$P${q1}")
+dname("Risk_Spectrum", f"Risk_315R!$S${q0}:$S${q1}"); dname("Risk_Check", f"Risk_315R!$T${q0}:$T${q1}")
+dname("Risk_RMM", f"Risk_315R!$W${q0}:$W${q1}"); dname("Risk_Level", f"Risk_315R!$E${q0}:$E${q1}")
+for band, colr in SPEC_COL.items():
+    ws.conditional_formatting.add(f"S{q0}:S{q1}", CellIsRule(operator="equal", formula=[f'"{band}"'], fill=fill(colr),
+                                  font=Font(name=F, bold=True, color="FFFFFF" if band in ("High", "Significant") else "000000")))
+ws.conditional_formatting.add(f"G{q0}:K{q1}", CellIsRule(operator="equal", formula=["3"], fill=fill("FFCDD2"), font=Font(name=F, bold=True, color="B71C1C")))
+ws.conditional_formatting.add(f"T{q0}:T{q1}", CellIsRule(operator="notEqual", formula=['"OK"'], fill=fill("FFE0B2")))
+note(ws, r, "Enter IRF ratings 0-3, likelihood & magnitude 1-5, and your judgement on significance. 'Consistency check' flags assessments that need justification (e.g. fraud risks not treated as significant; high IRFs with low inherent risk). "
+            "Control risk 'Rely' only where operating effectiveness is tested (IC4).", "Y")
+r += 2
+
+r = section(ws, r, "RA4", "Inherent risk heat map - likelihood x magnitude (number of risks)", "ISA 315R.31")
+put(ws, f"B{r}", "Likelihood  ↓   /   Magnitude  →", font(9, True)); r += 1
+put(ws, f"B{r}", "", font(9));
+for m in range(1, 6): put(ws, f"{chr(66+m)}{r}", m, font(9, True, "FFFFFF"), DK, al=CEN, bd=BOX)
+r += 1
+for L_ in range(5, 0, -1):
+    put(ws, f"B{r}", f"Likelihood {L_}", font(9, True, "FFFFFF"), DK, al=CEN, bd=BOX)
+    for m in range(1, 6):
+        p = L_ * m
+        band = "High" if p >= 15 else ("Elevated" if p >= 10 else ("Moderate" if p >= 5 else "Low"))
+        if p >= 20: band = "Significant"
+        put(ws, f"{chr(66+m)}{r}", f'=IF(COUNTIFS(Risk_L,{L_},Risk_M,{m})=0,"",COUNTIFS(Risk_L,{L_},Risk_M,{m}))',
+            font(12, True, "FFFFFF" if band in ("High", "Significant") else "000000"), SPEC_COL[band], "0", CEN, BOX)
+    ws.row_dimensions[r].height = 26; r += 1
+note(ws, r, "Cell colours show the spectrum band for each likelihood x magnitude combination; numbers are the count of risks in the register (RA3) at that position.", "L")
+r += 2
+
+r = section(ws, r, "RA5", "Risks at the financial statement level (pervasive) & overall responses", "ISA 315R.28(a), 30 | ISA 330.5")
+r = table_head(ws, r, ["#", "FS-level risk", "Source / evidence", "", "Affects assessment of assertion-level risks?", "Overall response (ISA 330.5, A1-A3)", "", "", "", "Linked"])
+ws.merge_cells(f"C{r-1}:D{r-1}"); ws.merge_cells(f"F{r-1}:I{r-1}")
+for i, (a, b, c_, d_, e_) in enumerate([
+        ("Management override of controls", "Owner-managed; no audit committee", "Yes", "Increased skepticism; unpredictable procedures; senior staff on JE testing", "R02, FR3"),
+        ("Weak entity risk assessment process & monitoring", "IC1 - COSO principles 6-9, 16", "Yes", "Less reliance on entity-level controls; more substantive evidence", "IC1, CD01"),
+        ("ITGC deficiency - user access", "IC3 / C06 deviation", "Yes", "Test IPE substantively; no reliance on automated control C03", "IC3, IC4"),
+        ("Pressure from EBITDA-linked bonus", "FR2 fraud risk factor", "Yes", "Focus on revenue cut-off & estimates bias; partner involvement", "FR2")], 1):
+    cell(ws, f"A{r}", i, center=True); cell(ws, f"B{r}", a, is_input=True); cell(ws, f"C{r}", b, is_input=True); ws.merge_cells(f"C{r}:D{r}")
+    cell(ws, f"E{r}", c_, is_input=True, center=True); cell(ws, f"F{r}", d_, is_input=True); ws.merge_cells(f"F{r}:I{r}")
+    cell(ws, f"J{r}", e_, center=True); ws.row_dimensions[r].height = 30; r += 1
+r += 1
+
+r = section(ws, r, "RA6", "Stand-back, evaluation of evidence & documentation", "ISA 315R.35-38")
+r = checklist(ws, r, [
+    ("Audit evidence from risk assessment procedures provides an appropriate basis for identifying & assessing RMM", "ISA 315R.35", "Yes", "Corroborative and contradictory evidence considered"),
+    ("Stand-back: material classes/balances/disclosures NOT identified as significant re-evaluated (see RA2 'Material, not significant')", "ISA 315R.36", "Yes", "Cost of sales, trade payables, share capital - conclusion appropriate"),
+    ("Substantive procedures designed for each material class/balance/disclosure regardless of assessed RMM", "ISA 330.18", "Yes", "C1 programme"),
+    ("Risk assessment revised where new information is inconsistent with the original assessment", "ISA 315R.37", "Yes", "C03 & C06 reliance withdrawn after IC4"),
+    ("Documentation: discussion, understanding, controls evaluated, RMM identified & assessed with rationale for significant judgements", "ISA 315R.38", "Yes", "This sheet + IC_Assessment"),
+], "RA6")
+
+# ---------------- FRAUD 240R ----------------
+ws = S["Fraud_240R"]
+r = sheet_header(ws, "FRAUD - ISA 240 (REVISED)", "2 & 4",
+                 "Apply a fraud lens to risk assessment, respond to assessed risks of material misstatement due to fraud, address fraud or suspected fraud (incl. allegations) and communicate fraud-related matters throughout the audit.",
+                 "ISA 240 (Revised) - issued Jul-2025, effective for periods beginning on/after 15-Dec-2026 (early adoption encouraged); ISA 315R; ISA 330; ISA 260; ISA 701; ISA 580")
+note(ws, 7, "Paragraph numbers of ISA 240 (Revised) differ from extant ISA 240 - references below cite the section of the revised standard. Verify against the IAASB Handbook edition adopted locally.", "L", 14)
+r = 9
+r = section(ws, r, "FR1", "Professional skepticism & engagement team discussion", "ISA 240R - Professional skepticism; Engagement team discussion")
+r = checklist(ws, r, [
+    ("Professional skepticism maintained throughout - remain alert to information inconsistent with records or indicating fraud", "ISA 240R - Professional skepticism", "Yes", "Briefed at kick-off; reinforced at each review"),
+    ("Records & documents not accepted as genuine without consideration; authenticity investigated where conditions indicate", "ISA 240R; ISA 500", "Yes", "Bank confirmations sent directly; signatures checked"),
+    ("Responses to inquiries of management/TCWG investigated where inconsistent", "ISA 240R", "Yes", ""),
+    ("Engagement team discussion held: how & where FS susceptible to fraud, incl. management override & use of technology to commit/conceal fraud", "ISA 240R - Engagement team discussion", "Yes", "15-Oct-25; minutes on file; IT auditor attended"),
+    ("Engagement partner determined matters to communicate to members not at the discussion", "ISA 240R; ISA 220R", "Yes", "Late joiner briefed 3-Nov-25"),
+], "FR1")
+
+r = section(ws, r, "FR2", "Risk assessment with a fraud lens - fraud risk factors & inquiries", "ISA 240R - Risk assessment procedures & related activities")
+r = table_head(ws, r, ["#", "Fraud risk factor", "Category", "Source", "Related IRF", "Linked RMM", "Present?", "Effect on assessment", "", "", ""])
+ws.merge_cells(f"H{r-1}:K{r-1}")
+frf = [("Management bonus linked to EBITDA target", "Incentive / pressure", "Inquiry; remuneration policy", "Bias / fraud", "R01, R03", "Yes", "Revenue & NRV estimates - bias focus"),
+       ("Bank covenant (net debt / EBITDA) creates pressure on reported results", "Incentive / pressure", "Loan agreement", "Bias / fraud", "R08", "Yes", "Covenant headroom tested (GC3)"),
+       ("Owner-manager dominance; no audit committee", "Opportunity", "Governance review", "Bias / fraud", "R02", "Yes", "FS-level risk (RA5)"),
+       ("ERP user access reviews lapsed (C06)", "Opportunity", "IC3 / IC4", "Complexity", "R02", "Yes", "Unauthorised JE risk - JE criteria expanded"),
+       ("Cash handling at branches with limited segregation", "Opportunity", "Walkthrough", "Bias / fraud", "R10", "Yes", "Surprise cash counts"),
+       ("Undisclosed director loan - attitude toward disclosure", "Attitude / rationalisation", "Ledger scan", "Bias / fraud", "R09", "Yes", "RP procedures extended"),
+       ("Aggressive revenue targets communicated to sales staff", "Incentive / pressure", "Inquiry of sales staff", "Bias / fraud", "R01", "Yes", "Cut-off extended to 10 days")]
+f0 = r
+for i, row in enumerate(frf, 1):
+    cell(ws, f"A{r}", i, center=True)
+    for j, v in enumerate(row[:6]): cell(ws, f"{chr(66+j)}{r}", v, is_input=True, center=j in (1, 3, 4, 5))
+    cell(ws, f"H{r}", row[6], is_input=True); ws.merge_cells(f"H{r}:K{r}"); ws.row_dimensions[r].height = 28; r += 1
+dv(ws, f"G{f0}:G{r-1}", "YesNo")
+dname("FRF_Present", f"Fraud_240R!$G${f0}:$G${r-1}")
+r += 1
+put(ws, f"B{r}", "Inquiries regarding fraud (management, TCWG, others within the entity)", font(9, True, DK)); r += 1
+r = table_head(ws, r, ["#", "Person inquired", "Role", "Date", "Matters covered", "", "", "Response / knowledge of fraud or allegations", "", "", ""])
+ws.merge_cells(f"E{r-1}:G{r-1}"); ws.merge_cells(f"H{r-1}:K{r-1}")
+for i, (p, role, d_, m, resp) in enumerate([
+        ("CEO", "Management", D(2025, 10, 16), "Fraud risk assessment process; known/suspected fraud; whistleblower reports", "No known fraud; informal process"),
+        ("Board chair", "TCWG", D(2025, 10, 20), "Oversight of fraud risk; allegations received", "Aware of branch 2 petty cash allegation (FR5)"),
+        ("Chief accountant", "Financial reporting", D(2025, 10, 22), "Unusual JEs; pressure to adjust results", "None reported"),
+        ("Sales staff (2)", "Others - operations", D(2025, 11, 20), "Pressure to meet targets; side agreements", "Year-end push acknowledged"),
+        ("Warehouse manager", "Others - operations", D(2025, 12, 31), "Inventory losses; write-offs", "Damaged stock not yet written off")], 1):
+    cell(ws, f"A{r}", i, center=True); cell(ws, f"B{r}", p); cell(ws, f"C{r}", role, center=True); cell(ws, f"D{r}", d_, DATE, True, center=True)
+    cell(ws, f"E{r}", m, is_input=True); ws.merge_cells(f"E{r}:G{r}"); cell(ws, f"H{r}", resp, is_input=True); ws.merge_cells(f"H{r}:K{r}")
+    ws.row_dimensions[r].height = 28; r += 1
+r += 1
+r = checklist(ws, r, [
+    ("Understanding of entity's culture, management's commitment to integrity, and TCWG oversight of fraud risk obtained", "ISA 240R; ISA 315R.21", "Yes", "Code of conduct; no whistleblower policy - recommended"),
+    ("Entity's process for identifying, assessing & responding to fraud risks (incl. whistleblower programme) understood", "ISA 240R; ISA 315R.22", "Yes", "Informal - deficiency CD01"),
+    ("Unusual or unexpected relationships from analytical procedures evaluated for fraud indicators", "ISA 240R; ISA 520", "Yes", "Dec-25 revenue spike +38% vs Nov"),
+    ("Fraud risk factors evaluated as part of inherent risk factor 'susceptibility to bias/fraud' (Risk_315R RA3)", "ISA 240R; ISA 315R.31", "Yes", "Linked above"),
+], "FR2")
+
+r = section(ws, r, "FR3", "Identified & assessed risks of material misstatement due to fraud", "ISA 240R - Identifying & assessing RMM due to fraud")
+r = table_head(ws, r, ["", "Item", "Value / decision", "Rationale"])
+ws.merge_cells(f"D{r-1}:L{r-1}")
+g0 = r
+fr3 = [("Risks flagged as fraud risks in register (RA3)", '=COUNTIF(Risk_Fraud,"Yes")', "0", "", False),
+       ("...of which assessed as significant risks", '=COUNTIFS(Risk_Fraud,"Yes",Risk_Spectrum,"Significant")', "0", "All fraud RMMs must be treated as significant risks", False),
+       ("Presumed fraud risk in revenue recognition rebutted?", "No", None, "Not rebutted - incentives (bonus, targets) and cut-off history (PY & CY misstatement M01)", True),
+       ("Management override - always a significant risk (cannot be rebutted)", "Significant", None, "R02", False),
+       ("Fraud risk factors identified (FR2)", '=COUNTIF(FRF_Present,"Yes")', "0", "", False),
+       ("CONCLUSION", f'=IF(C{g0+1}<C{g0},"ERROR - fraud RMM not assessed as significant: revise RA3",IF(C{g0+2}="Yes","Rebuttal documented - re-evaluate at completion","Fraud RMMs appropriately identified & treated as significant"))', None, "", False)]
+for i, (lab, v, nf, rat, isin) in enumerate(fr3):
+    b = cell(ws, f"B{r}", lab); c = cell(ws, f"C{r}", v, nf, isin, center=True)
+    if lab == "CONCLUSION": b.font = font(9, True); c.font = font(9, True, DK); ws.merge_cells(f"C{r}:L{r}")
+    else: cell(ws, f"D{r}", rat, is_input=isin); ws.merge_cells(f"D{r}:L{r}")
+    r += 1
+dv(ws, f"C{g0+2}", "YesNo")
+r += 1
+
+r = section(ws, r, "FR4", "Responses - overall, management override (JE testing, estimates, unusual transactions)", "ISA 240R - Responses to assessed RMM due to fraud | ISA 330")
+r = checklist(ws, r, [
+    ("Overall responses: assignment & supervision, element of unpredictability, evaluation of accounting policies (esp. subjective measurements)", "ISA 240R; ISA 330.5", "Yes", "Unannounced branch 3 cash count; new sample stratification"),
+    ("Retrospective review of management judgements & assumptions in PY estimates for bias", "ISA 240R; ISA 540R", "Yes", "PY NRV under-provided 21,000 (SUAD2)"),
+    ("Business rationale of significant transactions outside normal course of business / otherwise unusual evaluated", "ISA 240R", "Yes", "None identified"),
+    ("Use of automated tools & techniques (CAATs) considered for JE testing & data analytics", "ISA 240R; ISA 500", "Yes", "Full-population JE analytics in data tool"),
+], "FR4")
+put(ws, f"B{r}", "Journal entry testing - risk criteria (population: 48,320 entries reconciled to TB)", font(9, True, DK)); r += 1
+r = table_head(ws, r, ["#", "Risk criterion", "Entries meeting criterion", "Selected for testing", "Tested", "Exceptions", "Result"])
+jec = [("Post-closing entries (after 31-Dec-25)", 18, 18, 18, 0), ("Entries on weekends / public holidays", 64, 22, 22, 0),
+       ("Round-amount entries >= MNT 10m", 41, 15, 15, 0), ("Entries by unusual or senior users (CEO, IT admin)", 9, 9, 9, 1),
+       ("Entries to seldom-used accounts", 27, 11, 11, 0), ("Revenue / receivables entries with unusual offsets (cash, suspense)", 33, 20, 20, 0),
+       ("Descriptions with keywords: 'adjust', 'correction', 'per CEO', blank", 52, 17, 17, 0)]
+j0 = r
+for i, (crit, n_, sel, tst, exc) in enumerate(jec, 1):
+    cell(ws, f"A{r}", i, center=True); cell(ws, f"B{r}", crit)
+    for col, v in zip("CDEF", (n_, sel, tst, exc)): cell(ws, f"{col}{r}", v, "#,##0", True, center=True)
+    cell(ws, f"G{r}", f'=IF(E{r}<D{r},"Incomplete",IF(F{r}=0,"No exceptions","Exception - investigate (FR5)"))', center=True); r += 1
+put(ws, f"B{r}", "TOTAL", font(9, True), PALE, bd=BOX)
+for col in "CDEF": put(ws, f"{col}{r}", f"=SUM({col}{j0}:{col}{r-1})", font(9, True), PALE, "#,##0", CEN, BOX)
+dname("JE_Tested", f"Fraud_240R!$E${r}"); dname("JE_Exc", f"Fraud_240R!$F${r}")
+ws.conditional_formatting.add(f"G{j0}:G{r-1}", FormulaRule(formula=[f'LEFT($G{j0},9)="Exception"'], fill=fill("FFCDD2")))
+r += 1
+note(ws, r, "Exception (criterion 4): IT admin posted a reclassification of 3,500 - supported by approved request; no fraud indication. Documented in D6.", "L", 14)
+r += 2
+
+r = section(ws, r, "FR5", "Fraud or suspected fraud identified (incl. allegations)", "ISA 240R - Fraud or suspected fraud")
+r = table_head(ws, r, ["ID", "Date identified", "Source", "Description (allegations treated as suspected fraud)", "Involves mgmt / key IC roles?",
+                       "Procedures performed to understand", "Effect on RMM & audit", "Misstatement (SUAD)", "Communicated to mgmt", "Communicated to TCWG", "Report to authority?", "Status"])
+frows = [("FR5.1", D(2025, 10, 20), "Allegation (whistleblower email to Board)", "Branch 2 petty cash custodian misappropriating cash", "No",
+          "Surprise count; reconciliation; inquiry of custodian & branch manager", "Isolated; cash RMM unchanged; ISA 450 accumulation", "M06 (1,200 - trivial)", D(2025, 11, 5), D(2025, 11, 7), "No", "Closed"),
+         ("FR5.2", D(2026, 2, 24), "Audit procedure (JE criterion 4)", "IT admin posting journal entries", "Yes",
+          "Inspected approval, change ticket; inquiry of CFO", "No fraud; access rights restricted (C06)", "-", D(2026, 2, 26), D(2026, 3, 20), "No", "Closed"),
+         ("FR5.3", D(2026, 3, 10), "Audit procedure (RP ledger scan)", "Undisclosed director loan - possible concealment", "Yes",
+          "Inquiry of director & Board chair; loan agreement inspected", "Evaluate integrity of mgmt reps; qualitative materiality", "M08 (disclosure)", D(2026, 3, 12), None, "No", "Open")]
+h0 = r
+for row in frows:
+    for j, v in enumerate(row):
+        col = chr(65 + j)
+        cell(ws, f"{col}{r}", v, DATE if j in (1, 8, 9) else None, is_input=j > 0, center=j in (0, 1, 4, 7, 8, 9, 10, 11))
+    ws.row_dimensions[r].height = 40; r += 1
+dv(ws, f"E{h0}:E{r-1}", "YesNo"); dv(ws, f"K{h0}:K{r-1}", "YesNo"); dv(ws, f"L{h0}:L{r-1}", "IssueStatus")
+dname("Fraud_Status", f"Fraud_240R!$L${h0}:$L${r-1}"); dname("Fraud_TCWG", f"Fraud_240R!$J${h0}:$J${r-1}")
+dname("Fraud_Mgmt", f"Fraud_240R!$E${h0}:$E${r-1}")
+ws.conditional_formatting.add(f"J{h0}:J{r-1}", FormulaRule(formula=[f'AND($E{h0}="Yes",$J{h0}="")'], fill=fill("FFCDD2")))
+note(ws, r, "Where fraud or suspected fraud involves management, employees with significant roles in internal control, or results in a material misstatement, communicate with TCWG on a timely basis; consider legal/regulatory reporting duties and whether to withdraw. "
+            "Red cell = management involvement not yet communicated to TCWG.", "L")
+r += 2
+
+r = section(ws, r, "FR6", "Ongoing communication of fraud-related matters with management & TCWG", "ISA 240R - Communications | ISA 260")
+r = table_head(ws, r, ["#", "Date", "With", "Matter communicated", "", "", "", "Form", "Ref"])
+ws.merge_cells(f"D{r-1}:G{r-1}")
+for i, (d_, w, m, frm, ref) in enumerate([
+        (D(2025, 10, 20), "TCWG", "Planned approach to fraud risks incl. presumed revenue & override risks", "Written", "A7"),
+        (D(2025, 11, 7), "TCWG", "Results of branch 2 allegation investigation", "Meeting", "FR5.1"),
+        (D(2026, 2, 26), "Management", "JE exception - IT admin access to post journals", "Oral", "FR5.2"),
+        (D(2026, 3, 12), "Management", "Undisclosed director loan", "Meeting", "FR5.3"),
+        (None, "TCWG", "Fraud-related matters at completion incl. FR5.3 and control deficiencies", "Written", "F1")], 1):
+    cell(ws, f"A{r}", i, center=True); cell(ws, f"B{r}", d_, DATE, True, center=True); cell(ws, f"C{r}", w, center=True)
+    cell(ws, f"D{r}", m, is_input=True); ws.merge_cells(f"D{r}:G{r}"); cell(ws, f"H{r}", frm, center=True); cell(ws, f"I{r}", ref, center=True); r += 1
+r += 1
+
+r = section(ws, r, "FR7", "Auditor's report, written representations & documentation", "ISA 240R; ISA 701; ISA 580; ISA 230")
+r = checklist(ws, r, [
+    ("Auditor's report describes the auditor's responsibilities relating to fraud", "ISA 240R; ISA 700R", None, "Use revised illustrative wording"),
+    ("Listed / publicly traded entity: determine which fraud-related matters are KAMs and describe them", "ISA 240R; ISA 701", "N/A", "Non-listed - voluntary KAM on revenue cut-off (F4)"),
+    ("Written representations: responsibility for fraud prevention/detection; disclosure of fraud, suspected fraud & allegations", "ISA 240R; ISA 580", None, "F2"),
+    ("Evaluated whether misstatements indicate fraud and implications for reliability of representations", "ISA 240R; ISA 450", "Yes", "M01 cut-off - pressure-driven; reps scrutinised"),
+    ("Considered whether to withdraw from the engagement where legally possible", "ISA 240R", "N/A", ""),
+    ("Documentation: discussion, fraud risk factors, RMM due to fraud & responses, JE testing, fraud identified, communications", "ISA 240R; ISA 230", "Yes", "This sheet"),
+], "FR7")
+
+# ---------------- GOING CONCERN 570R ----------------
+ws = S["GoingConcern_570R"]
+r = sheet_header(ws, "GOING CONCERN - ISA 570 (REVISED 2024)", "2 & 6",
+                 "Identify events or conditions through risk assessment, evaluate management's assessment (at least 12 months from approval of the FS), conclude on the going concern basis & material uncertainty, communicate and report.",
+                 "ISA 570 (Revised 2024) - issued Apr-2025, effective for periods beginning on/after 15-Dec-2026 (early adoption encouraged); ISA 315R; ISA 540R; ISA 260; ISA 700R; ISA 580")
+note(ws, 7, "References cite sections of ISA 570 (Revised 2024); paragraph numbering differs from extant ISA 570 (Revised). Verify against the locally adopted handbook.", "L", 14)
+r = 9
+r = section(ws, r, "GC1", "Risk assessment - events or conditions & entity's going concern process", "ISA 570R - Risk assessment procedures | ISA 315R")
+r = table_head(ws, r, ["#", "Event or condition", "Category", "Present?", "Evidence / comment", "", "", "", "", "Source"])
+ws.merge_cells(f"E{r-1}:I{r-1}")
+evc = [("Net liability or net current liability position", "Financial", "No", "Current ratio 2.3x"),
+       ("Borrowings approaching maturity without realistic renewal prospects", "Financial", "No", "Loan matures 2028"),
+       ("Negative operating cash flows (historical or forecast)", "Financial", "No", "Operating cash inflow 1.9bn MNT"),
+       ("Adverse key financial ratios / covenant breach or near-breach", "Financial", "Yes", "Net debt/EBITDA headroom narrow under stress (GC3)"),
+       ("Substantial operating losses or significant deterioration in asset values", "Financial", "No", ""),
+       ("Inability to pay creditors on due dates / arrears", "Financial", "No", "Payable days stable"),
+       ("Loss of key management, major market, key customer or supplier", "Operating", "Yes", "Key supplier (35% of imports) under sanctions review"),
+       ("Labour difficulties or shortages of important supplies", "Operating", "No", ""),
+       ("Emergence of a highly successful competitor", "Operating", "No", ""),
+       ("Non-compliance with capital or other statutory/regulatory requirements", "Other", "No", ""),
+       ("Pending legal proceedings that could result in claims the entity cannot satisfy", "Other", "No", "One customer claim - immaterial (D7)"),
+       ("Changes in law, regulation or government policy (e.g. import duties, FX controls)", "Other", "No", "")]
+e0 = r
+for i, (ev_, cat, pres, com) in enumerate(evc, 1):
+    cell(ws, f"A{r}", i, center=True); cell(ws, f"B{r}", ev_); cell(ws, f"C{r}", cat, center=True)
+    cell(ws, f"D{r}", pres, is_input=True, center=True); cell(ws, f"E{r}", com, is_input=True); ws.merge_cells(f"E{r}:I{r}")
+    cell(ws, f"J{r}", "Inquiry / analytics", center=True); ws.row_dimensions[r].height = 26; r += 1
+dv(ws, f"D{e0}:D{r-1}", "YesNo")
+ws.conditional_formatting.add(f"D{e0}:D{r-1}", CellIsRule(operator="equal", formula=['"Yes"'], fill=fill("FFE0B2")))
+put(ws, f"B{r}", "Events or conditions identified", font(9, True), PALE, bd=BOX)
+put(ws, f"D{r}", f'=COUNTIF(D{e0}:D{r-1},"Yes")', font(10, True, DK), PALE, "0", CEN, BOX)
+dname("GC_EventsN", f"GoingConcern_570R!$D${r}")
+r += 2
+r = checklist(ws, r, [
+    ("Understanding of entity's process for its going concern assessment obtained (method, assumptions, data, controls, use of experts)", "ISA 570R; ISA 315R.19-26", "Yes", "Board-approved 15-month cash forecast"),
+    ("Considered whether events or conditions exist that may cast significant doubt - throughout the audit, not only at planning", "ISA 570R", "Yes", "2 items identified above"),
+    ("Discussed going concern basis and events/conditions with management; obtained management's preliminary assessment", "ISA 570R", "Yes", "CFO meeting 14-Nov-25"),
+    ("Engagement team discussion included susceptibility to going concern issues & management bias", "ISA 570R; ISA 315R.17", "Yes", "15-Oct-25"),
+], "GC1")
+
+r = section(ws, r, "GC2", "Evaluating management's assessment of going concern", "ISA 570R - Evaluating management's assessment | ISA 540R")
+g0 = r
+dates = [("Date of approval of the financial statements", "=Set_RptDate", DATE, False),
+         ("End of period covered by management's assessment", D(2027, 6, 30), DATE, True),
+         ("Months covered from date of approval", f"=(YEAR(C{g0+1})-YEAR(C{g0}))*12+MONTH(C{g0+1})-MONTH(C{g0})", "0", False),
+         ("Assessment period test (>= 12 months from approval)", f'=IF(C{g0+2}>=12,"Meets requirement","SHORTER THAN 12 MONTHS - request management to extend")', None, False)]
+for i, (lab, v, nf, isin) in enumerate(dates):
+    cell(ws, f"B{r}", lab); c = cell(ws, f"C{r}", v, nf, isin, link=(i == 0), center=True)
+    if i == 3: ws.merge_cells(f"C{r}:H{r}"); c.font = font(9, True, DK)
+    r += 1
+dname("GC_Months", f"GoingConcern_570R!$C${g0+2}")
+r += 1
+r = table_head(ws, r, ["#", "Significant assumption", "Management's assumption", "Auditor's evidence", "", "", "Sensitivity tested", "", "Reasonable?"])
+ws.merge_cells(f"D{r-1}:F{r-1}"); ws.merge_cells(f"G{r-1}:H{r-1}")
+for i, (a, m, ev_, sens, ok) in enumerate([
+        ("Revenue growth FY26", "+6%", "Q1-26 actual +5%; order book; market data", "-10% receipts (GC3)", "Yes"),
+        ("Gross margin", "35%", "3-year average 34.6%", "-3 pp", "Yes"),
+        ("Bank facility renewal / availability", "Undrawn 1,000,000 available", "Bank confirmation; facility letter to 2028", "Facility withdrawn", "Yes"),
+        ("Alternative supplier if key supplier sanctioned", "Switch within 3 months, +4% cost", "Draft contract with second supplier", "6-month disruption", "Yes"),
+        ("MNT/USD exchange rate", "3,450", "Central bank forecast range", "+10% depreciation", "Yes")], 1):
+    cell(ws, f"A{r}", i, center=True); cell(ws, f"B{r}", a); cell(ws, f"C{r}", m, is_input=True, center=True)
+    cell(ws, f"D{r}", ev_, is_input=True); ws.merge_cells(f"D{r}:F{r}"); cell(ws, f"G{r}", sens, is_input=True); ws.merge_cells(f"G{r}:H{r}")
+    cell(ws, f"I{r}", ok, is_input=True, center=True); ws.row_dimensions[r].height = 26; r += 1
+r += 1
+r = checklist(ws, r, [
+    ("Method used by management is appropriate and consistently applied", "ISA 570R; ISA 540R", "Yes", ""),
+    ("Significant assumptions reasonable & supportable; sensitivity / stress tests evaluated", "ISA 570R", "Yes", "See GC3"),
+    ("Data used is relevant & reliable (incl. IPE)", "ISA 570R; ISA 500", "Yes", "Forecast agreed to budgets & actuals"),
+    ("Management's plans for future actions feasible; intent & ability evaluated", "ISA 570R", "Yes", "Supplier switch plan evidenced"),
+    ("Financial support by third parties / owners: intent AND ability of the supporter evaluated", "ISA 570R", "N/A", "No support letter relied upon"),
+    ("Indicators of possible management bias evaluated; contradictory evidence considered", "ISA 570R; ISA 540R.32", "Yes", "Optimistic growth vs. sector - within range"),
+    ("Additional procedures performed where events/conditions identified (ISA 570R - when events or conditions identified)", "ISA 570R", "Yes", "Stress test, bank confirmation, post-YE trading"),
+], "GC2")
+
+r = section(ws, r, "GC3", "Cash-flow forecast, headroom & stress test (MNT '000)", "ISA 570R | management's forecast")
+r = table_head(ws, r, ["", "Line", "Q2-26", "Q3-26", "Q4-26", "Q1-27", "Q2-27", "Total"])
+c0 = r
+lines = [("Opening cash", None), ("Operating receipts", [4900000, 4700000, 5300000, 4500000, 4950000]),
+         ("Operating payments", [-4450000, -4300000, -4750000, -4200000, -4500000]), ("Capital expenditure", [-150000, -150000, -150000, -150000, -150000]),
+         ("Debt service (interest + principal)", [-95000, -95000, -595000, -95000, -95000]), ("Closing cash - BASE", None),
+         ("Undrawn facility", [1000000] * 5), ("Liquidity headroom - BASE", None),
+         ("Stress: reduction in operating receipts", None), ("Closing cash - STRESS (cumulative)", None), ("Liquidity headroom - STRESS", None)]
+rows_ = {}
+for i, (lab, vals) in enumerate(lines):
+    rr = r + i; rows_[lab] = rr
+    b = cell(ws, f"B{rr}", lab)
+    for k in range(5):
+        col = chr(67 + k)
+        if lab == "Opening cash": v = '=INDEX(TB_Final,MATCH("Cash",TB_Acct,0))' if k == 0 else f"={chr(66+k)}{c0+5}"
+        elif lab == "Closing cash - BASE": v = f"=SUM({col}{c0}:{col}{c0+4})"
+        elif lab == "Liquidity headroom - BASE": v = f"={col}{c0+5}+{col}{c0+6}"
+        elif lab == "Stress: reduction in operating receipts": v = f"=-{col}{c0+1}*$C${c0+12}"
+        elif lab == "Closing cash - STRESS (cumulative)": v = f"={col}{c0+5}+SUM($C{c0+8}:{col}{c0+8})"
+        elif lab == "Liquidity headroom - STRESS": v = f"={col}{c0+9}+{col}{c0+6}"
+        else: v = vals[k]
+        cc = cell(ws, f"{col}{rr}", v, NUM, is_input=vals is not None and lab != "Undrawn facility" or lab == "Undrawn facility", link=(lab == "Opening cash" and k == 0))
+        if "headroom" in lab.lower() or "Closing" in lab: cc.font = font(9, True)
+    if lab in ("Operating receipts", "Operating payments", "Capital expenditure", "Debt service (interest + principal)", "Stress: reduction in operating receipts"):
+        cell(ws, f"H{rr}", f"=SUM(C{rr}:G{rr})", NUM)
+    if "headroom" in lab.lower() or "Closing" in lab: b.font = font(9, True); b.fill = fill(PALE)
+r += len(lines) + 1
+st0 = r
+stress = [("Stress: operating receipts reduction %", 0.10, PCT, True),
+          ("Minimum liquidity headroom - base", f"=MIN(C{c0+7}:G{c0+7})", NUM, False),
+          ("Minimum liquidity headroom - stress", f"=MIN(C{c0+10}:G{c0+10})", NUM, False),
+          ("EBITDA (PBT + finance costs + depreciation)", f'=TB_PBT_Final+INDEX(TB_Final,MATCH("Finance costs",TB_Acct,0))+C{r+4}', NUM, False),
+          ("Depreciation & amortisation (input)", 850000, NUM, True),
+          ("Net debt (borrowings - cash)", '=-INDEX(TB_Final,MATCH("Borrowings",TB_Acct,0))-INDEX(TB_Final,MATCH("Cash",TB_Acct,0))', NUM, False),
+          ("Net debt / EBITDA (x)", f"=IFERROR(C{r+5}/C{r+3},0)", "0.00", False),
+          ("Covenant maximum (x)", 1.5, "0.00", True),
+          ("Covenant headroom", f'=IF(C{r+6}<=C{r+7},"Met - headroom "&TEXT(1-C{r+6}/C{r+7},"0%"),"BREACH - event/condition (ISA 570R)")', None, False)]
+for i, (lab, v, nf, isin) in enumerate(stress):
+    cell(ws, f"B{r}", lab); c = cell(ws, f"C{r}", v, nf, isin, center=True)
+    if i == 8: ws.merge_cells(f"C{r}:H{r}"); c.font = font(9, True, DK)
+    r += 1
+assert st0 == c0 + 12
+dname("GC_MinStress", f"GoingConcern_570R!$C${st0+2}")
+ws.conditional_formatting.add(f"C{c0+10}:G{c0+10}", CellIsRule(operator="lessThan", formula=["0"], fill=fill("FFCDD2")))
+r += 1
+
+r = section(ws, r, "GC4", "Conclusions - going concern basis & material uncertainty", "ISA 570R - Auditor conclusions")
+k0 = r
+concl = [("Events or conditions identified (GC1)?", '=IF(GC_EventsN>0,"Yes","No")', False),
+         ("Use of going concern basis of accounting appropriate?", "Yes", True),
+         ("Material uncertainty (MU) related to going concern exists?", "No", True),
+         ("Disclosures adequate (incl. MU or 'close call' disclosures)?", "Yes", True),
+         ("Close call (events/conditions identified but no MU)?", f'=IF(AND(C{k0}="Yes",C{k0+2}="No"),"Yes","No")', False),
+         ("Management unwilling to make / extend assessment?", "No", True),
+         ("REPORTING OUTCOME", f'=IF(C{k0+1}="No","Adverse opinion - going concern basis inappropriate",IF(C{k0+5}="Yes","Consider qualified / disclaimer - scope limitation",'
+                               f'IF(C{k0+2}="Yes",IF(C{k0+3}="Yes","Unmodified + Material Uncertainty Related to Going Concern section","Qualified / adverse - inadequate MU disclosure"),'
+                               f'IF(C{k0+3}="Yes","Unmodified - Going Concern section (no MU identified)","Qualified - inadequate close-call disclosure"))))', False)]
+for i, (lab, v, isin) in enumerate(concl):
+    b = cell(ws, f"B{r}", lab); c = cell(ws, f"C{r}", v, None, isin, center=(i < 6))
+    if i == 6: b.font = font(9, True); c.font = font(10, True, DK); b.fill = fill(PALE); c.fill = fill(PALE); ws.merge_cells(f"C{r}:J{r}")
+    r += 1
+for k in (1, 2, 3, 5): dv(ws, f"C{k0+k}", "YesNo")
+dname("GC_MU", f"GoingConcern_570R!$C${k0+2}"); dname("GC_Outcome", f"GoingConcern_570R!$C${k0+6}")
+dname("GC_Close", f"GoingConcern_570R!$C${k0+4}"); dname("GC_Basis", f"GoingConcern_570R!$C${k0+1}")
+r += 1
+
+r = section(ws, r, "GC5", "Draft 'Going Concern' section of the auditor's report (auto-generated)", "ISA 570R - Implications for the auditor's report | ISA 700R")
+txt = (f'=IF(GC_MU="Yes","Material Uncertainty Related to Going Concern - We draw attention to Note [X] in the financial statements, which indicates that [events/conditions]. '
+       f'As stated in Note [X], these events or conditions indicate that a material uncertainty exists that may cast significant doubt on the Entity\'s ability to continue as a going concern. '
+       f'Our opinion is not modified in respect of this matter.",'
+       f'"Going Concern - We have concluded that management\'s use of the going concern basis of accounting in the preparation of the financial statements is appropriate. '
+       f'Based on the audit evidence obtained, we have not identified a material uncertainty related to events or conditions that, individually or collectively, may cast significant doubt on the Entity\'s ability to continue as a going concern '
+       f'for a period of at least twelve months from the date on which the financial statements are authorised for issue."'
+       f')&IF(AND(GC_Close="Yes",ISNUMBER(SEARCH("listed",Set_EntityType))),"  [Listed/PTE: describe how we evaluated management\'s assessment, incl. key events or conditions identified.]","")')
+c = put(ws, f"B{r}", txt, font(9, i=True), "F1F8E9", al=WRAP, bd=BOX); ws.merge_cells(f"B{r}:L{r+3}")
+for rr in range(r, r + 4): ws.row_dimensions[rr].height = 22
+r += 5
+note(ws, r, "Under ISA 570 (Revised 2024) every auditor's report includes a going concern section. Illustrative wording only - align with the revised ISA 700/570 illustrative reports and local law.", "L", 14)
+r += 2
+
+r = section(ws, r, "GC6", "Communication with TCWG, written representations & documentation", "ISA 570R; ISA 260; ISA 580; ISA 230")
+r = checklist(ws, r, [
+    ("Communicated to TCWG: whether events/conditions identified that may cast significant doubt (incl. close calls)", "ISA 570R; ISA 260", None, "Completion meeting"),
+    ("Communicated: whether MU exists, appropriateness of GC basis, adequacy of disclosures, and implications for the report", "ISA 570R", None, ""),
+    ("Communicated any significant delay in approval of the FS and reasons", "ISA 570R", "N/A", ""),
+    ("Written representations on plans for future action & feasibility, and on going concern assessment", "ISA 570R; ISA 580", None, "F2"),
+    ("Documentation: events/conditions, evaluation of management's assessment, judgements on MU & disclosures, reporting decision", "ISA 570R; ISA 230", "Yes", "This sheet"),
+], "GC6")
+
 # ---------------- WP INDEX ----------------
 wpi = S["WP_Index"]
 widths(wpi, {"A": 7, "B": 13, "C": 46, "D": 30, "E": 14, "F": 11, "G": 14, "H": 11, "I": 13, "J": 9, "K": 9, "L": 9, "M": 12})
@@ -1511,11 +1965,30 @@ wps = [
  ("B1", "Planning", "Understanding the entity & environment", "ISA 315R.19", "Reviewed", 12, 14),
  ("B2", "Planning", "Understanding system of internal control", "ISA 315R.21-26", "Reviewed", 18, 21),
  ("B3", "Planning", "Materiality", "ISA 320; ISA 450", "Closed", 3, 3),
- ("B4", "Planning", "Risk assessment register", "ISA 315R.28-37", "Reviewed", 10, 11),
- ("B5", "Planning", "Fraud risk assessment", "ISA 240", "Reviewed", 6, 6),
+ ("B4", "Planning", "Risk assessment summary", "ISA 315R.28-38", "Reviewed", 2, 2),
+ ("RA1", "Planning", "IRF & spectrum methodology", "ISA 315R.12, 31; App. 2", "Closed", 1, 1),
+ ("RA2", "Planning", "Significant classes, balances & disclosures", "ISA 315R.29; ISA 330.18", "Reviewed", 3, 3),
+ ("RA3", "Planning", "Risk register - IRFs, spectrum, combined RMM", "ISA 315R.28, 31-34", "Reviewed", 10, 12),
+ ("RA4", "Planning", "Inherent risk heat map", "ISA 315R.31", "Reviewed", 1, 1),
+ ("RA5", "Planning", "Financial-statement-level risks", "ISA 315R.30; ISA 330.5", "Reviewed", 2, 2),
+ ("RA6", "Planning", "Stand-back & documentation", "ISA 315R.35-38", "Prepared", 2, 2),
+ ("B5", "Planning", "Fraud summary", "ISA 240 (Revised)", "Reviewed", 1, 1),
+ ("FR1", "Planning", "Skepticism & engagement team discussion", "ISA 240R", "Reviewed", 2, 2),
+ ("FR2", "Planning", "Fraud lens - risk factors & inquiries", "ISA 240R; ISA 315R", "Reviewed", 5, 6),
+ ("FR3", "Planning", "Risks of material misstatement due to fraud", "ISA 240R", "Reviewed", 2, 2),
+ ("FR4", "Execution", "Responses - JE testing, estimates, unusual txns", "ISA 240R; ISA 330", "Prepared", 14, 15),
+ ("FR5", "Execution", "Fraud or suspected fraud (incl. allegations)", "ISA 240R", "In progress", 4, 5),
+ ("FR6", "Oversight", "Ongoing fraud communications", "ISA 240R; ISA 260", "In progress", 1, 1),
+ ("FR7", "Oversight", "Report, representations & documentation", "ISA 240R; ISA 701; ISA 580", "Not started", 2, 0),
  ("B6", "Planning", "Laws & regulations", "ISA 250", "Prepared", 4, 3),
  ("B7", "Planning", "Related parties", "ISA 550", "In progress", 5, 3),
- ("B8", "Planning", "Going concern - preliminary", "ISA 570.10", "Reviewed", 3, 3),
+ ("B8", "Planning", "Going concern summary", "ISA 570 (Revised 2024)", "Reviewed", 1, 1),
+ ("GC1", "Planning", "Events or conditions & entity's process", "ISA 570R; ISA 315R", "Reviewed", 3, 3),
+ ("GC2", "Planning", "Evaluating management's assessment (12 months)", "ISA 570R; ISA 540R", "Prepared", 6, 7),
+ ("GC3", "Planning", "Cash-flow forecast & stress test", "ISA 570R", "Prepared", 4, 5),
+ ("GC4", "Oversight", "Conclusions - basis & material uncertainty", "ISA 570R", "In progress", 2, 1),
+ ("GC5", "Oversight", "Draft going concern report section", "ISA 570R; ISA 700R", "In progress", 1, 1),
+ ("GC6", "Oversight", "TCWG, representations & documentation", "ISA 570R; ISA 260; ISA 580", "Not started", 1, 0),
  ("B9", "Planning", "Opening balances", "ISA 510", "Closed", 2, 1),
  ("B10", "Planning", "Resource plan & timeline", "ISA 300.9; ISA 220R.25", "Reviewed", 3, 3),
  ("IC1", "Planning", "Entity-level controls - COSO 17 principles", "ISA 315R.21-25", "Reviewed", 6, 7),
@@ -1539,7 +2012,7 @@ wps = [
  ("D3", "Execution", "Substantive tests of details", "ISA 330.18; ISA 500", "Prepared", 90, 98),
  ("D4", "Execution", "External confirmations", "ISA 505", "In progress", 14, 12),
  ("D5", "Execution", "Inventory count attendance", "ISA 501.4-8", "Reviewed", 16, 18),
- ("D6", "Execution", "Journal entry testing", "ISA 240.33", "Prepared", 12, 14),
+ ("D6", "Execution", "Journal entry testing", "ISA 240 (Revised)", "Prepared", 12, 14),
  ("D7", "Execution", "Litigation & claims", "ISA 501.9-12", "In progress", 3, 1),
  ("D8", "Execution", "Subsequent events", "ISA 560", "In progress", 4, 2),
  ("D9", "Execution", "Comparative information", "ISA 710", "Reviewed", 2, 2),
@@ -1556,7 +2029,7 @@ wps = [
  ("SUAD4", "Findings", "SUAD - by FS line item", "ISA 450.A16", "Prepared", 1, 1),
  ("F1", "Oversight", "Communications with TCWG", "ISA 260; ISA 265", "In progress", 6, 3),
  ("F2", "Oversight", "Written representations", "ISA 580", "Not started", 2, 0),
- ("F3", "Oversight", "Going concern - final conclusion", "ISA 570.16-24", "Prepared", 3, 2),
+ ("F3", "Oversight", "Going concern - final conclusion", "ISA 570 (Revised 2024)", "Prepared", 1, 1),
  ("F4", "Oversight", "Key audit matters", "ISA 701", "In progress", 4, 2),
  ("F5", "Oversight", "Engagement quality review", "ISQM 2; ISA 220R.36", "Not started", 10, 0),
  ("F6", "Oversight", "Completion checklist & partner sign-off", "ISA 220R.37-40", "Not started", 6, 0),
@@ -1627,8 +2100,8 @@ for i, s in enumerate(lists["Severity"]):
     put(dd, f"B{rr}", f'=COUNTIF(Iss_Sev,A{rr})', bd=BOX, al=CEN)
     put(dd, f"C{rr}", f'=COUNTIFS(Iss_Sev,A{rr},Iss_Status,"<>Closed")', bd=BOX, al=CEN)
 
-put(dd, "A19", "Risk spectrum (ISA 315R)", font(9, True, "FFFFFF"), DK); put(dd, "B19", "Count", font(9, True, "FFFFFF"), DK)
-for i, s in enumerate(["Low", "Moderate", "Higher", "Significant"]):
+put(dd, "A19", "Spectrum of inherent risk (ISA 315R)", font(9, True, "FFFFFF"), DK); put(dd, "B19", "Count", font(9, True, "FFFFFF"), DK)
+for i, s in enumerate(["Low", "Moderate", "Elevated", "High", "Significant"]):
     rr = 20 + i; put(dd, f"A{rr}", s, bd=BOX); put(dd, f"B{rr}", f'=COUNTIF(Risk_Spectrum,A{rr})', bd=BOX, al=CEN)
 
 put(dd, "A26", "Misstatements vs materiality", font(9, True, "FFFFFF"), DK); put(dd, "B26", "MNT '000", font(9, True, "FFFFFF"), DK)
@@ -1667,6 +2140,12 @@ kpis = [("TotalWP", "Total working papers", "=G10", "0"),
         ("QAGreen", "Quality indicators green", '=COUNTIF(QA_RAG,"Green")&" / "&ROWS(QA_RAG)', "@"),
         ("EQR", "EQR status", '=INDEX(WP_Status,MATCH("F5",WP_Index!$A$6:$A$200,0))', "@"),
         ("DIpct", "D&I effective %", "=IFERROR(IC_DIeff/IC_RCMn,0)", "0%"),
+        ("HighIRF", "Risks with an IRF rated 3", "=COUNTIF(Risk_MaxIRF,3)", "0"),
+        ("RiskFlags", "Risk assessments needing justification", '=COUNTIF(Risk_Check,"<>OK")', "0"),
+        ("SigSCOT", "Significant SCOTABDs", '=COUNTIF(SCOT_Class,"Significant*")', "0"),
+        ("MatNotSig", "Material - not significant", '=COUNTIF(SCOT_Class,"Material*")', "0"),
+        ("FraudN", "Fraud matters logged", "=COUNTA(Fraud_Status)", "0"),
+        ("FraudOpen", "Fraud matters open", '=COUNTIF(Fraud_Status,"<>Closed")', "0"),
         ("ITGC", "ITGC status", '=IF(LEFT(IC_ITGC,14)="ITGCs DEFICIEN","Deficient","Effective")', "@")]
 for i, (nm, lab, f_, nf) in enumerate(kpis):
     rr = kp + 1 + i
@@ -1686,12 +2165,12 @@ stds = [("ISQM 1", "Quality Management for Firms that Perform Audits or Reviews"
         ("ISA 210", "Agreeing the Terms of Audit Engagements", "Strategy", "A2"),
         ("ISA 220 (Revised)", "Quality Management for an Audit of Financial Statements", "Strategy / Oversight", "A1, A3, B10, F5, F6"),
         ("ISA 230", "Audit Documentation", "All", "WP_Index, D1, E3, F9"),
-        ("ISA 240", "Auditor's Responsibilities Relating to Fraud", "Planning / Execution", "B5, D6"),
+        ("ISA 240 (Revised)", "Auditor's Responsibilities Relating to Fraud in an Audit of FS (issued Jul-2025; effective periods beginning on/after 15-Dec-2026)", "Planning / Execution / Oversight", "B5, FR1-FR7, D6"),
         ("ISA 250 (Revised)", "Consideration of Laws and Regulations", "Planning", "B6"),
         ("ISA 260 (Revised)", "Communication with Those Charged with Governance", "Strategy / Oversight", "A7, F1"),
         ("ISA 265", "Communicating Deficiencies in Internal Control", "Findings", "E2, E4, IC6"),
         ("ISA 300", "Planning an Audit of Financial Statements", "Strategy / Planning", "A6, B10"),
-        ("ISA 315 (Revised 2019)", "Identifying and Assessing the Risks of Material Misstatement", "Planning", "B1, B2, B4, IC1-IC3"),
+        ("ISA 315 (Revised 2019)", "Identifying and Assessing the Risks of Material Misstatement", "Planning", "B1, B2, B4, RA1-RA6, IC1-IC3"),
         ("ISA 320", "Materiality in Planning and Performing an Audit", "Planning", "B3"),
         ("ISA 330", "Auditor's Responses to Assessed Risks", "Methodology / Execution", "C1, D2, D3, IC4-IC6"),
         ("ISA 402", "Audit Considerations Relating to Service Organizations", "Methodology", "C8"),
@@ -1705,7 +2184,7 @@ stds = [("ISQM 1", "Quality Management for Firms that Perform Audits or Reviews"
         ("ISA 540 (Revised)", "Auditing Accounting Estimates and Related Disclosures", "Methodology", "C4"),
         ("ISA 550", "Related Parties", "Planning", "B7"),
         ("ISA 560", "Subsequent Events", "Execution", "D8"),
-        ("ISA 570 (Revised)", "Going Concern", "Planning / Oversight", "B8, F3"),
+        ("ISA 570 (Revised 2024)", "Going Concern (issued Apr-2025; effective periods beginning on/after 15-Dec-2026)", "Planning / Oversight", "B8, F3, GC1-GC6"),
         ("ISA 580", "Written Representations", "Oversight", "F2"),
         ("ISA 600 (Revised)", "Audits of Group Financial Statements", "Methodology", "C7"),
         ("ISA 610 (Revised 2013)", "Using the Work of Internal Auditors", "Methodology", "C5"),
@@ -1736,8 +2215,8 @@ for rr in range(1, 63):
 boxes = {
     "Strategy": ("G5", ["Audit objective definition", "Scope alignment", "Stakeholder expectations", "Audit direction setting"],
                  ["Acceptance & continuance (A1)", "Engagement letter (A2)", "Independence (A3-A5)", "Overall strategy (A6)"], "L1_Strategy"),
-    "Planning": ("B19", ["Understanding entity & IC", "Materiality setting", "Risk assessment", "Resource & timeline"],
-                 ["Materiality (B3) & risk register (B4)", "COSO entity-level controls (IC1)", "RCM design & implementation (IC2)", "ITGC assessment (IC3)"], "L2_Planning"),
+    "Planning": ("B19", ["Understanding entity & IC", "Materiality setting", "Inherent risk factors & spectrum", "Fraud & going concern lens"],
+                 ["IRF risk register & spectrum (RA1-RA6)", "Fraud lens - ISA 240R (FR1-FR3)", "Going concern - ISA 570R (GC1-GC3)", "Internal controls (IC1-IC3)"], "L2_Planning"),
     "Execution": ("L19", ["Fieldwork execution", "Control testing", "Data validation", "Process walkthrough"],
                   ["Lead schedule (D1)", "Tests of controls - attribute (IC4-IC5)", "Confirmations & MUS selection (D4, S4)", "JE testing (D6)"], "L4_Execution"),
     "Methodology": ("B33", ["Standard procedures", "Sampling techniques", "Evaluation methods", "Quality standards"],
@@ -1802,10 +2281,10 @@ for cc in range(2, 26): db.cell(4, cc).fill = fill(DK)
 db.row_dimensions[4].height = 5
 
 # Nav panel
-for rr in range(6, 55):
+for rr in range(6, 60):
     for cc in (2, 3): db.cell(rr, cc).fill = fill(DK)
 navs = [("Overview", "LayersMap"), ("Setup", "Setup"), ("WP Index", "WP_Index"), ("1 Strategy", "L1_Strategy"),
-        ("2 Planning", "L2_Planning"), ("3 Methodology", "L3_Methodology"), ("   Sampling", "Sampling"), ("4 Execution", "L4_Execution"),
+        ("2 Planning", "L2_Planning"), ("   Risk 315R", "Risk_315R"), ("   Fraud 240R", "Fraud_240R"), ("   GC 570R", "GoingConcern_570R"), ("3 Methodology", "L3_Methodology"), ("   Sampling", "Sampling"), ("4 Execution", "L4_Execution"),
         ("   IC Testing", "IC_Assessment"), ("5 Findings", "L5_Findings"), ("   SUAD", "SUAD"), ("6 Oversight", "L6_Oversight"), ("Standards", "Standards")]
 for k, (lab, sh) in enumerate(navs):
     rr = 7 + k * 3
@@ -1875,9 +2354,9 @@ for idx, col in enumerate(["C62828", "FFB300", "66BB6A"]):
     pt = DataPoint(idx=idx); pt.graphicalProperties.solidFill = col; c2.series[0].dPt.append(pt)
 db.add_chart(c2, "N16")
 # 3 Risk spectrum
-c3 = bar_chart("Risk Spectrum", Reference(dd, min_col=1, min_row=20, max_row=23),
-               Reference(dd, min_col=2, min_row=19, max_row=23), colors=[LT], w=8, h=7, legend=False)
-pts = ["81C784", "FFB300", "EF6C00", "C62828"]
+c3 = bar_chart("Spectrum of Inherent Risk", Reference(dd, min_col=1, min_row=20, max_row=24),
+               Reference(dd, min_col=2, min_row=19, max_row=24), colors=[LT], w=8, h=7, legend=False)
+pts = ["81C784", "FFF176", "FFB300", "EF6C00", "C62828"]
 for idx, col in enumerate(pts):
     pt = DataPoint(idx=idx); pt.graphicalProperties.solidFill = col; c3.series[0].dPt.append(pt)
 db.add_chart(c3, "T16")
@@ -1916,11 +2395,20 @@ B2 = [("D&I Effective", "=DD_DIpct", "0%", '=IC_DIeff&" of "&IC_RCMn&" controls 
 for k, t in enumerate(B2):
     tile(51, 5 + k * 3, 3 if k < 5 else 6, *t, accent="1565C0")
 db["T52"].font = font(12, True, DK)
-put(db, "E56", "=\"Misstatement evaluation: \"&MS_Eval", font(9, True, "B71C1C"), BG); db.merge_cells("E56:Y56")
-put(db, "E57", "All figures update live from the layer working papers. Illustrative data for teaching - replace in Setup & layer sheets.", font(8, i=True, c="757575"), BG)
-db.merge_cells("E57:Y57")
+B3 = [("Risks with IRF = 3", "=DD_HighIRF", "0", '="of "&DD_TotalRisks&" | "&DD_RiskFlags&" to justify"'),
+      ("Significant SCOTABDs", "=DD_SigSCOT", "0", '=DD_MatNotSig&" material, not significant"'),
+      ("Fraud Matters (240R)", "=DD_FraudN", "0", '=DD_FraudOpen&" open | "&COUNT(Fraud_TCWG)&" to TCWG"'),
+      ("JE Tested (240R)", "=JE_Tested", "#,##0", '=JE_Exc&" exception(s) (FR4)"'),
+      ("GC Period (months)", "=GC_Months", "0", '="from FS approval (570R)"'),
+      ("Going Concern Conclusion (570R)", "=GC_Outcome", "@", '="Close call: "&GC_Close&" | events/conditions: "&GC_EventsN')]
+for k, t in enumerate(B3):
+    tile(56, 5 + k * 3, 3 if k < 5 else 6, *t, accent="6A1B9A")
+db["T57"].font = font(9, True, DK)
+put(db, "E61", "=\"Misstatement evaluation: \"&MS_Eval", font(9, True, "B71C1C"), BG); db.merge_cells("E61:Y61")
+put(db, "E62", "All figures update live from the layer working papers. Illustrative data for teaching - replace in Setup & layer sheets.", font(8, i=True, c="757575"), BG)
+db.merge_cells("E62:Y62")
 db.freeze_panes = "A5"
-db.print_area = "A1:Y57"
+db.print_area = "A1:Y62"
 
 # ---------------- defined names ----------------
 for n, ref in names.items():
