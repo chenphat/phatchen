@@ -31,15 +31,28 @@ wb = Workbook()
 names = {}
 def dname(n, ref): names[n] = ref
 
-order = ["Dashboard", "LayersMap", "Setup", "WP_Index", "L1_Strategy", "Acceptance_QM", "Team_Resources", "PBC_List", "L2_Planning",
-         "Risk_315R", "Assertions", "Fraud_240R", "GoingConcern_570R", "L3_Methodology", "Sampling", "L4_Execution", "IC_Assessment", "L5_Findings", "Deficiencies_265", "SUAD", "L6_Oversight", "AI_Agents", "DashData", "Standards", "Lists"]
+order = ["Dashboard", "LayersMap", "Audit_Flow", "Setup", "WP_Index",
+         "Acceptance_QM", "L1_Strategy", "Team_Resources",
+         "L2_Planning", "PBC_List", "Risk_315R", "Assertions", "Fraud_240R", "GoingConcern_570R",
+         "L3_Methodology", "Sampling",
+         "IC_Assessment", "L4_Execution",
+         "L5_Findings", "SUAD", "Deficiencies_265",
+         "L6_Oversight", "AI_Agents",
+         "DashData", "Standards", "Lists"]
+LAYERS = [("Strategy", "1B5E20", "Pre-engagement & strategy"), ("Planning", "1565C0", "Planning & risk assessment"),
+          ("Methodology", "6A1B9A", "Response design"), ("Execution", "E65100", "Fieldwork (interim & final)"),
+          ("Findings", "C62828", "Evaluation & remediation"), ("Oversight", "00838F", "Completion & reporting")]
+SHEET_LAYER = {"Acceptance_QM": 1, "L1_Strategy": 1, "Team_Resources": 1, "L2_Planning": 2, "PBC_List": 2, "Risk_315R": 2, "Assertions": 2,
+               "Fraud_240R": 2, "GoingConcern_570R": 2, "L3_Methodology": 3, "Sampling": 3, "IC_Assessment": 4, "L4_Execution": 4,
+               "L5_Findings": 5, "SUAD": 5, "Deficiencies_265": 5, "L6_Oversight": 6, "AI_Agents": 6}
+FLOW = [n for n in order if n in SHEET_LAYER]
 ws0 = wb.active; ws0.title = order[0]
 S = {order[0]: ws0}
 for n in order[1:]: S[n] = wb.create_sheet(n)
 for ws in S.values():
     ws.sheet_view.showGridLines = False
 
-tabcol = {"Dashboard": DK, "LayersMap": DK, "Setup": "F9A825", "WP_Index": "F9A825", "DashData": "9E9E9E",
+tabcol = {"Dashboard": DK, "LayersMap": DK, "Audit_Flow": DK, "Setup": "F9A825", "WP_Index": "F9A825", "DashData": "9E9E9E",
           "Standards": "9E9E9E", "Lists": "9E9E9E"}
 for n, ws in S.items(): ws.sheet_properties.tabColor = tabcol.get(n, LT)
 
@@ -144,8 +157,17 @@ anchors = {}
 
 def sheet_header(ws, title, layer_no, objective, stds):
     widths(ws, COLW)
-    put(ws, "A1", f"LAYER {layer_no}  |  {title}", font(15, True, "FFFFFF"), DK)
-    ws.merge_cells("A1:L1"); ws.row_dimensions[1].height = 28
+    ln = SHEET_LAYER[ws.title]; lname, lcol, stage = LAYERS[ln - 1]
+    k = FLOW.index(ws.title)
+    ws.sheet_properties.tabColor = lcol
+    put(ws, "A1", f"LAYER {ln} · {lname.upper()}  |  {title}", font(14, True, "FFFFFF"), lcol, al=Alignment(vertical="center"))
+    ws.merge_cells("A1:H1"); ws.row_dimensions[1].height = 30
+    navl = [("I1", "◄ Previous", FLOW[k - 1] if k > 0 else "Audit_Flow"), ("J1", "Next ►", FLOW[k + 1] if k + 1 < len(FLOW) else "Audit_Flow"),
+            ("K1", "WP Index", "WP_Index"), ("L1", "Audit Flow", "Audit_Flow")]
+    for ref_, lab_, tgt in navl:
+        c = put(ws, ref_, f'=HYPERLINK("#{tgt}!A1","{lab_}")', Font(name=F, size=9, bold=True, color="FFFFFF", underline="single"), lcol, al=CEN)
+    put(ws, "A7", f"Audit flow step {k + 1} of {len(FLOW)}  ·  Stage {ln}: {stage}  ·  previous: {FLOW[k-1] if k > 0 else '-'}  ·  next: {FLOW[k+1] if k + 1 < len(FLOW) else '-'}",
+        font(8, True, lcol))
     rows = [("Client", "=Set_Client"), ("Period end", "=Set_FYE"), ("Framework", "=Set_Framework"),
             ("Objective", objective), ("Standards", stds)]
     for i, (k, v) in enumerate(rows):
@@ -169,6 +191,7 @@ def sheet_header(ws, title, layer_no, objective, stds):
     return 8
 
 def section(ws, r, ref, title, std):
+    MD = LAYERS[SHEET_LAYER[ws.title] - 1][1] if ws.title in SHEET_LAYER else globals()["MD"]
     put(ws, f"A{r}", ref, font(11, True, "FFFFFF"), MD)
     put(ws, f"B{r}", title, font(11, True, "FFFFFF"), MD)
     ws.merge_cells(f"B{r}:H{r}")
@@ -247,7 +270,7 @@ team = [("B. Bat-Erdene", "Engagement partner", "No", "No", "No", "No", "No", 4,
         ("S. Oyunaa", "Manager", "No", "No", "No", "No", "No", 3, D(2025, 9, 15)),
         ("T. Enkhjin", "Senior", "No", "No", "No", "Yes", "No", 2, D(2025, 9, 15)),
         ("M. Saruul", "Staff", "No", "No", "No", "No", "No", 1, D(2025, 9, 16)),
-        ("N. Temuulen", "Staff", "No", "No", "No", "No", "No", 1, None),
+        ("N. Temuulen", "Staff", "No", "No", "No", "No", "No", 1, D(2026, 1, 5)),
         ("IT auditor (firm)", "Specialist", "No", "No", "No", "No", "No", 1, D(2025, 10, 2))]
 t0 = r
 for i, row in enumerate(team, 1):
@@ -352,7 +375,7 @@ r = checklist(ws, r, [
     ("Entity's risk assessment process evaluated", "ISA 315R.22-23", "Yes", "Informal process - deficiency noted (E2)"),
     ("Process to monitor the system of internal control evaluated", "ISA 315R.24", "Yes", ""),
     ("Information system & communication understood (incl. flows of transactions)", "ISA 315R.25", "Yes", "Walkthroughs: sales, purchases, payroll, inventory"),
-    ("Control activities: controls addressing RMM identified; design & implementation evaluated", "ISA 315R.26", "Yes", "See D2"),
+    ("Control activities: controls addressing RMM identified; design & implementation evaluated", "ISA 315R.26", "Yes", "RCM - IC_Assessment IC2"),
     ("IT environment & general IT controls (access, change, operations) evaluated", "ISA 315R.26(b)-(c)", "Yes", "IT auditor involved; user access deficiency"),
 ], "B2")
 
@@ -723,7 +746,7 @@ issues = [("Revenue cut-off error (M01)", "Execution", "Misstatement", "High", "
           ("ERP access reviews missed (CD02)", "Execution", "Control deficiency", "High", "IT manager vacancy", "Quarterly access review with sign-off", "IT Manager", D(2025, 12, 5), D(2026, 3, 31), "In progress"),
           ("No NRV policy (CD04)", "Findings", "Control deficiency", "High", "Policy gap", "Adopt NRV/slow-moving policy & ageing report", "CFO", D(2026, 2, 20), D(2026, 4, 30), "Open"),
           ("Legal letter outstanding (D7)", "Execution", "Evidence gap", "Medium", "Counsel response delayed", "Follow up; consider ISA 501.11 limitation", "Manager", D(2026, 3, 2), D(2026, 3, 27), "Open"),
-          ("Independence declaration outstanding - N. Temuulen", "Strategy", "Compliance", "Medium", "New joiner onboarding", "Obtain before further work; firm system reminder", "Manager", D(2026, 2, 10), D(2026, 3, 13), "Open"),
+          ("Independence declaration outstanding - N. Temuulen", "Strategy", "Compliance", "Medium", "New joiner onboarding", "Obtain before further work; firm system reminder", "Manager", D(2026, 1, 2), D(2026, 1, 5), "Closed"),
           ("Expense misclassification (M04)", "Execution", "Misstatement", "Low", "Cost centre mapping", "Update mapping table", "Chief Accountant", D(2026, 2, 25), D(2026, 3, 31), "In progress"),
           ("Accruals completeness (M03)", "Execution", "Misstatement", "Medium", "Checklist out of date", "Monthly contract review", "Chief Accountant", D(2026, 2, 18), D(2026, 3, 6), "Closed"),
           ("Informal risk assessment (CD01)", "Planning", "Control deficiency", "Low", "Owner-managed culture", "Annual risk workshop by Board", "CEO", D(2025, 11, 10), D(2026, 6, 30), "In progress"),
@@ -760,6 +783,8 @@ ws = S["L6_Oversight"]
 r = sheet_header(ws, "AUDIT OVERSIGHT & COMPLETION LAYER", 6,
                  "Communicate with TCWG, obtain representations, complete engagement quality review, form the opinion and monitor quality (ISQM 1).",
                  "ISA 260; ISA 580; ISA 570 (Revised 2024); ISA 701; ISA 700/705/706; ISA 720; ISA 220 (Revised); ISQM 1; ISQM 2")
+put(ws, f"A{r}", "Completion sequence:  F1 TCWG -> F2 representations -> F3/GC4 going concern -> F4 KAMs -> F7 draft opinion -> AI3/AI4 review & inspection readiness -> F5 EQR -> F6 partner sign-off -> report dated -> F9 file assembly (60 days) -> F10 monitoring", font(8, True, "00838F"), "E0F7FA", al=WRAP)
+ws.merge_cells(f"A{r}:L{r}"); ws.row_dimensions[r].height = 26; r += 2
 r = section(ws, r, "F1", "Communications with those charged with governance", "ISA 260 (Revised) | ISA 265")
 r = table_head(ws, r, ["#", "Matter required to be communicated", "Standard ref", "Required?", "Form", "Date", "Status", "Ref"])
 comms = [("Auditor's responsibilities in relation to the FS audit", "ISA 260.14", "Yes", "Written", D(2025, 10, 20), "Done"),
@@ -2218,7 +2243,7 @@ for i, (lab, v, isin) in enumerate(dec):
     if lab == "DECISION": b.font = font(9, True); c.font = font(11, True, DK); b.fill = fill(PALE); c.fill = fill(PALE)
     ws.merge_cells(f"C{r}:H{r}"); r += 1
 for k in (0, 1): dv(ws, f"C{a0+k}", "YesNo")
-dname("AC_Decision", f"Acceptance_QM!$C${a0+5}")
+dname("AC_Decision", f"Acceptance_QM!$C${a0+5}"); dname("AC_Seq", f"Acceptance_QM!$C${a0+10}")
 
 # ---------------- TEAM RESOURCES ----------------
 ws = S["Team_Resources"]
@@ -2732,15 +2757,15 @@ for i, (ag, pr, ver) in enumerate(prompts, 1):
 
 # ---------------- WP INDEX ----------------
 wpi = S["WP_Index"]
-widths(wpi, {"A": 7, "B": 13, "C": 46, "D": 30, "E": 14, "F": 11, "G": 14, "H": 11, "I": 13, "J": 9, "K": 9, "L": 9, "M": 12})
+widths(wpi, {"A": 7, "B": 13, "C": 46, "D": 30, "E": 14, "F": 11, "G": 14, "H": 11, "I": 13, "J": 9, "K": 9, "L": 9, "M": 12, "N": 8, "O": 28})
 put(wpi, "A1", "WORKING PAPER INDEX & DOCUMENT REGISTER  |  drives the dashboard", font(14, True, "FFFFFF"), DK)
-wpi.merge_cells("A1:M1"); wpi.row_dimensions[1].height = 26
+wpi.merge_cells("A1:O1"); wpi.row_dimensions[1].height = 26
 put(wpi, "A2", "=Set_Client&\"  |  FYE \"&TEXT(Set_FYE,\"dd mmm yyyy\")&\"  |  ISA 230 - audit documentation; ISQM 1.31(f) - engagement documentation\"", font(9, i=True))
-wpi.merge_cells("A2:M2")
+wpi.merge_cells("A2:O2")
 put(wpi, "A3", "Update Status, sign-offs and hours (yellow). Status values: Not started / In progress / Prepared / Reviewed / Closed. 'Completed' on the dashboard = Reviewed + Closed.", font(8, i=True, c="616161"))
-wpi.merge_cells("A3:M3")
+wpi.merge_cells("A3:O3")
 heads = ["Ref", "Layer", "Working paper", "Standard reference", "Prepared by", "Prep date", "Reviewed by", "Review date",
-         "Status", "Budget hrs", "Actual hrs", "Var hrs", "Go to WP"]
+         "Status", "Budget hrs", "Actual hrs", "Var hrs", "Go to WP", "Flow #", "Audit stage"]
 for j, h in enumerate(heads):
     put(wpi, f"{chr(65+j)}5", h, font(9, True, "FFFFFF"), DK, al=CEN, bd=BOX)
 wpi.row_dimensions[5].height = 28
@@ -2755,15 +2780,15 @@ wps = [
  ("AC7", "Strategy", "Decision & approvals", "ISQM 1.30-31", "Closed", 1, 1),
  ("TR1", "Strategy", "Team competency matrix", "ISA 220R.25-26; IES 8", "Reviewed", 1, 1),
  ("TR2", "Strategy", "Competency needs vs coverage", "ISA 220R.26", "Reviewed", 1, 1),
- ("TR3", "Strategy", "Budget, actual hours & utilisation", "ISA 220R.25(b)", "In progress", 1, 1),
+ ("TR3", "Strategy", "Budget, actual hours & utilisation", "ISA 220R.25(b)", "Reviewed", 1, 1),
  ("TR4", "Strategy", "Monthly capacity plan", "ISQM 1.32", "Reviewed", 2, 2),
  ("TR5", "Strategy", "Direction, supervision & review plan", "ISA 220R.29-34", "Reviewed", 1, 1),
  ("TR6", "Strategy", "Resources conclusion", "ISA 220R.25-28", "Reviewed", 0.5, 0.5),
- ("PBC1", "Planning", "PBC request list & tracker", "ISA 210.6(b)(iii); ISA 500.9", "In progress", 4, 4),
- ("PBC2", "Planning", "PBC procedures & escalation", "ISA 300; ISA 260.16(b)", "Prepared", 1, 1),
+ ("PBC1", "Planning", "PBC request list & tracker", "ISA 210.6(b)(iii); ISA 500.9", "Reviewed", 4, 4),
+ ("PBC2", "Planning", "PBC procedures & escalation", "ISA 300; ISA 260.16(b)", "Reviewed", 1, 1),
  ("PBC3", "Execution", "PBC progress dashboard", "Engagement management", "In progress", 1, 1),
  ("A2", "Strategy", "Terms of engagement & preconditions", "ISA 210", "Closed", 3, 2.5),
- ("A3", "Strategy", "Independence declarations - team", "IESBA Part 4A; ISA 220R.16-21", "Prepared", 4, 5),
+ ("A3", "Strategy", "Independence declarations - team", "IESBA Part 4A; ISA 220R.16-21", "Reviewed", 4, 5),
  ("A4", "Strategy", "Threats & safeguards register", "IESBA 120; 300", "Reviewed", 3, 3),
  ("A5", "Strategy", "Fee dependency & non-assurance services", "IESBA 410; 600", "Reviewed", 2, 1.5),
  ("A6", "Strategy", "Overall audit strategy", "ISA 300.7-8", "Reviewed", 8, 9),
@@ -2777,7 +2802,7 @@ wps = [
  ("RA3", "Planning", "Risk register - IRFs, spectrum, combined RMM", "ISA 315R.28, 31-34", "Reviewed", 10, 12),
  ("RA4", "Planning", "Inherent risk heat map", "ISA 315R.31", "Reviewed", 1, 1),
  ("RA5", "Planning", "Financial-statement-level risks", "ISA 315R.30; ISA 330.5", "Reviewed", 2, 2),
- ("RA6", "Planning", "Stand-back & documentation", "ISA 315R.35-38", "Prepared", 2, 2),
+ ("RA6", "Planning", "Stand-back & documentation", "ISA 315R.35-38", "Reviewed", 2, 2),
  ("AS1", "Planning", "Assertion framework", "ISA 315R.A190", "Closed", 0.5, 0.5),
  ("AS2", "Planning", "Assertion risk matrix by SCOTABD", "ISA 315R.28-29", "Reviewed", 1, 1),
  ("AS3", "Findings", "Control gap > assertion > impact > recommendation", "ISA 265.11; ISA 450", "Prepared", 2, 2),
@@ -2789,12 +2814,12 @@ wps = [
  ("FR5", "Execution", "Fraud or suspected fraud (incl. allegations)", "ISA 240R", "In progress", 4, 5),
  ("FR6", "Oversight", "Ongoing fraud communications", "ISA 240R; ISA 260", "In progress", 1, 1),
  ("FR7", "Oversight", "Report, representations & documentation", "ISA 240R; ISA 701; ISA 580", "Not started", 2, 0),
- ("B6", "Planning", "Laws & regulations", "ISA 250", "Prepared", 4, 3),
- ("B7", "Planning", "Related parties", "ISA 550", "In progress", 5, 3),
+ ("B6", "Planning", "Laws & regulations", "ISA 250", "Reviewed", 4, 3),
+ ("B7", "Planning", "Related parties", "ISA 550", "Reviewed", 5, 3),
  ("B8", "Planning", "Going concern summary", "ISA 570 (Revised 2024)", "Reviewed", 1, 1),
  ("GC1", "Planning", "Events or conditions & entity's process", "ISA 570R; ISA 315R", "Reviewed", 3, 3),
- ("GC2", "Planning", "Evaluating management's assessment (12 months)", "ISA 570R; ISA 540R", "Prepared", 6, 7),
- ("GC3", "Planning", "Cash-flow forecast & stress test", "ISA 570R", "Prepared", 4, 5),
+ ("GC2", "Planning", "Evaluating management's assessment (12 months)", "ISA 570R; ISA 540R", "Reviewed", 6, 7),
+ ("GC3", "Planning", "Cash-flow forecast & stress test", "ISA 570R", "Reviewed", 4, 5),
  ("GC4", "Oversight", "Conclusions - basis & material uncertainty", "ISA 570R", "In progress", 2, 1),
  ("GC5", "Oversight", "Draft going concern report section", "ISA 570R; ISA 700R", "In progress", 1, 1),
  ("GC6", "Oversight", "TCWG, representations & documentation", "ISA 570R; ISA 260; ISA 580", "Not started", 1, 0),
@@ -2805,8 +2830,8 @@ wps = [
  ("IC3", "Planning", "IT general controls assessment", "ISA 315R.26(c)", "Reviewed", 10, 11),
  ("C1", "Methodology", "Audit programme by FS area & assertion", "ISA 330.6-7", "Reviewed", 8, 8),
  ("C2", "Methodology", "Sampling methodology (MUS)", "ISA 530", "Reviewed", 4, 4),
- ("C3", "Methodology", "Analytical procedures", "ISA 520", "Prepared", 8, 9),
- ("C4", "Methodology", "Accounting estimates", "ISA 540R", "Prepared", 12, 15),
+ ("C3", "Methodology", "Analytical procedures", "ISA 520", "Reviewed", 8, 9),
+ ("C4", "Methodology", "Accounting estimates", "ISA 540R", "Reviewed", 12, 15),
  ("C5", "Methodology", "Internal audit function", "ISA 610", "Closed", 1, 0.5),
  ("C6", "Methodology", "Auditor's expert (IT)", "ISA 620", "Reviewed", 3, 3),
  ("C7", "Methodology", "Group audit considerations", "ISA 600R", "Closed", 1, 0.5),
@@ -2866,6 +2891,21 @@ r = 6
 w0 = r
 base = {"Strategy": D(2025, 9, 20), "Planning": D(2025, 11, 10), "Methodology": D(2025, 11, 14), "Execution": D(2026, 2, 27),
         "Findings": D(2026, 3, 16), "Oversight": D(2026, 3, 18)}
+FLOW_REFS = [
+ ["AC1", "AC2", "AC3", "AC4", "AC5", "AC6", "AC7", "A1", "A2", "A3", "A4", "A5", "TR1", "TR2", "TR3", "TR4", "TR5", "TR6", "A6", "A7"],
+ ["B1", "B2", "IC1", "IC2", "IC3", "B3", "RA1", "RA2", "RA3", "RA4", "RA5", "RA6", "B4", "AS1", "AS2", "B5", "FR1", "FR2", "FR3", "B6", "B7",
+  "B8", "GC1", "GC2", "GC3", "B9", "B10", "PBC1", "PBC2"],
+ ["C1", "C2", "S1", "S2", "S3", "C3", "C4", "C5", "C6", "C7", "C8"],
+ ["IC4", "IC5", "IC6", "D1", "D2", "S4", "D4", "S5", "D3", "D5", "D6", "FR4", "FR5", "D7", "D8", "D9", "PBC3"],
+ ["E1", "SUAD1", "SUAD2", "SUAD3", "SUAD4", "AS3", "E2", "DF1", "DF2", "DF3", "DF4", "DF5", "DF6", "E3", "E4"],
+ ["F1", "FR6", "F2", "F3", "GC4", "GC5", "GC6", "F4", "FR7", "F8", "F7", "AI1", "AI2", "AI3", "AI4", "AI5", "AI6", "F5", "F6", "F9", "F10"]]
+pos = {ref: (si, k) for si, grp in enumerate(FLOW_REFS) for k, ref in enumerate(grp)}
+missing = [w[0] for w in wps if w[0] not in pos]
+assert not missing, missing
+wps = sorted(wps, key=lambda w: pos[w[0]])
+wps = [(w[0], LAYERS[pos[w[0]][0]][0]) + tuple(w[2:]) for w in wps]
+stage_of = {w[0]: f"{pos[w[0]][0]+1} {LAYERS[pos[w[0]][0]][2]}" for w in wps}
+flow_no = 0
 for ref, lay, title, std, stt, bh, ah in wps:
     cell(wpi, f"A{r}", ref, center=True); cell(wpi, f"B{r}", lay, center=True); cell(wpi, f"C{r}", title); cell(wpi, f"D{r}", std)
     prepd = stt in ("Prepared", "Reviewed", "Closed")
@@ -2880,8 +2920,12 @@ for ref, lay, title, std, stt, bh, ah in wps:
     sh, ar = anchors[ref]
     c = cell(wpi, f"M{r}", f'=HYPERLINK("#{sh}!A{ar}","Open >")', center=True)
     c.font = Font(name=F, size=9, color="1565C0", underline="single")
+    flow_no += 1
+    cell(wpi, f"N{r}", flow_no, "0", center=True)
+    c = cell(wpi, f"O{r}", stage_of[ref], center=True); c.fill = fill(LAYERS[pos[ref][0]][1]); c.font = font(9, True, "FFFFFF")
     r += 1
 w1 = r - 1
+dname("WP_Stage", f"WP_Index!$O${w0}:$O${w1}"); dname("WP_Ref", f"WP_Index!$A${w0}:$A${w1}")
 put(wpi, f"C{r}", "TOTAL", font(9, True), PALE, bd=BOX)
 for col in "JKL": put(wpi, f"{col}{r}", f"=SUM({col}{w0}:{col}{w1})", font(9, True), PALE, "0.0", CEN, BOX)
 put(wpi, f"I{r}", f'=COUNTA(I{w0}:I{w1})&" WPs"', font(9, True), PALE, al=CEN, bd=BOX)
@@ -2973,6 +3017,102 @@ for i, (nm, lab, f_, nf) in enumerate(kpis):
     put(dd, f"A{rr}", lab, bd=BOX); put(dd, f"B{rr}", f_, nf=nf, bd=BOX, al=CEN)
     dname("DD_" + nm, f"DashData!$B${rr}")
 
+# ---------------- AUDIT FLOW (stages & gates) ----------------
+af = S["Audit_Flow"]
+widths(af, {"A": 5, "B": 34, "C": 14, "D": 46, "E": 9, "F": 11, "G": 11, "H": 12, "I": 22, "J": 10, "K": 12})
+put(af, "A1", "AUDIT FLOW  |  stages, progress & stage gates (ISA 300 / ISA 220R / ISQM 1)", font(15, True, "FFFFFF"), DK)
+af.merge_cells("A1:K1"); af.row_dimensions[1].height = 28
+put(af, "A2", "Work through the six stages in order. Each stage has a GATE: conditions that must be met before the next stage is relied upon. "
+              "Open gate items from earlier stages must be resolved before the auditor's report is dated (ISA 220R.40, ISA 700.49).",
+    font(9, i=True, c="424242"), al=WRAP); af.merge_cells("A2:K2"); af.row_dimensions[2].height = 30
+sheets_of = {i + 1: [n for n in FLOW if SHEET_LAYER[n] == i + 1] for i in range(6)}
+r = 4
+heads = ["#", "Stage", "Layer", "Working-paper sheets (in order)", "WPs", "Completed", "% complete", "Gate items open", "Gate status", "Passed", "Go"]
+for j, h in enumerate(heads): put(af, f"{gl(1+j)}{r}", h, font(9, True, "FFFFFF"), DK, al=CEN, bd=BOX)
+af.row_dimensions[r].height = 28
+r += 1
+st0 = r
+gate_rows_start = st0 + 6 + 3
+for i, (ln, lc, stg) in enumerate(LAYERS):
+    n = i + 1
+    c = put(af, f"A{r}", n, font(12, True, "FFFFFF"), lc, al=CEN, bd=BOX)
+    put(af, f"B{r}", stg, font(10, True, lc), bd=BOX, al=WRAP)
+    put(af, f"C{r}", ln, font(9, True), bd=BOX, al=CEN)
+    put(af, f"D{r}", "  ►  ".join(sheets_of[n]), font(9), bd=BOX, al=WRAP)
+    put(af, f"E{r}", f'=COUNTIF(WP_Stage,"{n} *")', font(9), nf="0", al=CEN, bd=BOX)
+    put(af, f"F{r}", f'=COUNTIFS(WP_Stage,"{n} *",WP_Status,"Reviewed")+COUNTIFS(WP_Stage,"{n} *",WP_Status,"Closed")', font(9), nf="0", al=CEN, bd=BOX)
+    put(af, f"G{r}", f"=IFERROR(F{r}/E{r},0)", font(9, True), nf="0%", al=CEN, bd=BOX)
+    put(af, f"H{r}", f'=COUNTIFS(Gate_Stage,{n},Gate_Result,"Open")', font(9), nf="0", al=CEN, bd=BOX)
+    put(af, f"I{r}", f'=IF(H{r}=0,"GATE PASSED",H{r}&" item(s) open")', font(9, True), al=CEN, bd=BOX)
+    put(af, f"J{r}", f"=IF(H{r}=0,1,0)", font(9), nf="0", al=CEN, bd=BOX)
+    c = put(af, f"K{r}", f'=HYPERLINK("#{sheets_of[n][0]}!A1","Open >")', Font(name=F, size=9, color="1565C0", underline="single"), al=CEN, bd=BOX)
+    af.row_dimensions[r].height = 30; r += 1
+st1 = r - 1
+af.conditional_formatting.add(f"I{st0}:I{st1}", CellIsRule(operator="equal", formula=['"GATE PASSED"'], fill=fill("C8E6C9"), font=Font(name=F, bold=True, color="1B5E20")))
+af.conditional_formatting.add(f"I{st0}:I{st1}", FormulaRule(formula=[f'$I{st0}<>"GATE PASSED"'], fill=fill("FFE0B2")))
+nested = '"All gates passed - ready to date the report"'
+for i in range(5, -1, -1):
+    nested = f'IF(J{st0+i}=0,"Stage {i+1}: "&B{st0+i},{nested})'
+put(af, f"B{r}", "EARLIEST OPEN GATE (resolve first)", font(10, True), PALE, bd=BOX)
+put(af, f"C{r}", "=" + nested, font(10, True, "B71C1C"), PALE, bd=BOX); af.merge_cells(f"C{r}:K{r}")
+dname("AF_Gate", f"Audit_Flow!$C${r}")
+r += 2
+
+put(af, f"A{r}", "STAGE GATE CHECKS", font(11, True, "FFFFFF"), MD); af.merge_cells(f"A{r}:K{r}"); r += 1
+for j, h in enumerate(["Stage", "Gate condition", "Standard", "Evidence / source", "", "", "", "", "Result", "", "Go"]):
+    put(af, f"{gl(1+j)}{r}", h, font(9, True, "FFFFFF"), DK, al=CEN, bd=BOX)
+af.merge_cells(f"D{r}:H{r}"); af.merge_cells(f"I{r}:J{r}"); r += 1
+def all_rev(n): return f'COUNTIFS(WP_Stage,"{n} *",WP_Status,"Reviewed")+COUNTIFS(WP_Stage,"{n} *",WP_Status,"Closed")=COUNTIF(WP_Stage,"{n} *")'
+gates = [
+ (1, "Acceptance / continuance decision = ACCEPT", "ISQM 1.30", 'LEFT(AC_Decision,6)="ACCEPT"', "Acceptance_QM", "AC7 decision"),
+ (1, "Acceptance approved before engagement letter", "ISQM 1.30; ISA 210", 'LEFT(AC_Seq,8)="Approved"', "Acceptance_QM", "AC7 sequence check"),
+ (1, "All independence declarations received & threats addressed", "IESBA 400; ISA 220R.16-21", "DD_IndRecv=DD_IndTot", "L1_Strategy", "A3 / A4"),
+ (1, "Team resources sufficient & appropriate", "ISA 220R.25-28", 'LEFT(TR_Conclusion,12)<>"RESOURCES IN"', "Team_Resources", "TR6"),
+ (1, "Stage 1 working papers reviewed", "ISA 220R.30-31", all_rev(1), "WP_Index", "WP_Index stage 1"),
+ (2, "Materiality, PM & clearly trivial set", "ISA 320.10-11", "AND(Mat_OM>0,Mat_PM>0,Mat_CT>0)", "L2_Planning", "B3"),
+ (2, "Risk register complete; no unjustified assessments", "ISA 315R.28-38", 'AND(COUNTA(Risk_ID)>0,COUNTIF(Risk_Check,"<>OK")=0)', "Risk_315R", "RA3"),
+ (2, "All fraud risks assessed as significant risks", "ISA 240R", 'COUNTIFS(Risk_Fraud,"Yes",Risk_Spectrum,"<>Significant")=0', "Risk_315R", "RA3 / FR3"),
+ (2, "Design & implementation of relevant controls evaluated", "ISA 315R.26", "IC_DIeff>0", "IC_Assessment", "IC2"),
+ (2, "Going concern events/conditions assessed; period >= 12 months", "ISA 570R", "GC_Months>=12", "GoingConcern_570R", "GC1-GC2"),
+ (2, "PBC request list issued", "ISA 210.6(b)(iii)", "PBC_N>0", "PBC_List", "PBC1"),
+ (2, "Stage 2 working papers reviewed before fieldwork", "ISA 300.11; ISA 220R.30", all_rev(2), "WP_Index", "WP_Index stage 2"),
+ (3, "Sample sizes determined for populations", "ISA 530.7-8", "INDEX(Pop_SampleSize,1)>0", "Sampling", "S1"),
+ (3, "Material balances not significant covered by substantive procedures (stand-back)", "ISA 330.18; 315R.36", 'COUNTIF(SCOT_Class,"Material*")>=0', "Risk_315R", "RA2 / C1"),
+ (3, "Stage 3 working papers reviewed", "ISA 220R.30", all_rev(3), "WP_Index", "WP_Index stage 3"),
+ (4, "Controls tested with adequate sample sizes", "ISA 330.10; ISA 530", 'COUNTIF(Ctl_Result,"Sample too small")=0', "IC_Assessment", "IC4"),
+ (4, "External confirmations resolved", "ISA 505", 'COUNTIF(Conf_Status,"Outstanding")=0', "L4_Execution", "D4"),
+ (4, "No PBC items overdue", "ISA 500; ISA 705.7", "PBC_Overdue=0", "PBC_List", "PBC3"),
+ (4, "Stage 4 working papers reviewed", "ISA 220R.30", all_rev(4), "WP_Index", "WP_Index stage 4"),
+ (5, "Misstatements accumulated & evaluated (SUAD)", "ISA 450.5-11", "LEN(MS_Eval)>0", "SUAD", "SUAD3"),
+ (5, "Aggregate uncorrected misstatements below overall materiality", "ISA 450.11", "ABS(MS_Agg)<Mat_OM", "SUAD", "SUAD3"),
+ (5, "Significant deficiencies communicated in writing", "ISA 265.9", 'CD_SigComm=COUNTIF(CD_Class,"Significant deficiency")', "Deficiencies_265", "DF4"),
+ (5, "Fraud / suspected fraud matters closed", "ISA 240R", "DD_FraudOpen=0", "Fraud_240R", "FR5"),
+ (5, "Stage 5 working papers reviewed", "ISA 220R.30", all_rev(5), "WP_Index", "WP_Index stage 5"),
+ (6, "Communications with TCWG complete", "ISA 260", "DD_CommPct>=1", "L6_Oversight", "F1"),
+ (6, "Written representations obtained", "ISA 580", 'OR(INDEX(WP_Status,MATCH("F2",WP_Ref,0))="Reviewed",INDEX(WP_Status,MATCH("F2",WP_Ref,0))="Closed")', "L6_Oversight", "F2"),
+ (6, "No high-severity review flags (Review Agent)", "ISA 220R.30-34", "AI_FlagsHigh=0", "AI_Agents", "AI3"),
+ (6, "Inspection readiness >= 90%", "ISQM 1.35-47", "AI_Ready>=0.9", "AI_Agents", "AI4"),
+ (6, "Engagement quality review completed before report date", "ISQM 2; ISA 220R.36", 'OR(DD_EQR="Reviewed",DD_EQR="Closed")', "L6_Oversight", "F5"),
+ (6, "Stage 6 working papers reviewed", "ISA 220R.40", all_rev(6), "WP_Index", "WP_Index stage 6")]
+g0 = r
+for (n, cond, std_, f_, sh, ev_) in gates:
+    lc = LAYERS[n - 1][1]
+    put(af, f"A{r}", n, font(9, True, "FFFFFF"), lc, al=CEN, bd=BOX)
+    put(af, f"B{r}", cond, font(9), bd=BOX, al=WRAP); put(af, f"C{r}", std_, font(8), bd=BOX, al=WRAP)
+    put(af, f"D{r}", ev_, font(9, c="616161"), bd=BOX); af.merge_cells(f"D{r}:H{r}")
+    put(af, f"I{r}", f'=IF({f_},"Pass","Open")', font(9, True), al=CEN, bd=BOX); af.merge_cells(f"I{r}:J{r}")
+    put(af, f"K{r}", f'=HYPERLINK("#{sh}!A1","Open >")', Font(name=F, size=9, color="1565C0", underline="single"), al=CEN, bd=BOX)
+    af.row_dimensions[r].height = 26; r += 1
+g1 = r - 1
+dname("Gate_Stage", f"Audit_Flow!$A${g0}:$A${g1}"); dname("Gate_Result", f"Audit_Flow!$I${g0}:$I${g1}")
+af.conditional_formatting.add(f"I{g0}:I{g1}", CellIsRule(operator="equal", formula=['"Pass"'], fill=fill("C8E6C9"), font=Font(name=F, bold=True, color="1B5E20")))
+af.conditional_formatting.add(f"I{g0}:I{g1}", CellIsRule(operator="equal", formula=['"Open"'], fill=fill("FFCDD2"), font=Font(name=F, bold=True, color="B71C1C")))
+put(af, f"B{r+1}", "Gate items read live from the working papers. An 'Open' item in an earlier stage is a documented exception: resolve it or record the rationale before the report is dated.", font(8, i=True, c="616161"), al=WRAP)
+af.merge_cells(f"B{r+1}:K{r+1}"); af.row_dimensions[r + 1].height = 24
+mini_chart(af, "% complete by audit stage", Reference(af, min_col=2, min_row=st0, max_row=st1), Reference(af, min_col=7, min_row=st0 - 1, max_row=st1),
+           "M4", color="1565C0", w=13, h=7.5, pct=True)
+af.freeze_panes = "A5"
+
 # ---------------- STANDARDS ----------------
 sd = S["Standards"]
 widths(sd, {"A": 16, "B": 58, "C": 16, "D": 40})
@@ -3052,7 +3192,7 @@ from openpyxl.utils import column_index_from_string as ci, get_column_letter as 
 for lay, (anchor, focus, ctrls_, sheet) in boxes.items():
     c0 = ci(anchor.rstrip("0123456789")); r0 = int(anchor[len(anchor.rstrip("0123456789")):])
     cA, cZ = gl(c0), gl(c0 + 5)
-    title = {"Findings": "Findings & Remediation Layer"}.get(lay, f"Audit {lay} Layer")
+    title = str([l[0] for l in LAYERS].index(lay) + 1) + ". " + {"Findings": "Findings & Remediation Layer"}.get(lay, f"Audit {lay} Layer")
     c = put(lm, f"{cA}{r0}", f'=HYPERLINK("#{sheet}!A1","{title}  >")', font(11, True, "FFFFFF"), "101010", al=CEN)
     lm.merge_cells(f"{cA}{r0}:{cZ}{r0+1}")
     put(lm, f"{cA}{r0+2}", "Common Focus Areas:", font(9, True, "9CCC65", i=True), "101010")
@@ -3078,6 +3218,8 @@ for rr in range(26, 32):
         lm.cell(rr, cc).border = Border(left=ring if cc == ci("H") else None, right=ring if cc == ci("K") else None,
                                         top=ring if rr == 26 else None, bottom=ring if rr == 31 else None)
 put(lm, "H32", '="Overall "&TEXT(DD_PctComplete,"0%")&" complete"', font(10, True, "FFFFFF"), "101010", al=CEN); lm.merge_cells("H32:K32")
+put(lm, "B60", "AUDIT FLOW:  1 Strategy  ►  2 Planning  ►  3 Methodology  ►  4 Execution  ►  5 Findings & Remediation  ►  6 Oversight  (stage gates: Audit_Flow sheet)", font(10, True, "B2FF59"), "101010", al=CEN)
+lm.merge_cells("B60:Q60")
 put(lm, "B61", "Click a layer title to open its working papers.  |  ISA · ISQM 1 · ISQM 2 · IESBA Code", font(9, i=True, c="9CCC65"), "101010")
 lm.merge_cells("B61:Q61")
 
@@ -3093,7 +3235,7 @@ for cc in range(2, 26):
     for rr in (1, 2, 3): db.cell(rr, cc).fill = fill("FFFFFF")
 put(db, "C1", "AW", font(16, True, "FFFFFF"), DK, al=CEN); db.merge_cells("C1:C3")
 put(db, "E1", "AUDIT DASHBOARD", font(20, True, DK), "FFFFFF"); db.merge_cells("E1:L2")
-put(db, "E3", "Overview of ISA / ISQM / IESBA engagement status", font(10, c="424242"), "FFFFFF"); db.merge_cells("E3:L3")
+put(db, "E3", '="Earliest open gate: "&AF_Gate', font(9, True, "B71C1C"), "FFFFFF"); db.merge_cells("E3:L3")
 for k, (lab, f_, nf) in enumerate([("Client", "=Set_Client", None), ("Year end", "=Set_FYE", "dd mmm yyyy"), ("Status as of", "=Set_AsOf", "dd mmm yyyy")]):
     cA = gl(14 + k * 4); cZ = gl(14 + k * 4 + 3)
     put(db, f"{cA}1", lab, font(8, True, "616161"), "FFFFFF"); db.merge_cells(f"{cA}1:{cZ}1")
@@ -3105,13 +3247,19 @@ db.row_dimensions[4].height = 5
 # Nav panel
 for rr in range(6, 76):
     for cc in (2, 3): db.cell(rr, cc).fill = fill(DK)
-navs = [("Overview", "LayersMap"), ("Setup", "Setup"), ("WP Index", "WP_Index"), ("1 Strategy", "L1_Strategy"), ("   Acceptance", "Acceptance_QM"), ("   Team", "Team_Resources"), ("   PBC", "PBC_List"),
-        ("2 Planning", "L2_Planning"), ("   Risk 315R", "Risk_315R"), ("   Assertions", "Assertions"), ("   Fraud 240R", "Fraud_240R"), ("   GC 570R", "GoingConcern_570R"), ("3 Methodology", "L3_Methodology"), ("   Sampling", "Sampling"), ("4 Execution", "L4_Execution"),
-        ("   IC Testing", "IC_Assessment"), ("5 Findings", "L5_Findings"), ("   Deficiencies", "Deficiencies_265"), ("   SUAD", "SUAD"), ("6 Oversight", "L6_Oversight"), ("AI Agents", "AI_Agents"), ("Standards", "Standards")]
-for k, (lab, sh) in enumerate(navs):
+navs = [("Overview", "LayersMap", None), ("Audit Flow", "Audit_Flow", None), ("Setup", "Setup", None), ("WP Index", "WP_Index", None),
+        ("1 Strategy", "L1_Strategy", 1), ("   Acceptance", "Acceptance_QM", 0), ("   Team", "Team_Resources", 0),
+        ("2 Planning", "L2_Planning", 2), ("   PBC", "PBC_List", 0), ("   Risk 315R", "Risk_315R", 0), ("   Assertions", "Assertions", 0),
+        ("   Fraud 240R", "Fraud_240R", 0), ("   GC 570R", "GoingConcern_570R", 0),
+        ("3 Methodology", "L3_Methodology", 3), ("   Sampling", "Sampling", 0),
+        ("4 Execution", "L4_Execution", 4), ("   IC Testing", "IC_Assessment", 0),
+        ("5 Findings", "L5_Findings", 5), ("   SUAD", "SUAD", 0), ("   Deficiencies", "Deficiencies_265", 0),
+        ("6 Oversight", "L6_Oversight", 6), ("   AI Agents", "AI_Agents", 0), ("Standards", "Standards", None)]
+for k, (lab, sh, lv) in enumerate(navs):
     rr = 7 + k * 3
-    c = put(db, f"C{rr}", f'=HYPERLINK("#{sh}!A1","{lab}")', font(10, True, DK if k == 0 else "FFFFFF"),
-            "C5E1A5" if k == 0 else DK, al=Alignment(horizontal="left", vertical="center", indent=1))
+    bg = "C5E1A5" if k == 0 else (LAYERS[lv - 1][1] if lv else DK)
+    c = put(db, f"C{rr}", f'=HYPERLINK("#{sh}!A1","{lab}")', font(10 if lv != 0 else 9, lv != 0, DK if k == 0 else "FFFFFF"),
+            bg, al=Alignment(horizontal="left", vertical="center", indent=1))
     db.merge_cells(f"C{rr}:C{rr+1}")
 
 def tile(r0, c0, w, label, valf, nf, subf, accent=LT, h=4):
