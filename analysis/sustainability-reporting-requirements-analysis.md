@@ -119,6 +119,24 @@ its year before the first intake.
    narrowed by the Omnibus; ISSB adoption covers 39 jurisdictions with profiles. For a Cambodian exporter
    the practical demand comes from EU buyers, lenders and DFIs as much as from SERC.
 
+## 4a. Cambodia carbon pricing and ETS (addendum)
+- **Status:** Cambodia has no ETS or carbon tax in force. A carbon-market sub-decree is an NDC 3.0
+  milestone ("by 2026"), and its approval is not confirmed. An Article 6 framework is operating: a
+  Ministry of Environment Operations Manual, the Carbon Crediting Secretariat, eligible mechanisms (JCM,
+  Gold Standard, VCS, A6.4), letters of authorisation already issued, and forestry credits restricted
+  from export.
+- **How to treat it under ISSB:** a *possible* scheme is a policy/legal transition risk (S2.10). It
+  should be modelled as a scenario (CR-06), and the cost ranges disclosed as anticipated financial effects
+  (S2.15–21). If management uses the price paths internally, they are an internal carbon price
+  (S2.29(f)). Credits go in CR-07 and are disclosed under S2.36(e), never netted against emissions.
+- **Example result:** a garment SME sits far below a plausible coverage threshold. Its exposure is
+  indirect, through electricity-tariff pass-through and buyer pricing (USD 11k–91k cumulative over
+  2027–2035 across scenarios for Mekong Garment). Cement, brick kilns, power, steel and banks, through
+  their borrowers, face direct exposure.
+- **Accounting:** no IFRS covers allowances specifically, so a policy choice is needed under IAS 8
+  (IAS 38/IAS 2 for allowances; IAS 37 for the obligation). The assumptions must be consistent with
+  the financial statements (S1.23).
+
 ## 5. Implications for the reporting process (built into the skills)
 
 | Principle | How the skills implement it |

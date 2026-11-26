@@ -8,6 +8,7 @@ Status as understood at November 2026 — confirm every item marked ☐ before r
 | ACAR (Accounting and Auditing Regulator) / NAA | Adopts accounting standards (CIFRS = full IFRS; CIFRS for SMEs) and would adopt IFRS S1/S2 and ISSA 5000. ☐ Formal adoption instrument and effective date — treat ISSB application as voluntary unless confirmed. |
 | SERC (Securities and Exchange Regulator of Cambodia) / CSX | **Prakas N.034 F.S.A.PK (10 May 2024) on Sustainability Disclosure**: listed entities disclose ESG information from 2026 against 31 specified items. ☐ Whether SERC will reference IFRS S1/S2 directly. |
 | NBC (National Bank of Cambodia) | Governance and risk Prakas for banks/MFIs; Cambodian Sustainable Finance Principles. ☐ Any climate-risk or ISSB requirement for banks. |
+| Carbon market (MoE / Carbon Crediting Secretariat) | No ETS or carbon tax in force; carbon-market sub-decree is an NDC 3.0 milestone (by 2026) ☐; Article 6 Operations Manual; eligible mechanisms JCM, Gold Standard, VCS, Article 6.4. Model carbon pricing as a scenario (ifrs-s2-reporting CR-06). |
 | KICPAA | Professional body; CPD recognition. |
 | Ministry of Environment | NDC 3.0 (Aug 2025: up to 55% reduction by 2035, conditional), Long-Term Strategy for Carbon Neutrality 2050, grid emission factor (see IFRS S2 skill). |
 
@@ -72,4 +73,4 @@ restatement disclosure, ISSA 5000 readiness).
 - SERC/NBC requirements to apply ISSB for listed issuers and banks.
 - Official current Cambodian grid emission factor and year (Ministry of Environment/EAC) vs IFI 2021 0.5878 kg CO2e/kWh.
 - NDC 3.0 base year and conditional/unconditional split.
-- Article 6 carbon-credit arrangements (JCM; Cambodia–Singapore) status.
+- Article 6 carbon-credit arrangements (JCM; Korea; Cambodia–Singapore) status; carbon-market sub-decree and any ETS design (coverage threshold, sectors, start year, allocation).

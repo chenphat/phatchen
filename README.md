@@ -8,7 +8,7 @@ Cambodia: SERC Prakas 034, ACAR, NBC, CIFRS, EDC grid factor and local data sour
 |---|---|
 | `analysis/sustainability-reporting-requirements-analysis.md` | Review and analysis of the requirements: architecture, boundary, materiality, foundations, climate, the ACLEDA 2025 gap analysis, cross-document findings and open items |
 | `skills/ifrs-s1-reporting/` | IFRS S1 skill: an 8-phase process, a paragraph-level checklist, the materiality procedure, ICSR and assurance guidance, Cambodian context, and a builder for working papers S1-00 to S1-14 |
-| `skills/ifrs-s2-reporting/` | IFRS S2 skill: a 10-phase climate process, a checklist including the December 2025 amendments, GHG methodology, scenario analysis (SA1–SA9), PCAF financed emissions, and a builder for working papers CR-00 to CR-05, SA, GHG-00 to GHG-09 and FE-01 |
+| `skills/ifrs-s2-reporting/` | IFRS S2 skill: a 10-phase climate process, a checklist including the December 2025 amendments, GHG methodology, scenario analysis (SA1–SA9), PCAF financed emissions, and a builder for working papers CR-00 to CR-07 (incl. the Cambodia carbon pricing/ETS scenario model and the carbon credit register), SA, GHG-00 to GHG-09 and FE-01 |
 | `examples/` | Generated workbooks: an illustrative Mekong Garment case (inventory totals 3,733.1 tCO2e; Case F gives 70.5 t) and blank templates |
 | `dist/*.skill` | Packaged skills, ready to install |
 

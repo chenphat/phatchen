@@ -40,7 +40,7 @@ financials none — absence is common, not a reason to delay.
 | SA3 | Time horizons and operational scope (own ops / upstream / downstream; sites, portfolios) |
 | SA4 | Key assumptions by category (policy, macro, local physical variables, energy, technology) |
 | SA5 | Physical risk analysis: hazard × exposure × vulnerability per site/asset/portfolio |
-| SA6 | Transition risk analysis: carbon price, demand shifts, technology costs, buyer requirements |
+| SA6 | Transition risk analysis: carbon price (CR-06 Cambodia ETS scenarios), demand shifts, technology costs, buyer requirements |
 | SA7 | Financial effects: P&L, balance sheet, cash flow ranges per scenario and horizon; FS link |
 | SA8 | Resilience conclusion and capacity to adjust |
 | SA9 | Uncertainties, limitations, quality-ladder rating, two actions to move up a level, next update date |

@@ -1,6 +1,6 @@
 ---
 name: ifrs-s2-reporting
-description: Process, procedures and Excel working-paper templates for IFRS S2 (ISSB) climate-related disclosures - climate governance, physical and transition risks and opportunities, transition plans, financial effects, scenario analysis and resilience (SA1-SA9), GHG accounting under the GHG Protocol (Scope 1, 2 location-based, 3; AR6 GWPs; GHG-00 to GHG-09 with factor register and reconciliations), S2.29 cross-industry metrics, targets and carbon credits, PCAF financed emissions for banks and MFIs, December 2025 amendments and reliefs, with Cambodian factors and data. Use whenever the user mentions IFRS S2, ISSB climate, TCFD, climate risk, scenario analysis, transition plan, GHG inventory, carbon footprint, Scope 1/2/3, emission or grid factors, financed emissions, internal carbon price, net-zero or SBTi targets, or climate working papers, even without naming IFRS S2. Use with ifrs-s1-reporting for general requirements.
+description: Process, procedures and Excel working-paper templates for IFRS S2 (ISSB) climate-related disclosures - climate governance, physical and transition risks and opportunities, transition plans, financial effects, scenario analysis and resilience (SA1-SA9), GHG accounting under the GHG Protocol (Scope 1, 2 location-based, 3; AR6 GWPs; GHG-00 to GHG-09 with factor register and reconciliations), S2.29 cross-industry metrics, targets, carbon credits and Cambodia carbon pricing/ETS scenarios, PCAF financed emissions for banks and MFIs, December 2025 amendments and reliefs, with Cambodian factors and data. Use whenever the user mentions IFRS S2, ISSB climate, TCFD, climate risk, scenario analysis, transition plan, GHG inventory, carbon footprint, Scope 1/2/3, emission or grid factors, financed emissions, carbon pricing, ETS or carbon tax, Article 6 credits, internal carbon price, net-zero or SBTi targets, or climate working papers, even without naming IFRS S2. Use with ifrs-s1-reporting for general requirements.
 ---
 
 # IFRS S2 reporting — process, procedures and working papers
@@ -38,6 +38,7 @@ calculations and working papers.
 | `references/ghg-methodology.md` | Any GHG calculation or review: six steps, formulas, GWPs, factors, Cambodian grid factor, data quality (EDQA), common errors, Case F |
 | `references/scenario-analysis.md` | Climate resilience/scenario analysis (S2.22, B1–B18): proportionality, quality ladder, SA1–SA9, financial-effect translation |
 | `references/financed-emissions.md` | Banks, MFIs, asset managers, insurers: Cat 15, PCAF methods and data quality, climate-adjusted ECL |
+| `references/cambodia-carbon-pricing.md` | Carbon pricing / possible Cambodian ETS, Article 6 credits, CBAM, internal carbon price, allowance accounting (CR-06, CR-07) |
 
 ## The process
 
@@ -110,6 +111,16 @@ trends. GHG targets: gases, scopes, **gross vs net (if net, also gross)**, secto
 approach, planned use of carbon credits — extent of reliance, scheme, type (nature-based/technological;
 removal/avoidance), credibility factors. Never net credits against the inventory.
 
+### Phase 8a — Carbon pricing, ETS exposure and credits → CR-06, CR-07
+No Cambodian ETS or carbon tax is in force (Nov 2026); a carbon-market sub-decree is an NDC 3.0
+milestone and Article 6 rules exist. Model a possible ETS as a **scenario**, not a fact
+(`references/cambodia-carbon-pricing.md`): direct compliance cost above the coverage threshold
+(free allocation, offset limit), indirect cost through power-tariff pass-through, by scenario price
+path; feed the ranges into S2.15–21 and SA6, and the price into S2.29(f) if used internally. Record
+Article 6/voluntary credits in CR-07 with authorisation and corresponding-adjustment status for
+S2.36(e). If a scheme starts, set an allowance accounting policy and keep assumptions consistent with
+the FS (S1.23).
+
 ### Phase 9 — Financed emissions (banks, MFIs, asset managers, insurers) → FE-01
 See `references/financed-emissions.md`. S2.29(a)(vi)(2) and B58–B63 with the December 2025 amendments
 (limits on derivatives, facilitated and insurance-associated emissions; alternative industry
@@ -130,6 +141,8 @@ index; review against the scenario quality checklist and anti-greenwashing contr
 | CR-03 | Cross-industry metrics (b)–(g) | S2.29(b)–(g) |
 | CR-04 | Targets and carbon credits | S2.33–36 |
 | CR-05 | Industry-based metrics | S2.32 |
+| CR-06 | Carbon pricing / Cambodia ETS exposure model (scenario-based: direct, indirect, credits, NPV) | S2.10, 15–22, 29(f) |
+| CR-07 | Carbon credit register (Article 6 / voluntary; LoA, corresponding adjustment, type) | S2.36(e) |
 | GHG-00 | Lead schedule (scopes, categories, prior year, intensity, checks) | S2.29(a) |
 | GHG-01 | Boundary and approach memo | S2.29(a)(ii)–(iii) |
 | GHG-02 | Emission factor register (source, year, GWP basis, approval) | S2.B21–B22 |

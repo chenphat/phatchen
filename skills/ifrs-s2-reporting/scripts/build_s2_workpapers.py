@@ -474,7 +474,7 @@ def cr_00(wb, a):
                 input_cols=[3, 4], example_rows=0)
     dv_list(ws, f"C10:C{end}", ["Y", "N", "NA"])
     r = end + 2
-    sheets = ["CR-01", "CR-02", "SA", "CR-03", "CR-04", "CR-05", "GHG-00", "GHG-01", "GHG-02", "GHG-03", "GHG-03a", "GHG-03b",
+    sheets = ["CR-01", "CR-02", "SA", "CR-03", "CR-04", "CR-05", "CR-06", "CR-07", "GHG-00", "GHG-01", "GHG-02", "GHG-03", "GHG-03a", "GHG-03b",
               "GHG-04", "GHG-05", "GHG-06", "GHG-07", "GHG-07b", "GHG-08", "GHG-09", "FE-01", "S2-CL"]
     ws.cell(r, 1, "Working papers").font = F_BOLD
     for k, s in enumerate(sheets):
@@ -490,10 +490,11 @@ def cr_01(wb, a):
     rows = ex([["R01", "Buyer decarbonisation requirements", "Transition – market", "Downstream", "Medium (1–5y)", "Orders from EU/US brands", "Revenue; access to green loans", 4, 4, sc, "Supplier data programme; solar PPA", "Scope 3 Cat 1; % revenue from buyers with SBTs", "SA6"],
                ["R02", "Flooding at Phnom Penh SEZ site", "Physical – acute", "Own operations", "Short (0–1y)", "Factory, inventory", "PP&E, inventory, downtime", 3, 4, sc, "Raised plinths; insurance", "% assets in flood zone (S2.29(c))", "SA5"],
                ["R04", "Heat stress reduces productivity", "Physical – chronic", "Own operations", "Long (>5y)", "4,000 workers", "Labour cost, output", 4, 3, sc, "Ventilation, work-rest schedule", "Hours lost to heat", "SA5"],
+               ["R05", "Domestic carbon pricing / ETS (sub-decree pending) and pass-through in power tariffs", "Transition – policy/legal", "Own operations; upstream power", "Medium (1–5y)", "Scope 1 and purchased electricity", "Energy cost; compliance cost", 3, 2, sc, "Solar PPA; efficiency; monitor MoE rules", "CR-06 cost by scenario; internal carbon price (S2.29(f))", "SA6; CR-06"],
                ["O01", "Rooftop solar lowers energy cost and Scope 2", "Opportunity – energy source", "Own operations", "Medium", "Energy cost", "Cost of sales", 4, 2, sc, "2 MW PPA by Q3 2027", "% renewable; capex (S2.29(e))", "SA6"]], 20, 13, {10: sc})
     end = table(ws, 9, ["ID", "Description", "Type", "Value-chain location", "Horizon", "Exposure (assets/activities)", "Financial channel",
                         "Likelihood 1–5", "Magnitude 1–5", "Score", "Response (mitigation/adaptation)", "Metric / target", "Scenario WP"],
-                rows, [7, 32, 20, 16, 12, 22, 22, 9, 9, 8, 30, 28, 9], input_cols=[1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13], example_rows=4)
+                rows, [7, 32, 20, 16, 12, 22, 22, 9, 9, 8, 30, 28, 9], input_cols=[1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13], example_rows=5)
     dv_list(ws, f"C10:C{end}", ["Physical – acute", "Physical – chronic", "Transition – policy/legal", "Transition – technology",
                                  "Transition – market", "Transition – reputation", "Opportunity – resource efficiency",
                                  "Opportunity – energy source", "Opportunity – products/services", "Opportunity – markets", "Opportunity – resilience"])
@@ -614,6 +615,200 @@ def cr_05(wb, a):
     ws.cell(30, 1, "Check the current Industry-based Guidance code and wording; the ISSB is enhancing SASB Standards (exposure drafts 2025–2026).").font = F_NOTE
 
 
+YEARS = list(range(2027, 2036))
+PRICE_PATHS = [  # illustrative USD/tCO2e assumptions, NOT forecasts
+    ("Current Policies (~3°C) — no domestic ETS before 2030", [0, 0, 0, 0, 5, 5, 6, 7, 8]),
+    ("NDC 3.0 / Delayed transition — ETS from 2029", [0, 0, 5, 7, 9, 11, 13, 14, 15]),
+    ("Net Zero 2050 (~1.5°C) — ETS from 2027, regional convergence", [10, 14, 18, 23, 28, 33, 39, 44, 50]),
+]
+
+
+def cr_06(wb, a, kwh_first, kwh_last):
+    """Cambodia carbon pricing / ETS exposure model (scenario-based)."""
+    ws = header(wb, "CR-06", "Cambodia carbon pricing and ETS exposure model", "S2.10, 15–22, 29(f), 36(e); S1.23", a,
+                "Scenario model of a possible Cambodian ETS (or carbon tax): direct compliance cost if above the threshold, "
+                "indirect cost via electricity pass-through, credit use. Parameters are assumptions — no Cambodian ETS is in force (Nov 2026).")
+    ws.column_dimensions["A"].width = 58
+    ws.column_dimensions["B"].width = 16
+    for j in range(3, 3 + len(YEARS)):
+        ws.column_dimensions[get_column_letter(j)].width = 11
+    ws.column_dimensions[get_column_letter(3 + len(YEARS))].width = 14
+
+    def sec(r, t):
+        ws.cell(r, 1, t).font = Font(name=FONT, size=11, bold=True, color="1F3864")
+
+    # A. Regulatory status
+    sec(9, "A. Regulatory status — confirm each item before use (☐)")
+    status = [["Domestic ETS or carbon tax in force?", "No (as understood at Nov 2026)", "Slaughter and May ESG in APAC 2025 (Cambodia)", "☐"],
+              ["Carbon market sub-decree", "NDC 3.0 milestone: sub-decree approved by 2026 — status unconfirmed", "Cambodia NDC 3.0 (UNFCCC, Aug 2025)", "☐"],
+              ["Article 6 framework", "MoE Article 6 Operations Manual (Dec 2023/2024); eligible mechanisms: JCM, Gold Standard, VCS, Article 6.4 (PACM)", "DFDL legal update; MoE", "☐"],
+              ["Institution", "Carbon Crediting Secretariat (CCS) under MoE leads implementation", "Khmer Times, May 2026", "☐"],
+              ["Bilateral", "JCM (Japan); Korea Article 6.2 partnership; Cambodia–Singapore MoU (2023)", "Press; MoE", "☐"],
+              ["Registry", "UN PACM registry and independent-mechanism registries pending a national registry", "MoE Operations Manual", "☐"],
+              ["External carbon prices faced by exporters", "EU CBAM (definitive from 2026: cement, iron/steel, aluminium, fertilisers, hydrogen, electricity); buyer internal carbon prices", "EU Regulation 2023/956", "☐"]]
+    lastc = 3 + len(YEARS)
+    for j, h in enumerate(["Item", "Current understanding  [source]  — tick ☐ when confirmed"], start=1):
+        c = ws.cell(10, j, h)
+        c.font, c.fill, c.border = F_HEAD, FILL_HEAD, BORDER
+    ws.merge_cells(start_row=10, start_column=2, end_row=10, end_column=lastc)
+    for k, (item, und, src, tick) in enumerate(status):
+        rr = 11 + k
+        ws.cell(rr, 1, item).font = F_BOLD
+        ws.cell(rr, 1).alignment = WRAP
+        c = ws.cell(rr, 2, f"{und}  [{src}]  {tick}")
+        c.font, c.alignment, c.fill = F_BASE, WRAP, FILL_INPUT
+        ws.merge_cells(start_row=rr, start_column=2, end_row=rr, end_column=lastc)
+        ws.row_dimensions[rr].height = 30
+    r = 10 + len(status)
+
+    # B. Scheme design assumptions
+    r += 2
+    sec(r, "B. Scheme design assumptions (scenario inputs — edit; label as assumptions in any disclosure)")
+    assum = [("Scheme modelled", "Hypothetical Cambodia ETS", "text"),
+             ("Earliest possible compliance year (scenario start = later of this and first year its price > 0)", 2027, "0"),
+             ("Coverage threshold — direct (Scope 1) emissions per entity/facility (tCO2e/yr)", 25000, NUM0),
+             ("Power generation covered (cost passed through to tariffs)? 1 = yes, 0 = no", 1, "0"),
+             ("Electricity cost pass-through to customers (%)", 0.5, "0%"),
+             ("Free allocation in first compliance year (%)", 0.9, "0%"),
+             ("Annual reduction in free allocation (percentage points)", 0.1, "0%"),
+             ("Offset limit — share of obligation met with eligible Cambodian credits (%)", 0.1, "0%"),
+             ("Eligible credit price (USD/tCO2e)", 8, NUM),
+             ("Annual change in covered emissions after base year (%) — negative = reduction", -0.02, "0.0%"),
+             ("Base year for emissions (from GHG-00)", 2026, "0"),
+             ("Base-year Scope 1 (tCO2e) — link", "='GHG-00'!B10", NUM),
+             ("Base-year purchased electricity (kWh) — link", f"=SUM('GHG-05'!C{kwh_first}:C{kwh_last})", NUM0),
+             ("Grid emission factor (kg CO2e/kWh) — link GHG-02", f"=INDEX('GHG-02'!$C${FR_FIRST}:$C${FR_LAST},MATCH(\"EF-ELEC-KH\",'GHG-02'!$A${FR_FIRST}:$A${FR_LAST},0))", "0.0000"),
+             ("Presentation units per USD (e.g. KHR million per USD = 0.004 at KHR 4,000)", 0.004, "0.000000"),
+             ("Discount rate for NPV (%)", 0.1, "0.0%"),
+             ("EBITDA, presentation currency (for materiality context)", 60000, NUM0)]
+    A = {}
+    for k, (lab, val, nf) in enumerate(assum):
+        rr = r + 1 + k
+        ws.cell(rr, 1, lab).font = F_BASE
+        c = ws.cell(rr, 2, val)
+        c.border = BORDER
+        c.number_format = "General" if nf == "text" else nf
+        if is_formula(val):
+            c.font = F_LINK
+        else:
+            c.fill = FILL_INPUT
+            c.font = F_EX if EXAMPLES else F_BASE
+        A[k] = f"$B${rr}"
+    (sch, start, thr, pwr, pt, free0, freed, olim, cprice, chg, base, s1, kwh, gef, fx, disc, ebitda) = [A[k] for k in range(17)]
+    r = r + len(assum) + 2
+
+    # C. Price paths
+    sec(r, "C. Carbon price paths (USD/tCO2e) — illustrative assumptions, not forecasts; align with SA2 scenarios")
+    hdr_r = r + 1
+    ws.cell(hdr_r, 1, "Scenario").font = F_HEAD
+    ws.cell(hdr_r, 1).fill = FILL_HEAD
+    ws.cell(hdr_r, 2, "Unit").font = F_HEAD
+    ws.cell(hdr_r, 2).fill = FILL_HEAD
+    for j, y in enumerate(YEARS):
+        c = ws.cell(hdr_r, 3 + j, str(y))
+        c.font, c.fill, c.alignment = F_HEAD, FILL_HEAD, Alignment(horizontal="center")
+    price_rows = []
+    for k, (name, path) in enumerate(PRICE_PATHS):
+        rr = hdr_r + 1 + k
+        ws.cell(rr, 1, name).font = F_BASE
+        ws.cell(rr, 2, "USD/tCO2e").font = F_BASE
+        for j, p in enumerate(path):
+            c = ws.cell(rr, 3 + j, p)
+            c.fill, c.border, c.number_format = FILL_INPUT, BORDER, NUM0
+            c.font = F_EX if EXAMPLES else F_BASE
+        price_rows.append(rr)
+    r = hdr_r + len(PRICE_PATHS) + 2
+
+    # D. Calculation per scenario
+    sec(r, "D. Exposure by scenario and year")
+    r += 1
+    summary = []
+    lastcol = get_column_letter(2 + len(YEARS))
+    totcol = 3 + len(YEARS)
+    for k, (name, _) in enumerate(PRICE_PATHS):
+        pr = price_rows[k]
+        for j, y in enumerate(YEARS):
+            c = ws.cell(r, 3 + j, y)
+            c.font, c.fill = F_BOLD, FILL_TOT
+        ws.cell(r, totcol, "Total / NPV").font = F_BOLD
+        yr = r
+        c = ws.cell(yr, 2, f'=MAX({start},IF(_xlfn.MINIFS(C{yr}:{lastcol}{yr},C{pr}:{lastcol}{pr},">0")=0,9999,_xlfn.MINIFS(C{yr}:{lastcol}{yr},C{pr}:{lastcol}{pr},">0")))')
+        c.font, c.fill, c.number_format = F_BOLD, FILL_TOT, "0"
+        ws.cell(yr, 1, f"{name}  — scheme start year →").font = F_BOLD
+        lines = [
+            ("Covered direct emissions (tCO2e)", "={s1}*(1+{chg})^({Y}{yr}-{base})", NUM),
+            ("In scheme? (year ≥ start and emissions ≥ threshold)", "=IF(AND({Y}{yr}>=$B${yr},{Y}{r1}>={thr}),1,0)", "0"),
+            ("Free allocation (%)", "=IF({Y}{yr}<$B${yr},0,MAX(0,{free0}-{freed}*({Y}{yr}-$B${yr})))", "0%"),
+            ("Net obligation after free allocation (tCO2e)", "={Y}{r1}*(1-{Y}{r3})*{Y}{r2}", NUM),
+            ("Met with eligible credits (tCO2e)", "={Y}{r4}*{olim}", NUM),
+            ("Allowances purchased (tCO2e)", "={Y}{r4}-{Y}{r5}", NUM),
+            ("Direct compliance cost (USD)", "={Y}{r6}*{Y}{pr}+{Y}{r5}*{cprice}*IF({Y}{pr}>0,1,0)", NUM0),
+            ("Indirect cost: electricity pass-through (USD)", "=IF({Y}{yr}>=$B${yr},{kwh}*{gef}/1000*{Y}{pr}*{pt}*{pwr},0)", NUM0),
+            ("Total cost (USD)", "={Y}{r7}+{Y}{r8}", NUM0),
+            ("Total cost (presentation currency)", "={Y}{r9}*{fx}", NUM),
+            ("Total cost as % of EBITDA", "=IF({ebitda}<>0,{Y}{r10}/{ebitda},\"\")", "0.00%"),
+        ]
+        rows_idx = {}
+        for i, (lab, tmpl, nf) in enumerate(lines, start=1):
+            rr = yr + i
+            rows_idx[f"r{i}"] = rr
+            ws.cell(rr, 1, lab).font = F_BASE
+        for i, (lab, tmpl, nf) in enumerate(lines, start=1):
+            rr = yr + i
+            for j in range(len(YEARS)):
+                Y = get_column_letter(3 + j)
+                f = tmpl.format(Y=Y, yr=yr, pr=pr, s1=s1, chg=chg, base=base, start=start, thr=thr, free0=free0,
+                                freed=freed, olim=olim, cprice=cprice, kwh=kwh, gef=gef, pt=pt, pwr=pwr, fx=fx,
+                                ebitda=ebitda, **rows_idx)
+                c = ws.cell(rr, 3 + j, f)
+                c.number_format, c.border, c.font = nf, BORDER, F_BASE
+            if i in (6, 7, 8, 9):
+                c = ws.cell(rr, totcol, f"=SUM(C{rr}:{lastcol}{rr})")
+                c.number_format, c.font, c.fill = nf, F_BOLD, FILL_TOT
+            if i == 10:
+                c = ws.cell(rr, totcol, f"=NPV({disc},C{rr}:{lastcol}{rr})")
+                c.number_format, c.font, c.fill = NUM, F_BOLD, FILL_TOT
+        summary.append((name, yr + 9, yr + 10))
+        r = yr + len(lines) + 2
+
+    # E. Summary for disclosure
+    sec(r, "E. Summary for S2.15–22 disclosure (anticipated financial effects of carbon-pricing transition risk)")
+    r += 1
+    rows = [[n, f"='CR-06'!{get_column_letter(totcol)}{tu}", f"='CR-06'!{get_column_letter(totcol)}{tp}",
+             f"=MAX(C{tp}:{lastcol}{tp})"] for n, tu, tp in summary]
+    rows = [[x[0], x[1].replace("'CR-06'!", ""), x[2].replace("'CR-06'!", ""), x[3]] for x in rows]
+    e = table(ws, r, ["Scenario", "Cumulative cost 2027–2035 (USD)", "NPV (presentation currency)", "Peak annual cost (presentation currency)"],
+              rows, None, example_rows=0, fmt={2: NUM0, 3: NUM, 4: NUM})
+    notes = [
+        "Disclosure links: transition risk — policy/legal (S2.10(b)); anticipated financial effects (S2.15–21, ranges acceptable); SA6 transition analysis (S2.22);",
+        "internal carbon price — if the entity uses one of these paths in decisions, disclose how and the price (S2.29(f)); planned use of credits towards targets (S2.36(e)) — CR-07.",
+        "Teaching point: an SME garment exporter with ~200 tCO2e Scope 1 falls far below a 25,000 t threshold — its exposure is indirect (power tariffs, buyer pricing, CBAM-type mechanisms), not direct compliance.",
+        "Accounting (if a scheme starts): no specific IFRS for allowances (IFRIC 3 withdrawn) — choose and disclose a policy (e.g. allowances as intangible assets/inventory at cost; obligation as an IAS 37 liability",
+        "measured at carrying amount of allowances held plus market price for the shortfall). Use the same price and FX assumptions as the FS (S1.23); connect to S1-09.",
+    ]
+    for k, n in enumerate(notes):
+        ws.cell(e + 2 + k, 1, n).font = F_NOTE
+
+
+def cr_07(wb, a):
+    ws = header(wb, "CR-07", "Carbon credit register (Article 6 / voluntary)", "S2.36(e); Cambodia Article 6 Operations Manual", a,
+                "Register credits held or planned: mechanism, authorisation, corresponding adjustment, type, intended use. Credits are disclosed separately — never netted against the GHG inventory.")
+    rows = ex([["CC-01", "Rooftop solar / cookstove programme (illustrative)", "Gold Standard", "2027", 500, "Technological", "Avoidance",
+                "N", "N", "GS registry", "Voluntary claim (not for net target)", "N", 8, 4000, "Planned — not yet contracted"],
+               ["CC-02", "Paddy AWD methane reduction (illustrative)", "JCM", "2028", 300, "Nature-based", "Avoidance",
+                "Y", "Y", "JCM registry", "Towards net Scope 1+2 target T02", "N", 12, 3600, "LoA from MoE required"]], 15, 15)
+    end = table(ws, 9, ["ID", "Project", "Mechanism (JCM / Gold Standard / VCS / A6.4 PACM / A6.2)", "Vintage", "Quantity (tCO2e)",
+                        "Nature-based / technological", "Removal / avoidance", "Letter of authorisation (MoE)?", "Corresponding adjustment?",
+                        "Registry", "Intended use (S2.36(e))", "Retired?", "Price (USD/t)", "Cost (USD)", "Integrity notes (permanence, additionality, leakage, forestry export limits)"],
+                rows, [7, 32, 20, 8, 11, 14, 12, 12, 12, 14, 26, 8, 9, 11, 40], input_cols=list(range(1, 16)), example_rows=2,
+                fmt={5: NUM0, 13: NUM, 14: NUM0})
+    dv_list(ws, f"F10:F{end}", ["Nature-based", "Technological"])
+    dv_list(ws, f"G10:G{end}", ["Removal", "Avoidance"])
+    total_row(ws, end + 1, 4, "Total", [5, 14], 10, end, NUM0)
+    ws.cell(end + 3, 1, "Cambodian rules: credits from eligible mechanisms only; forestry credits counted toward the NDC are not exportable (company transfers via long-term contracts); "
+                        "authorisation and corresponding adjustments determine whether a credit can support an international claim. Confirm against the current MoE Operations Manual / sub-decree.").font = F_NOTE
+
+
 def fe_01(wb, a):
     ws = header(wb, "FE-01", "Financed emissions (PCAF) — Scope 3 Cat 15", "S2.29(a)(vi)(2); S2.B58–B63; Dec 2025 amendments", a,
                 "Attribute counterparty emissions to the loan book by asset class and sector; score data quality.")
@@ -726,6 +921,10 @@ def main():
     ghg_09(wb, a)
     ghg_00(wb, a, s1_tot, s2_tot, s3_first, s3_last)
     wb.move_sheet("GHG-00", offset=lead_idx - wb.sheetnames.index("GHG-00"))
+    cr_06(wb, a, 10, s2_tot - 1)
+    cr_07(wb, a)
+    for k, name in enumerate(("CR-06", "CR-07")):
+        wb.move_sheet(name, offset=(wb.sheetnames.index("CR-05") + 1 + k) - wb.sheetnames.index(name))
     if a.bank:
         fe_01(wb, a)
     s2_cl(wb, a)
