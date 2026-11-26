@@ -674,6 +674,8 @@ examples = [
     ("CL-002", "Example: Foreign-owned property developer (51/49 nominee)", "Company", "High", "High", "Medium", "High",
      "Medium", "Medium", "No", "No"),
     ("CL-003", "Example: NGO (LANGO registered)", "NPO", "Medium", "Low", "Medium", "Low", "Low", "Medium", "Yes", "No"),
+    ("CL-004", "CASE (fictional): Xing Tian Dy / Golden Tide Development Co., Ltd.", "Company", "High", "High", "High",
+     "High", "High", "High", "No", "Yes"),
 ]
 CRA_N = 60
 for i in range(CRA_N):
@@ -682,10 +684,16 @@ for i in range(CRA_N):
         for j, v in enumerate(examples[i]):
             inp(cr, f"{'ABCDEFGHIJK'[j]}{r}", v)
         inp(cr, f"O{r}", f"=DATE(2026,{3+i*2},15)", fmt="dd-mmm-yyyy")
+        if examples[i][0] == "CL-004":
+            cr[f"O{r}"].value = "=DATE(2026,11,20)"
+            inp(cr, f"R{r}", "OFAC 50% rule: corporate shareholder blocked; client is its director. Declined; STR filed. "
+                             "See Case_XingTianDy sheet.")
     else:
         for col in "ABCDEFGHIJK":
             inp(cr, f"{col}{r}")
         inp(cr, f"O{r}", None, fmt="dd-mmm-yyyy")
+    if i >= len(examples) or examples[i][0] != "CL-004":
+        inp(cr, f"R{r}")
     sc_parts = "+".join(
         f'{"DEFGHI"[j]}$3*MATCH({"DEFGHI"[j]}{r},{{"Low","Medium","High"}},0)' for j in range(6))
     put(cr, f"L{r}", f'=IF(COUNTA(D{r}:I{r})<6,"",({sc_parts})/SUM($D$3:$I$3))', fmt="0.00", align=center)
@@ -695,8 +703,7 @@ for i in range(CRA_N):
                      f'IF(M{r}="Low","Simplified CDD (if permitted)","STOP - MLRO decision; consider STR / freeze"))))')
     put(cr, f"P{r}", f'=IF(OR(O{r}="",M{r}=""),"",IF(M{r}="Prohibited / escalate",O{r},'
                      f'EDATE(O{r},IF(M{r}="High",$Q$6,IF(M{r}="Medium",$R$6,$S$6)))))', fmt="dd-mmm-yyyy")
-    put(cr, f"Q{r}", f'=IF(P{r}="","",IF(P{r}<Cover!$C$9,"Yes","No"))', align=center)
-    inp(cr, f"R{r}")
+    put(cr, f"Q{r}", f'=IF(P{r}="","",IF(M{r}="Prohibited / escalate","Exited",IF(P{r}<Cover!$C$9,"Yes","No")))', align=center)
 CL = 8 + CRA_N
 put(cr, "Q4", f'=IFERROR(COUNTIF(M9:M{CL},"High")/COUNT(L9:L{CL}),0)', fmt="0%")
 put(cr, "Q5", f'=COUNTIF(Q9:Q{CL},"Yes")')
@@ -945,6 +952,276 @@ for t in ["Copying a template without putting the firm's own data in it",
     r += 1
     put(ev, f"B{r}", "- " + t, border=False)
 
+# ============================================================ Case study
+cs = sheet("Case_XingTianDy", {"A": 5, "B": 30, "C": 22, "D": 16, "E": 16, "F": 16, "G": 40}, tab="C00000")
+title(cs, "Sample client case: Xing Tian Dy - OFAC-linked ownership (teaching case)",
+      "FICTIONAL CASE FOR TEACHING. All persons, companies, ID numbers and sanctions entries are invented. "
+      "'Xing Tian Dy' was not found on the OFAC SDN list when this case was written. Any resemblance to real persons is coincidental.")
+cs["A2"].font = Font(name=F, size=9, bold=True, color="C00000")
+r = 4
+
+
+def kv_block(rows, start, label_w="B", val_span="G"):
+    rr = start
+    for k, v in rows:
+        put(cs, f"B{rr}", k, font=f_bold, fill=fill_grey)
+        put(cs, f"C{rr}", v)
+        cs.merge_cells(f"C{rr}:{val_span}{rr}")
+        cs.row_dimensions[rr].height = 30 if len(str(v)) > 90 else 16
+        rr += 1
+    return rr
+
+
+section(cs, f"A{r}", "A. Client profile (KYC as collected at onboarding, 18-Nov-2026)", f"G{r}")
+r = kv_block([
+    ("Prospective client (entity)", "Golden Tide Development Co., Ltd. (fictional) - real-estate & condominium developer, "
+     "Sihanoukville, Preah Sihanouk province"),
+    ("MOC registration no.", "000XXXXX (fictional) - incorporated Mar-2023, registered capital USD 1,000,000"),
+    ("Contact person / director", "Mr. XING Tian Dy (fictional)"),
+    ("Name variants to screen", "XING Tian Dy; DY Xing Tian; XING Tiandi; Xing T. Dy; Khmer-script transliteration; "
+     "Chinese-character name (as on PRC passport)"),
+    ("Date / place of birth", "12-Apr-1979, Fujian, PRC (fictional)"),
+    ("Nationality / ID", "Cambodian (naturalised 2021) - ID card XXXXXXXXX; also holds PRC passport EXXXXXXXX (fictional)"),
+    ("Residential address", "Ochheuteal area, Sangkat 4, Sihanoukville (fictional)"),
+    ("Occupation / source of wealth (as stated)", "Property developer since 2016; previously 'online entertainment "
+     "technology consulting' (2018-2020). No documentary evidence provided for source of wealth."),
+    ("PEP status", "Not a PEP. Holds an honorary advisor title to a provincial business association (assess as possible PEP associate)."),
+    ("How onboarded", "Introduced via WeChat/Telegram by a Phnom Penh 'investment agent'; first meeting by video only; "
+     "ID copies sent as phone photos."),
+], r + 1)
+
+r += 1
+section(cs, f"A{r}", "B. Ownership structure and OFAC 50% rule test (aggregate ownership by blocked persons >= 50% = blocked)",
+        f"G{r}")
+r += 1
+put(cs, f"B{r}", "Treat nominee shares as held for the beneficial owner?", font=f_bold)
+inp(cs, f"C{r}", "Yes")
+dv_list(cs, '"Yes,No"', f"C{r}")
+cs[f"D{r}"] = "Change to 'No' to see the result on the face of the MOC register only."
+cs[f"D{r}"].font = f_note
+NOM = f"$C${r}"
+r += 2
+section(cs, f"B{r}", "B1. Oriental Crown Holdings Ltd (BVI) - corporate shareholder (fictional)", f"G{r}")
+r += 1
+header(cs, r, ["Shareholder", "On OFAC SDN list?", "% held", "Blocked %", "", "Notes"], col=2)
+r += 1
+oc_first = r
+for n, sdn, pct, note in [
+        ("Sapphire Bay Group (fictional SDN)", "Yes", 0.40, "Fictional SDN entry, designated for scam-compound / forced-labour links."),
+        ("KWAN Lee (fictional SDN individual)", "Yes", 0.20, "Fictional SDN entry; chairman of Sapphire Bay Group."),
+        ("XING Tian Dy", "No", 0.15, "Also a DIRECTOR of Oriental Crown."),
+        ("Other private investors (3)", "No", 0.25, "Not identified.")]:
+    put(cs, f"B{r}", n)
+    inp(cs, f"C{r}", sdn)
+    inp(cs, f"D{r}", pct, fmt="0%")
+    put(cs, f"E{r}", f'=IF(C{r}="Yes",D{r},0)', fmt="0%")
+    put(cs, f"G{r}", note)
+    r += 1
+oc_last = r - 1
+dv_list(cs, '"Yes,No"', f"C{oc_first}:C{oc_last}")
+put(cs, f"B{r}", "Aggregate blocked ownership", font=f_bold)
+put(cs, f"D{r}", f"=SUM(D{oc_first}:D{oc_last})", fmt="0%", font=f_bold)
+put(cs, f"E{r}", f"=SUM(E{oc_first}:E{oc_last})", fmt="0%", font=f_bold)
+put(cs, f"G{r}", f'=IF(E{r}>=0.5,"BLOCKED by 50% rule","Not blocked by ownership alone")', font=f_bold)
+OC_BLOCKED = f"$G${r}"
+r += 2
+section(cs, f"B{r}", "B2. Golden Tide Development Co., Ltd. - the prospective client (fictional)", f"G{r}")
+r += 1
+header(cs, r, ["Shareholder (MOC register)", "Blocked person?", "% on register", "Blocked % (effective)", "", "Notes"], col=2)
+r += 1
+gt_first = r
+put(cs, f"B{r}", "Ms. SOK Channary (Khmer national)")
+put(cs, f"C{r}", f'=IF({NOM}="Yes",IF({OC_BLOCKED}="BLOCKED by 50% rule","Yes (via nominee)","No"),"No")')
+inp(cs, f"D{r}", 0.51, fmt="0%")
+put(cs, f"E{r}", f'=IF(LEFT(C{r},3)="Yes",D{r},0)', fmt="0%")
+put(cs, f"G{r}", "Office clerk, age 24. Signed nominee/trust deed in favour of Oriental Crown (found in data room). "
+                 "Land-holding workaround: foreigners cannot own land.")
+r += 1
+put(cs, f"B{r}", "Oriental Crown Holdings Ltd (BVI)")
+put(cs, f"C{r}", f'=IF({OC_BLOCKED}="BLOCKED by 50% rule","Yes","No")')
+inp(cs, f"D{r}", 0.25, fmt="0%")
+put(cs, f"E{r}", f'=IF(LEFT(C{r},3)="Yes",D{r},0)', fmt="0%")
+put(cs, f"G{r}", "Blocked under the 50% rule (see B1).")
+r += 1
+put(cs, f"B{r}", "XING Tian Dy")
+put(cs, f"C{r}", "No")
+inp(cs, f"D{r}", 0.24, fmt="0%")
+put(cs, f"E{r}", 0, fmt="0%")
+put(cs, f"G{r}", "Not listed himself; but director of a blocked entity and acts for it.")
+gt_last = r
+r += 1
+put(cs, f"B{r}", "Effective blocked ownership", font=f_bold)
+put(cs, f"D{r}", f"=SUM(D{gt_first}:D{gt_last})", fmt="0%", font=f_bold)
+put(cs, f"E{r}", f"=SUM(E{gt_first}:E{gt_last})", fmt="0%", font=f_bold)
+put(cs, f"G{r}", f'=IF(E{r}>=0.5,"CLIENT IS BLOCKED (50% rule) - PROHIBITED",'
+                 f'IF(E{r}>0,"Blocked shareholder present - PROHIBITED by firm appetite","No blocked ownership"))',
+    font=Font(name=F, size=10, bold=True, color="C00000"))
+GT_RESULT = f"$G${r}"
+r += 1
+cs[f"B{r}"] = ("Lesson: on the MOC register the blocked stake is only 25% (below 50%). Looking through the Khmer nominee "
+               "takes it to 76% - the client itself is a blocked entity. Always verify the beneficial owner to a natural person.")
+cs[f"B{r}"].font = f_note
+cs[f"B{r}"].alignment = wrap
+cs.merge_cells(f"B{r}:G{r}")
+cs.row_dimensions[r].height = 30
+
+r += 2
+section(cs, f"A{r}", "C. Services requested and proposed fees", f"G{r}")
+r += 1
+header(cs, r, ["Service", "Fee (USD)", "Payment method offered", "", "", "Risk note"], col=2)
+r += 1
+sv_first = r
+for s, fee, pm, note in [
+        ("Statutory audit FY2025 (CIFRS for SMEs)", 18000, "Cash USD, in advance", "Audit opinion needed to open a new bank account."),
+        ("Monthly bookkeeping & GDT tax filing", 9600, "Transfer from Hong Kong company", "Third-party payer."),
+        ("MOC amendment: increase capital to USD 3.5m", 2500, "Cash USD", "Capital funded by HK entity - source unknown."),
+        ("Nominee company-secretary service", 3000, "Transfer from Hong Kong company", "Firm would act for the structure.")]:
+    put(cs, f"B{r}", s)
+    inp(cs, f"C{r}", fee, fmt="#,##0")
+    put(cs, f"D{r}", pm)
+    cs.merge_cells(f"D{r}:F{r}")
+    put(cs, f"G{r}", note)
+    r += 1
+put(cs, f"B{r}", "Total proposed fees", font=f_bold)
+put(cs, f"C{r}", f"=SUM(C{sv_first}:C{r-1})", fmt="#,##0", font=f_bold)
+r += 2
+section(cs, f"A{r}", "D. Transactions seen in draft ledgers / bank statements (Jan-Oct 2026)", f"G{r}")
+r += 1
+header(cs, r, ["Date", "Description", "Amount (USD)", "Counterparty", "", "Red flag"], col=2)
+r += 1
+tx_first = r
+for d, desc, amt, cp, rf_ in [
+        ("=DATE(2026,2,3)", "'Shareholder capital injection'", 2400000, "Bright Harbour Trading Ltd (HK)", "Unrelated offshore funder; no loan/share docs."),
+        ("=DATE(2026,3,15)", "Cash deposits (14 deposits)", 610000, "Branch counters, Sihanoukville", "Structuring pattern; cash-intensive."),
+        ("=DATE(2026,5,20)", "Payment 'construction materials'", 880000, "Oriental Crown Holdings Ltd", "Payment to blocked entity; no delivery docs."),
+        ("=DATE(2026,7,8)", "Transfer to crypto OTC desk", 350000, "Unnamed OTC broker (Telegram)", "Virtual-asset conversion."),
+        ("=DATE(2026,9,30)", "'Consultancy fees'", 120000, "Staff personal accounts (5)", "Use of personal accounts; possible layering.")]:
+    inp(cs, f"B{r}", d, fmt="dd-mmm-yyyy")
+    put(cs, f"C{r}", desc)
+    inp(cs, f"D{r}", amt, fmt="#,##0")
+    put(cs, f"E{r}", cp)
+    cs.merge_cells(f"E{r}:F{r}")
+    put(cs, f"G{r}", rf_)
+    r += 1
+put(cs, f"C{r}", "Total flagged", font=f_bold)
+put(cs, f"D{r}", f"=SUM(D{tx_first}:D{r-1})", fmt="#,##0", font=f_bold)
+put(cs, f"E{r}", "Declared annual revenue FY2025:", font=f_bold)
+inp(cs, f"F{r}", 420000, fmt="#,##0")
+r += 1
+put(cs, f"C{r}", "Flagged flows / revenue", font=f_bold)
+put(cs, f"D{r}", f"=IFERROR(D{r-1}/F{r-1},0)", fmt='0.0"x"', font=f_bold)
+
+r += 2
+section(cs, f"A{r}", "E. Sanctions & adverse-media screening log (UN / Cambodian domestic / OFAC / UK / EU)", f"G{r}")
+r += 1
+header(cs, r, ["Name screened", "List / source", "Match score", "Result", "", "Resolution"], col=2)
+r += 1
+for n, lst, scr, res, why in [
+        ("XING Tian Dy", "OFAC SDN", 0.88, "False positive", "Hit 'XING Tiandi' (fictional SDN): different DOB (1985), PRC only - discounted on 2 identifiers."),
+        ("XING Tian Dy", "UN Consolidated / Cambodian list", 0, "No match", "-"),
+        ("Oriental Crown Holdings Ltd", "OFAC SDN (direct)", 0, "No match", "Not named on list - BUT owned 60% by SDNs: blocked by 50% rule."),
+        ("Sapphire Bay Group", "OFAC SDN", 1.00, "TRUE MATCH", "Exact name, address and BVI reg. no. match (fictional entry)."),
+        ("KWAN Lee", "OFAC SDN", 0.97, "TRUE MATCH", "Name, DOB and passport match (fictional entry)."),
+        ("Golden Tide / XING Tian Dy", "Adverse media", None, "Relevant", "Press reports link the site to a scam compound raid (fictional)."),
+        ("SOK Channary", "All lists", 0, "No match", "Nominee - see ownership test.")]:
+    put(cs, f"B{r}", n)
+    put(cs, f"C{r}", lst)
+    put(cs, f"D{r}", scr, fmt="0%", align=center)
+    put(cs, f"E{r}", res)
+    cs.merge_cells(f"E{r}:F{r}")
+    put(cs, f"G{r}", why)
+    cs.row_dimensions[r].height = 30
+    r += 1
+cs.conditional_formatting.add(f"E{r-7}:E{r-1}", CellIsRule(operator="equal", formula=['"TRUE MATCH"'],
+                              fill=PatternFill("solid", fgColor="FF7C80")))
+
+r += 1
+section(cs, f"A{r}", "F. Customer risk assessment result (live from CRA_Clients row CL-004)", f"G{r}")
+r += 1
+m = 'MATCH("CL-004",CRA_Clients!$A$9:$A$68,0)'
+for lab, col, fmt in [("Weighted score", "L", "0.00"), ("CRA rating", "M", None), ("CDD level / action", "N", None),
+                      ("Ownership test result", None, None)]:
+    put(cs, f"B{r}", lab, font=f_bold, fill=fill_grey)
+    if col:
+        put(cs, f"C{r}", f"=IFERROR(INDEX(CRA_Clients!${col}$9:${col}$68,{m}),\"\")", font=f_link, fmt=fmt)
+    else:
+        put(cs, f"C{r}", f"={GT_RESULT}", font=f_link)
+    cs.merge_cells(f"C{r}:G{r}")
+    r += 1
+
+r += 1
+section(cs, f"A{r}", "G. Red flags present (cross-reference Red_Flags sheet)", f"G{r}")
+for t in ["Beneficial owner hidden behind a Khmer nominee holding 51% under a trust deed",
+          "Corporate shareholder owned 60% by OFAC-designated persons; client's director sits on its board",
+          "Real-estate developer in Sihanoukville with adverse media linking the site to a scam compound",
+          "Non-face-to-face onboarding through an agent on messaging apps; photo copies of ID only",
+          "Fees offered in cash in advance and by an unrelated Hong Kong payer",
+          "USD 2.4m capital from an unrelated offshore company; flagged flows are many times declared revenue",
+          "Structured cash deposits; transfers to a crypto OTC desk; use of staff personal accounts",
+          "Urgency: audit opinion wanted quickly to open a new bank account (possible de-risked client)"]:
+    r += 1
+    put(cs, f"B{r}", "- " + t)
+    cs.merge_cells(f"B{r}:G{r}")
+
+r += 2
+section(cs, f"A{r}", "H. Decision and action log", f"G{r}")
+r += 1
+header(cs, r, ["Date", "Step", "Who", "", "", "Detail"], col=2)
+for d, step, who, det in [
+        ("=DATE(2026,11,18)", "Screening at onboarding", "Client service", "True matches on two shareholders of Oriental Crown; work NOT started."),
+        ("=DATE(2026,11,18)", "Escalation to MLRO (same day)", "Client service", "Internal suspicion report IR-2026-031; no contact with client about the reason."),
+        ("=DATE(2026,11,19)", "Ownership look-through & EDD review", "MLRO", "50% rule test: client blocked via nominee (76%)."),
+        ("=DATE(2026,11,20)", "Decision: decline engagement", "MLRO + Managing Partner", "Outside appetite (Risk_Appetite: 'will not accept' #2). Neutral decline letter - no tipping-off."),
+        ("=DATE(2026,11,20)", "STR filed with CAFIU", "MLRO", "Suspected proceeds of fraud/trafficking and sanctions evasion; reference STR-XXXX."),
+        ("=DATE(2026,11,20)", "Funds & records", "MLRO", "No fees received - nothing to return. Keep CDD, screening and decision records for the legal retention period."),
+        ("=DATE(2026,11,21)", "Wider checks", "MLRO", "Search client base for other links to Oriental Crown, Bright Harbour, the agent; update BRA trigger log.")]:
+    r += 1
+    inp(cs, f"B{r}", d, fmt="dd-mmm-yyyy")
+    put(cs, f"C{r}", step)
+    put(cs, f"D{r}", who)
+    cs.merge_cells(f"D{r}:F{r}")
+    put(cs, f"G{r}", det)
+    cs.row_dimensions[r].height = 30
+
+r += 2
+section(cs, f"A{r}", "I. Legal analysis - why OFAC matters to a Cambodian firm", f"G{r}")
+for t in [
+    "1. OFAC sanctions are US law. They are not, by themselves, a Cambodian legal freeze obligation. Cambodian TFS "
+    "freeze-and-report duties attach to UN Security Council and domestic designations (verify current list and procedure with CAFIU / NCC).",
+    "2. But Cambodia's economy is dollarised: USD payments clear through US correspondent banks. Dealing with blocked persons "
+    "exposes the firm, its bank and its clients to blocked payments, bank de-risking and possible US secondary-sanctions risk.",
+    "3. The firm's own risk appetite treats OFAC/UK/EU hits as 'will not accept' - so the engagement is refused regardless.",
+    "4. Separately, the facts give reasonable grounds to suspect proceeds of crime (fraud, trafficking) and sanctions evasion, "
+    "so an STR to CAFIU is required under the AML/CFT Law - even though no service was provided.",
+    "5. Do not tip off the client. A neutral decline letter is used; the STR is never mentioned.",
+    "6. Freeze vs refuse: with an OFAC-only link and no funds held, the response is refuse + report. If a UN/domestic "
+    "designation matched, the firm would freeze without delay and report as the TFS procedure requires.",
+]:
+    r += 1
+    put(cs, f"B{r}", t)
+    cs.merge_cells(f"B{r}:G{r}")
+    cs.row_dimensions[r].height = 32
+
+r += 2
+section(cs, f"A{r}", "J. Discussion questions for students (model answers)", f"G{r}")
+r += 1
+header(cs, r, ["Question", "Model answer", "", "", "", ""], col=2)
+cs.merge_cells(f"C{r}:G{r}")
+for q, a in [
+    ("1. Is Golden Tide blocked on the face of the MOC register?", "No - only 25% is held by a blocked entity (Oriental Crown), below 50%. Set C-toggle to 'No' to show this."),
+    ("2. What changes when you look through the nominee?", "Sok Channary's 51% is held for Oriental Crown, so blocked ownership = 76%: the client is itself blocked."),
+    ("3. Was the 88% name hit on XING Tian Dy a true match?", "No - false positive resolved on DOB and nationality. Record the reasoning; do not just click 'clear'."),
+    ("4. Which BRA risks does this case test?", "C02 nominee/BO, C06 scam-linked clients, G02 SEZ/border, S01 company services, D01 non-face-to-face, T01/T02, N01 crypto, and the TFS component."),
+    ("5. Must the firm file an STR if it never accepted the client?", "Yes - attempted transactions / prospective clients with grounds for suspicion are reportable to CAFIU (check the exact wording of the law and CAFIU guideline)."),
+    ("6. Which controls worked and which failed?", "Worked: screening at onboarding (K04), BO look-through (K02), MLRO escalation (K09). Weak: agent introduction and remote onboarding (D02, K06)."),
+    ("7. What should change in the BRA afterwards?", "Log a trigger, consider raising C06/G02 likelihood, add the agent to a watch list, brief staff with this case."),
+]:
+    r += 1
+    put(cs, f"B{r}", q, font=f_bold)
+    put(cs, f"C{r}", a)
+    cs.merge_cells(f"C{r}:G{r}")
+    cs.row_dimensions[r].height = 32
+
 # ==================================================================== Cover
 cv = wb.create_sheet("Cover", 0)
 cv.sheet_view.showGridLines = False
@@ -1064,7 +1341,7 @@ cv.row_dimensions[r].height = 30
 
 # sheet order
 order = ["Cover", "Scales", "BRA_Register", "TFS_TF_PF", "Risk_Appetite", "Heat_Map", "Control_Tests",
-         "CRA_Clients", "Action_Plan", "Traceability", "Red_Flags", "Triggers_Versions", "Evidence_Checklist"]
+         "CRA_Clients", "Case_XingTianDy", "Action_Plan", "Traceability", "Red_Flags", "Triggers_Versions", "Evidence_Checklist"]
 wb._sheets = [wb[n] for n in order]
 for ws in wb.worksheets:
     ws.page_setup.orientation = "landscape"
