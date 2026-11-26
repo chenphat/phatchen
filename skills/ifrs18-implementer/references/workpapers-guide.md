@@ -5,6 +5,7 @@ Inputs are blue text on yellow cells. Everything else is a formula. In 05_TB deb
 | WP | Sheet | Purpose | Inputs | Key formulas / outputs |
 |---|---|---|---|---|
 | 00 | 00_Index | Index with hyperlinks, status, sign-off, overall check status | Status, initials | Link to 19_Checks |
+| 00a | 00a_Dashboard | One-page dashboard: 12 KPI tiles (with % change vs PY), charts of profit by category, IAS 1 vs IFRS 18 subtotals, expenses by nature and MPM bridge, readiness panel | – | Formula-fed helper data in columns Z:AB |
 | 01 | 01_Setup | Entity, labels, adoption date, SMBA flags, expense method, tax rate, NCI, EPS data, materiality | All | Referenced everywhere |
 | 02 | 02_Plan | Assess / Redesign / Implement / Report task plan; key dates | Owner, dates, status | Weighted % complete |
 | 03 | 03_Gap | IAS 1 practice vs IFRS 18 gap analysis (22 areas) | Current practice, gap, impact, action | Count of high-impact gaps |
@@ -13,6 +14,7 @@ Inputs are blue text on yellow cells. Everything else is a formula. In 05_TB deb
 | 06 | 06_Rules | Classification rule book (no SMBA / investing SMBA / financing SMBA) | – | Reference |
 | 07 | 07_Classification | Totals by category and by IFRS 18 line, with account counts | – | Five categories = profit |
 | 08 | 08_SPLOCI | Statement of profit or loss and OCI, attribution, EPS | – | SUMIFS by line; OP, PBFIT, PBT, profit, OCI, TCI |
+| 08b | 08b_PL_Visual | Colour-banded P&L: one band per category, closing with its subtotal (teaching / board view) | – | Links to 08_SPLOCI |
 | 09 | 09_Transition | C3 reconciliation; lettered explanations; bridge matrix (IAS 1 captions × IFRS 18 lines) | Explanation text | IAS 1 vs IFRS 18 vs adjustment; profit unchanged |
 | 10 | 10_ExpNature | IFRS 18.83 table: recognised, capitalised, incurred by function line × five natures | Capitalised amounts | Ties to function line totals |
 | 11 | 11_Aggregation | Every statement line: "other" flag, PM flag, prompt, judgement record | Judgement columns | Prompts for B15–B26 review |

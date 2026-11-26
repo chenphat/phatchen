@@ -24,6 +24,8 @@ from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.datavalidation import DataValidation
 from openpyxl.formatting.rule import CellIsRule, FormulaRule
+from openpyxl.chart import BarChart, Reference
+from openpyxl.chart.label import DataLabelList
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import demo_data  # noqa: E402
@@ -279,8 +281,8 @@ class Builder:
         self.setup_ref = {}
         self.checks = []   # (description, formula_actual, formula_expected, wp)
         # sheet order
-        names = ["00_Index", "01_Setup", "02_Plan", "03_Gap", "04_SMBA", "05_TB", "06_Rules",
-                 "07_Classification", "08_SPLOCI", "09_Transition", "10_ExpNature", "11_Aggregation",
+        names = ["00_Index", "00a_Dashboard", "01_Setup", "02_Plan", "03_Gap", "04_SMBA", "05_TB", "06_Rules",
+                 "07_Classification", "08_SPLOCI", "08b_PL_Visual", "09_Transition", "10_ExpNature", "11_Aggregation",
                  "12_MPM_ID", "13_MPM_Recon", "14_SFP", "15_CashFlow", "16_Disclosure", "17_Reclass",
                  "18_Issues", "19_Checks", "Lists"]
         self.ws = {n: self.wb.create_sheet(n) for n in names}
@@ -540,6 +542,7 @@ class Builder:
         put(ws, r, 5, f"={self.S('nci_profit_py')}+{self.S('nci_oci_py')}", fmt=NUM)
         self.r_tci_nci = r; r += 2
         section("Earnings per share (IAS 33.66)")
+        self.r_eps = r
         put(ws, r, 2, "Basic EPS")
         put(ws, r, 4, f"=(D{self.r_owners}-{self.S('pref_div_cy')})/{self.S('wans_basic_cy')}", fmt=NUM2)
         put(ws, r, 5, f"=(E{self.r_owners}-{self.S('pref_div_py')})/{self.S('wans_basic_py')}", fmt=NUM2); r += 1
@@ -568,6 +571,212 @@ class Builder:
                             f'-SUMIFS({py},{self.tbr("C")},"PL")', "08_SPLOCI"))
         self.checks.append(("OCI = minus sum of OCI accounts (CY)", f"'08_SPLOCI'!D{self.r_oci}",
                             f'-SUMIFS({cy},{self.tbr("C")},"OCI")', "08_SPLOCI"))
+
+
+    # ---------- 08b colour-banded P&L ----------
+    def pl_visual(self):
+        ws = self.ws["08b_PL_Visual"]
+        ws.sheet_view.showGridLines = False
+        sp = "'08_SPLOCI'"
+        ws.merge_cells("A1:D1")
+        put(ws, 1, 1, "=\"Statement of profit or loss by IFRS 18 category - \"&'01_Setup'!C5", font=F_TITLE)
+        ws.merge_cells("A2:D2")
+        put(ws, 2, 1, "=\"For the year ended \"&'01_Setup'!C8&\"  |  \"&'01_Setup'!C10&\" \"&'01_Setup'!C11", font=F_SUB)
+        header(ws, 4, ["Five mandatory categories (IFRS 18.47)", "Line item", "=\"CY \"&'01_Setup'!C6", "=\"PY \"&'01_Setup'!C7"])
+        bands = [
+            (OP, "FFD966", "000000", self.lines_in(OP), [("Operating profit", self.r_op)]),
+            (INV, NAVY, "FFFFFF", self.lines_in(INV), [("Profit before financing and income taxes", self.r_pbfit)]),
+            (FIN, "BDD7EE", "000000", self.lines_in(FIN), [("Profit before income taxes", self.r_pbt)]),
+            (TAX, "FFD966", "000000", self.lines_in(TAX), [("Profit from continuing operations", self.r_cont)]),
+            (DISC, NAVY, "FFFFFF", self.lines_in(DISC), [("Profit for the period", self.r_profit)]),
+        ]
+        r = 5
+        for name, colour, txt, lines, subs in bands:
+            fill = PatternFill("solid", fgColor=colour)
+            light = PatternFill("solid", fgColor="FFF2CC" if colour == "FFD966" else ("DEEBF7" if colour == "BDD7EE" else "D9E1F2"))
+            top = r
+            rows = []
+            for k in lines:
+                rows.append((self.cat[k][0], self.spl_rows[k], False))
+                if k == "Cost of sales" and "Revenue" in self.spl_rows:
+                    rows.append(("Gross profit", self.spl_rows[k] + 1, True))
+            rows += [(lab, rr, True) for lab, rr in subs]
+            for lab, rr, bold in rows:
+                put(ws, r, 2, ("" if bold else "    ") + lab, font=F_BOLD if bold else F_NORM, fill=light)
+                for c, col in ((3, "D"), (4, "E")):
+                    put(ws, r, c, f"={sp}!{col}{rr}", font=F_BOLD if bold else F_NORM, fmt=NUM, fill=light,
+                        border=B_TOP if bold else None)
+                r += 1
+            ws.merge_cells(start_row=top, start_column=1, end_row=r - 1, end_column=1)
+            c = put(ws, top, 1, name, font=Font(name="Calibri", size=13, bold=True, color=txt), fill=fill,
+                    align=Alignment(horizontal="center", vertical="center", wrap_text=True))
+            for rr in range(top, r):
+                ws.cell(row=rr, column=1).fill = fill
+                for cc in range(1, 5):
+                    ws.cell(row=rr, column=cc).border = Border(left=THIN, right=THIN,
+                                                               top=THIN if rr == top else None,
+                                                               bottom=THIN if rr == r - 1 else None)
+        r += 1
+        for n in ["Reading the statement: each band is one IFRS 18 category; the bold line closing a band is the required or permitted subtotal.",
+                  "Financing is deducted ONCE: PBFIT less financing = profit before income taxes (a common error is to deduct a 'total financing' line twice).",
+                  "Linked to 08_SPLOCI - change the mapping in 05_TB and this view updates."]:
+            put(ws, r, 1, n, font=F_SUB)
+            r += 1
+        widths(ws, [24, 66, 15, 15])
+
+    # ---------- 00a Dashboard ----------
+    def dashboard(self):
+        ws = self.ws["00a_Dashboard"]
+        ws.sheet_view.showGridLines = False
+        sp, tr = "'08_SPLOCI'", "'09_Transition'"
+        GREEN, DARK, PALE = "1E7B34", "14532D", "E2F0D9"
+        for c in range(1, 25):
+            ws.column_dimensions[get_column_letter(c)].width = 9.5
+        # banner
+        ws.merge_cells("A1:X2")
+        put(ws, 1, 1, "=\"IFRS 18 Dashboard  |  \"&'01_Setup'!C5", font=Font(name="Calibri", size=18, bold=True, color="FFFFFF"),
+            fill=PatternFill("solid", fgColor=GREEN), align=Alignment(vertical="center", indent=1))
+        ws.merge_cells("A3:X3")
+        put(ws, 3, 1, "=\"Overview of IFRS 18 implementation - \"&'01_Setup'!C6&\" vs \"&'01_Setup'!C7&\" (restated)  |  \"&'01_Setup'!C10&\" \"&'01_Setup'!C11&\"  |  Expense method: \"&'01_Setup'!C16&\"  |  SMBA: investing \"&'01_Setup'!C14&\", financing \"&'01_Setup'!C15",
+            font=F_SUB, fill=PatternFill("solid", fgColor=PALE))
+        ws.row_dimensions[1].height = 22
+        ws.row_dimensions[2].height = 22
+
+        def tile(col, row, label, cy, py=None, fmt=NUM, sub=None):
+            c1, c2 = get_column_letter(col), get_column_letter(col + 3)
+            box = PatternFill("solid", fgColor="FFFFFF")
+            ws.merge_cells(f"{c1}{row}:{c2}{row}")
+            put(ws, row, col, label, font=Font(name="Calibri", size=10, bold=True, color=DARK), fill=PatternFill("solid", fgColor=PALE),
+                align=Alignment(horizontal="center"))
+            ws.merge_cells(f"{c1}{row+1}:{c2}{row+1}")
+            put(ws, row + 1, col, f"={cy}", font=Font(name="Calibri", size=20, bold=True, color=GREEN), fmt=fmt, fill=box,
+                align=Alignment(horizontal="center", vertical="center"))
+            ws.row_dimensions[row + 1].height = 30
+            ws.merge_cells(f"{c1}{row+2}:{c2}{row+2}")
+            if py is not None:
+                f = f'=IFERROR(IF({cy}>={py},"▲ ","▼ ")&TEXT(ABS({cy}/{py}-1),"0.0%")&" vs "&\'01_Setup\'!C7,"n/a")'
+            else:
+                f = sub or ""
+            put(ws, row + 2, col, f, font=F_SUB, fill=box, align=Alignment(horizontal="center"))
+            for rr in range(row, row + 3):
+                for cc in range(col, col + 4):
+                    ws.cell(row=rr, column=cc).border = Border(
+                        left=Side(style="thin", color=GREEN) if cc == col else None,
+                        right=Side(style="thin", color=GREEN) if cc == col + 3 else None,
+                        top=Side(style="thin", color=GREEN) if rr == row else None,
+                        bottom=Side(style="thin", color=GREEN) if rr == row + 2 else None)
+
+        rev = self.spl_rows.get("Revenue")
+        rev_cy, rev_py = (f"{sp}!D{rev}", f"{sp}!E{rev}") if rev else ("0", "0")
+        mpm_cy, mpm_py = f"'13_MPM_Recon'!C{self.mpm_tot['CY']}", f"'13_MPM_Recon'!C{self.mpm_tot['PY']}"
+        tiles1 = [
+            ("Revenue", rev_cy, rev_py, NUM),
+            ("Operating profit", f"{sp}!D{self.r_op}", f"{sp}!E{self.r_op}", NUM),
+            ("Profit before financing & income taxes", f"{sp}!D{self.r_pbfit}", f"{sp}!E{self.r_pbfit}", NUM),
+            ("Profit for the period", f"{sp}!D{self.r_profit}", f"{sp}!E{self.r_profit}", NUM),
+            ("MPM: " + "adjusted operating profit", mpm_cy, mpm_py, NUM),
+            ("Basic EPS", f"{sp}!D{self.r_eps}", f"{sp}!E{self.r_eps}", NUM2),
+        ]
+        for i, (lab, cy, py, fmt) in enumerate(tiles1):
+            tile(1 + 4 * i, 5, lab, cy, py, fmt)
+        tiles2 = [
+            ("Operating margin", f"IFERROR({sp}!D{self.r_op}/{rev_cy},0)", None, PCT,
+             f'="PY "&TEXT(IFERROR({sp}!E{self.r_op}/{rev_py},0),"0.0%")'),
+            ("IAS 1 vs IFRS 18 operating profit (PY)", f"{tr}!D{self.tr_op}", None, NUM,
+             f'="IAS 1 "&TEXT({tr}!C{self.tr_op},"#,##0")&" -> IFRS 18 "&TEXT({tr}!E{self.tr_op},"#,##0")'),
+            ("Accounts reclassified", self.reclass_count, None, "0", '="IAS 1 caption -> IFRS 18 line"'),
+            ("Control checks", "'19_Checks'!B4", None, None, '="see 19_Checks"'),
+            ("Implementation progress", self.plan_progress, None, PCT, '="weighted tasks complete (02_Plan)"'),
+            ("High-impact gaps open", self.gap_high, None, "0", '="from 03_Gap"'),
+        ]
+        for i, (lab, cy, py, fmt, sub) in enumerate(tiles2):
+            tile(1 + 4 * i, 9, lab, cy, py, fmt, sub)
+        ws["M10"].font = Font(name="Calibri", size=13, bold=True, color=GREEN)
+        ws.conditional_formatting.add("M10", FormulaRule(formula=['M10<>"ALL CHECKS OK"'],
+                                                         font=Font(color="C00000", bold=True)))
+
+        # helper data for charts (columns Z onwards)
+        put(ws, 4, 26, "Chart data (formula-driven)", font=F_SUB)
+        r = 5
+        header(ws, r, ["Category", "CY", "PY"], col=26)
+        cats = [(OP, "B6", "C6"), (INV, "B7", "C7"), (FIN, "B8", "C8"), (TAX, "B9", "C9"), (DISC, "B10", "C10")]
+        for i, (nm, b, c) in enumerate(cats):
+            put(ws, r + 1 + i, 26, nm)
+            put(ws, r + 1 + i, 27, f"='07_Classification'!{b}", fmt=NUM)
+            put(ws, r + 1 + i, 28, f"='07_Classification'!{c}", fmt=NUM)
+        cat_r = (r, r + 5)
+        r += 8
+        header(ws, r, ["Subtotal (PY)", "IAS 1", "IFRS 18"], col=26)
+        put(ws, r + 1, 26, "Operating profit"); put(ws, r + 1, 27, f"={tr}!C{self.tr_op}", fmt=NUM); put(ws, r + 1, 28, f"={tr}!E{self.tr_op}", fmt=NUM)
+        put(ws, r + 2, 26, "Profit before tax"); put(ws, r + 2, 27, f"={sp}!E{self.r_pbt}", fmt=NUM); put(ws, r + 2, 28, f"={sp}!E{self.r_pbt}", fmt=NUM)
+        put(ws, r + 3, 26, "Profit for the period"); put(ws, r + 3, 27, f"={sp}!E{self.r_profit}", fmt=NUM); put(ws, r + 3, 28, f"={sp}!E{self.r_profit}", fmt=NUM)
+        ias_r = (r, r + 3)
+        r += 6
+        header(ws, r, ["Nature (IFRS 18.83, CY incurred)", "Amount"], col=26)
+        nt = self.nat_tot_cells["CY"]
+        for i, n in enumerate(NATURES5):
+            put(ws, r + 1 + i, 26, n)
+            put(ws, r + 1 + i, 27, f"='10_ExpNature'!{get_column_letter(2 + i)}{nt}", fmt=NUM)
+        nat_r = (r, r + 5)
+        r += 8
+        header(ws, r, ["MPM bridge (CY)", "Amount"], col=26)
+        put(ws, r + 1, 26, "Operating profit"); put(ws, r + 1, 27, f"={sp}!D{self.r_op}", fmt=NUM)
+        put(ws, r + 2, 26, "MPM adjustments"); put(ws, r + 2, 27, f"={mpm_cy}-{sp}!D{self.r_op}", fmt=NUM)
+        put(ws, r + 3, 26, "Adjusted operating profit"); put(ws, r + 3, 27, f"={mpm_cy}", fmt=NUM)
+        mpm_r = (r, r + 3)
+        for c in ("Z", "AA", "AB"):
+            ws.column_dimensions[c].width = 30 if c == "Z" else 12
+
+        def bar(title_, rng, ncols, anchor, horizontal=False, colours=(GREEN, "A9D18E")):
+            ch = BarChart()
+            ch.type = "bar" if horizontal else "col"
+            ch.title = title_
+            ch.style = 10
+            ch.height, ch.width = 7.2, 14.2
+            data = Reference(ws, min_col=27, max_col=26 + ncols, min_row=rng[0], max_row=rng[1])
+            labels = Reference(ws, min_col=26, min_row=rng[0] + 1, max_row=rng[1])
+            ch.add_data(data, titles_from_data=True)
+            ch.set_categories(labels)
+            for i, srs in enumerate(ch.series):
+                srs.graphicalProperties.solidFill = colours[i % len(colours)]
+                srs.graphicalProperties.line.solidFill = colours[i % len(colours)]
+            ch.dataLabels = DataLabelList()
+            ch.dataLabels.showVal = True
+            ch.dataLabels.showSerName = False
+            ch.dataLabels.showCatName = False
+            ch.dataLabels.showLegendKey = False
+            ch.dataLabels.numFmt = "#,##0"
+            ch.y_axis.numFmt = "#,##0"
+            ch.y_axis.majorGridlines = None
+            ch.x_axis.tickLblPos = "low"
+            ch.legend.position = "b"
+            if ncols == 1:
+                ch.legend = None
+            ws.add_chart(ch, anchor)
+
+        bar("Profit by IFRS 18 category", cat_r, 2, "A13")
+        bar("IAS 1 vs IFRS 18 subtotals (comparative)", ias_r, 2, "I13", colours=("7F7F7F", GREEN))
+        bar("Expenses by nature - specified amounts", nat_r, 1, "Q13", horizontal=True)
+        bar("MPM reconciliation (current period)", mpm_r, 1, "A29")
+        # readiness panel
+        put(ws, 29, 10, "Readiness and judgements", font=Font(name="Calibri", size=12, bold=True, color=DARK))
+        items = [
+            ("SMBA - investing in assets", f"={self.S('smba_investing')}"),
+            ("SMBA - financing customers", f"={self.S('smba_financing')}"),
+            ("Operating expense presentation", f"={self.S('expense_method')}"),
+            ("MPMs identified (12_MPM_ID)", "=COUNTIF('12_MPM_ID'!G:G,\"MPM*\")"),
+            ("Disclosure items answered 'N'", "=COUNTIF('16_Disclosure'!D:D,\"N\")"),
+            ("Open issues (18_Issues)", "=COUNTIFS('18_Issues'!H6:H200,\"<>Complete\",'18_Issues'!C6:C200,\"<>\")"),
+            ("Date of initial application", f"={self.S('date_initial_application')}"),
+        ]
+        for i, (lab, f) in enumerate(items):
+            rr = 30 + i
+            ws.merge_cells(start_row=rr, start_column=10, end_row=rr, end_column=14)
+            put(ws, rr, 10, lab, fill=PatternFill("solid", fgColor=PALE), border=B_ALL)
+            ws.merge_cells(start_row=rr, start_column=15, end_row=rr, end_column=18)
+            put(ws, rr, 15, f, font=F_BOLD, border=B_ALL, align=Alignment(horizontal="center"))
+        put(ws, 38, 10, "All figures are live formulas from the working papers. Green tabs = presentation views.", font=F_SUB)
+        ws.sheet_view.zoomScale = 85
 
     # ---------- 14 SFP ----------
     def sfp(self):
@@ -731,6 +940,7 @@ class Builder:
                 matched.add(i1)
         ias1_op = "+".join(f'-SUMIFS({py},{self.tbr("F")},"{x}")' for x in ias1 if ias1_grp[x] == "Above operating profit")
         r_op = sub("Operating profit", f"={ias1_op}", f"={sp}!E{self.r_op}")
+        self.tr_op = r_op
         for k in self.lines_in(INV):
             i1 = eq(k)
             if i1:
@@ -1055,6 +1265,7 @@ class Builder:
         put(ws, 4, 2, "='19_Checks'!B4", font=F_BOLD)
         header(ws, 6, ["WP ref", "Sheet (click)", "Purpose", "Key IFRS references", "Status", "Prepared (initials/date)", "Reviewed (initials/date)"])
         wps = [
+            ("00a", "00a_Dashboard", "One-page IFRS 18 dashboard: KPIs, category mix, IAS 1 vs IFRS 18, expenses by nature, MPM bridge, readiness", "-"),
             ("01", "01_Setup", "Entity details, adoption date, SMBA and expense-method conclusions, EPS/NCI/materiality inputs", "IFRS 18.C1-C2; IAS 8"),
             ("02", "02_Plan", "Implementation plan: Assess - Redesign - Implement - Report", "IFRS 18.C1"),
             ("03", "03_Gap", "Impact / gap analysis IAS 1 practice vs IFRS 18", "IFRS 18 (whole)"),
@@ -1063,6 +1274,7 @@ class Builder:
             ("06", "06_Rules", "Classification rule book by item type and SMBA status", "IFRS 18.47-68, B42-B77"),
             ("07", "07_Classification", "Category totals and completeness of the five-category split", "IFRS 18.47"),
             ("08", "08_SPLOCI", "Statement of profit or loss and OCI with required subtotals and EPS", "IFRS 18.69, 75-76, 86-95; IAS 33"),
+            ("08b", "08b_PL_Visual", "Colour-banded profit or loss by the five categories (presentation / teaching view)", "IFRS 18.47, 69"),
             ("09", "09_Transition", "IAS 1 to IFRS 18 reconciliation of comparatives, explanations, bridge matrix", "IFRS 18.C3, C6"),
             ("10", "10_ExpNature", "Five specified expenses by nature for each function line", "IFRS 18.82-85, B84"),
             ("11", "11_Aggregation", "Aggregation / disaggregation and 'other' labelling review", "IFRS 18.41-45, B15-B26"),
@@ -1133,6 +1345,7 @@ class Builder:
         add_list_validation(ws, f"H6:H{last}", f"={self.status_rng}")
         put(ws, last + 2, 3, "Overall progress", font=F_BOLD)
         put(ws, last + 2, 10, f"=SUM(J6:J{last})/SUM(I6:I{last})", font=F_BOLD, fmt=PCT)
+        self.plan_progress = f"'02_Plan'!J{last + 2}"
         r = last + 4
         put(ws, r, 2, "Key dates (31 December year end)", font=F_BOLD, fill=FILL_SEC)
         for i, (d, t) in enumerate([("1 Jan 2026", "Comparative period begins - 2026 transactions need classifying under IFRS 18 categories"),
@@ -1184,6 +1397,7 @@ class Builder:
         add_list_validation(ws, f"F6:F{last}", '"H,M,L"')
         put(ws, last + 2, 1, "High-impact gaps", font=F_BOLD)
         put(ws, last + 2, 2, f'=COUNTIFS(E6:E{last},"Y",F6:F{last},"H")', fmt="0")
+        self.gap_high = f"'03_Gap'!B{last + 2}"
         widths(ws, [24, 62, 22, 40, 9, 10, 40, 14, 14])
         ws.freeze_panes = "B6"
 
@@ -1430,6 +1644,7 @@ class Builder:
         put(ws, r, 9, f"=SUM(I{first}:I{r-1})", font=F_BOLD, fmt=NUM, border=B_TOT)
         put(ws, r + 1, 2, "Accounts reclassified", font=F_BOLD)
         put(ws, r + 1, 9, f'=COUNTIF(F{first}:F{r-1},"Yes")', font=F_BOLD, fmt="0")
+        self.reclass_count = f"'17_Reclass'!I{r + 1}"
         ws.conditional_formatting.add(f"F{first}:F{r-1}", CellIsRule(operator="equal", formula=['"Yes"'], fill=FILL_KEY))
         widths(ws, [9, 46, 36, 46, 13, 10, 40, 40, 12, 8])
         ws.freeze_panes = "C6"
@@ -1488,6 +1703,7 @@ class Builder:
         self.lists()
         self.trial_balance()
         self.sploci()
+        self.pl_visual()
         self.sfp()
         self.classification()
         self.transition()
@@ -1505,9 +1721,10 @@ class Builder:
         self.reclass()
         self.issues()
         self.checks_sheet()
+        self.dashboard()
         self.ws["Lists"].sheet_state = "visible"
         for ws in self.wb.worksheets:
-            ws.sheet_properties.tabColor = {"0": NAVY, "1": "2E75B6"}.get(ws.title[0], "7F7F7F")
+            ws.sheet_properties.tabColor = "00B050" if ws.title in ("00a_Dashboard", "08b_PL_Visual") else {"0": NAVY, "1": "2E75B6"}.get(ws.title[0], "7F7F7F")
             ws.page_setup.orientation = "landscape"
             ws.page_setup.fitToWidth = 1
             ws.sheet_properties.pageSetUpPr.fitToPage = True

@@ -7,7 +7,7 @@ description: "Implements IFRS 18 Presentation and Disclosure in Financial Statem
 
 You act as a preparer implementing IFRS 18 *Presentation and Disclosure in Financial Statements* (IASB, April 2024) and its consequential amendments (IAS 7, IAS 33, IAS 34, IAS 8 *Basis of Preparation of Financial Statements*). A qualified accountant reviews and approves. Recognition and measurement do not change under IFRS 18: net profit and net assets before and after adoption must agree. If they don't, something other than presentation has changed, so stop and investigate.
 
-The deliverable is an Excel working-paper file built by `scripts/build_ifrs18_workpapers.py`. It covers 19 working papers plus a Lists sheet, uses formulas throughout and ends in a 19_Checks sheet that must show **ALL CHECKS OK**.
+The deliverable is an Excel working-paper file built by `scripts/build_ifrs18_workpapers.py`. It covers 19 working papers, a one-page **00a_Dashboard** (KPI tiles, category mix, IAS 1 vs IFRS 18, expenses by nature, MPM bridge, readiness panel), a colour-banded **08b_PL_Visual** view of the P&L by the five categories, and a Lists sheet. It uses formulas throughout and ends in a 19_Checks sheet that must show **ALL CHECKS OK**.
 
 Reference files (read when the topic arises):
 - `references/ifrs18-requirements.md`: the technical rules by topic with paragraph references. Read it before classifying anything unusual, concluding on SMBA or MPMs, or drafting disclosures.
@@ -119,3 +119,4 @@ The demo workbook works as a classroom case. Students re-map accounts in 05_TB, 
 - decide whether EBITDA is an MPM;
 - compute MPM tax and NCI effects;
 - explain why operating profit under IFRS 18 differs from the old IAS 1 "operating profit" (9,457 → 8,838 in the demo).
+- spot the error in a published example: a common slip in social-media IFRS 18 tables is deducting financing twice (PBFIT − 'total financing' − each financing line). Each category band in 08b_PL_Visual closes with its subtotal, so the error is easy to see.
