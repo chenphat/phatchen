@@ -32,7 +32,7 @@ names = {}
 def dname(n, ref): names[n] = ref
 
 order = ["Dashboard", "LayersMap", "Setup", "WP_Index", "L1_Strategy", "L2_Planning",
-         "Risk_315R", "Fraud_240R", "GoingConcern_570R", "L3_Methodology", "Sampling", "L4_Execution", "IC_Assessment", "L5_Findings", "SUAD", "L6_Oversight", "DashData", "Standards", "Lists"]
+         "Risk_315R", "Fraud_240R", "GoingConcern_570R", "L3_Methodology", "Sampling", "L4_Execution", "IC_Assessment", "L5_Findings", "Deficiencies_265", "SUAD", "L6_Oversight", "DashData", "Standards", "Lists"]
 ws0 = wb.active; ws0.title = order[0]
 S = {order[0]: ws0}
 for n in order[1:]: S[n] = wb.create_sheet(n)
@@ -74,6 +74,7 @@ lists = {
     "ICRating": ["Effective", "Needs improvement", "Ineffective"],
     "Nature": ["Overstatement", "Understatement", "Classification", "Disclosure"],
     "CtlType": ["Preventive", "Detective"],
+    "DefType": ["Design", "Implementation", "Operating"],
 }
 put(L, "A1", "Validation lists (do not edit)", font(11, True))
 for j, (k, vals) in enumerate(lists.items()):
@@ -173,7 +174,7 @@ def section(ws, r, ref, title, std):
 
 def table_head(ws, r, heads, start="A"):
     for j, h in enumerate(heads):
-        col = chr(ord(start) + j)
+        from openpyxl.utils import get_column_letter as _gl, column_index_from_string as _ci; col = _gl(_ci(start) + j)
         put(ws, f"{col}{r}", h, font(9, True, "FFFFFF"), DK, al=CEN, bd=BOX)
     ws.row_dimensions[r].height = 30
     return r + 1
@@ -700,28 +701,15 @@ for i, (lab, f_, nf) in enumerate([("Misstatements logged (all, incl. trivial & 
 c = cell(ws, f"B{r}", '=HYPERLINK("#SUAD!A1","Open Summary of Unadjusted Differences >")'); c.font = Font(name=F, size=9, color="1565C0", underline="single")
 r += 2
 
-r = section(ws, r, "E2", "Control deficiencies evaluation", "ISA 265.7-11")
-r = table_head(ws, r, ["Ref", "Deficiency", "Process", "Source", "Could result in material misstatement?", "Compensating control?",
-                       "Classification", "Communicate to", "Form", "Date communicated", "Mgmt response", ""])
-defs = [("No formal entity risk assessment process", "Entity level", "B2", "No", "No"),
-        ("ERP user access reviews not performed in Q2 & Q3 (ITGC)", "IT", "IC4 C06", "Yes", "No"),
-        ("Three-way match override without approval (1 of 30)", "Purchases", "IC4 C03", "No", "Yes"),
-        ("No documented NRV / slow-moving inventory policy", "Inventory", "SUAD M02", "Yes", "No"),
-        ("Accrual checklist not updated for new contracts", "Financial close", "SUAD M03", "No", "Yes")]
-g0 = r
-for i, (dsc, proc, src, mm, comp) in enumerate(defs, 1):
-    cell(ws, f"A{r}", f"CD{i:02d}", center=True); cell(ws, f"B{r}", dsc, is_input=True); cell(ws, f"C{r}", proc, center=True)
-    cell(ws, f"D{r}", src, center=True); cell(ws, f"E{r}", mm, is_input=True, center=True); cell(ws, f"F{r}", comp, is_input=True, center=True)
-    cell(ws, f"G{r}", f'=IF(AND(E{r}="Yes",F{r}="No"),"Significant deficiency","Other deficiency")', center=True)
-    cell(ws, f"H{r}", f'=IF(G{r}="Significant deficiency","TCWG & management","Management")', center=True)
-    cell(ws, f"I{r}", f'=IF(G{r}="Significant deficiency","Written (ISA 265.9)","Written or oral (265.10)")', center=True)
-    cell(ws, f"J{r}", D(2026, 3, 20) if i < 4 else None, DATE, True, center=True)
-    cell(ws, f"K{r}", "Agreed" if i < 4 else "", is_input=True); ws.merge_cells(f"K{r}:L{r}")
-    ws.row_dimensions[r].height = 30; r += 1
-dv(ws, f"E{g0}:F{r-1}", "YesNo")
-dname("CD_Class", f"L5_Findings!$G${g0}:$G${r-1}")
-ws.conditional_formatting.add(f"G{g0}:G{r-1}", CellIsRule(operator="equal", formula=['"Significant deficiency"'], fill=fill("FFCDD2"), font=Font(name=F, bold=True, color="B71C1C")))
-r += 1
+r = section(ws, r, "E2", "Control deficiencies - summary (full ISA 265 working paper: Deficiencies_265)", "ISA 265.7-11")
+r = table_head(ws, r, ["", "Summary", "Value"])
+for lab, f_ in [("Deficiencies identified", "=CD_N"), ("Significant deficiencies", '=COUNTIF(CD_Class,"Significant deficiency")'),
+                ("Significant deficiencies communicated in writing to TCWG", "=CD_SigComm"),
+                ("Other deficiencies of sufficient importance (management)", '=COUNTIF(CD_Class,"Other deficiency - sufficient importance")'),
+                ("Remediated", "=CD_Closed")]:
+    cell(ws, f"B{r}", lab); cell(ws, f"C{r}", f_, "0", link=True, center=True); r += 1
+c = cell(ws, f"B{r}", '=HYPERLINK("#Deficiencies_265!A1","Open ISA 265 deficiencies working paper >")'); c.font = Font(name=F, size=9, color="1565C0", underline="single")
+r += 2
 
 r = section(ws, r, "E3", "Issue log & remediation tracker", "ISA 230.8-11 | ISQM 1.42")
 r = table_head(ws, r, ["ID", "Issue identified", "Layer", "Category", "Severity", "Root cause", "Recommendation", "Owner",
@@ -1294,7 +1282,7 @@ r = checklist(ws, r, [
     ("Determined whether deviations are isolated or systematic (not assumed to be anomalies)", "ISA 330.17; ISA 530.13", "Yes", "C03 systematic during outage period"),
     ("Controls with UDL > TDR or deviations not relied upon; control risk reassessed in RCM (IC2)", "ISA 330.17(b)", "Yes", "C03 & C06 reliance withdrawn"),
     ("Nature, timing & extent of substantive procedures revised for failed controls", "ISA 330.17(b); ISA 315R.37", "Yes", "Purchases: extended unrecorded liabilities search; IT: substantive IPE testing"),
-    ("Deviations evaluated as control deficiencies & logged in E2 / E3", "ISA 265.7-8", "Yes", "CD02, CD03"),
+    ("Deviations evaluated as control deficiencies & logged in Deficiencies_265 / E3", "ISA 265.7-8", "Yes", "CD02, CD03"),
     ("Interim results rolled forward to year end", "ISA 330.12", "Yes", "Inquiry + re-performance Dec-25 for C01, C02, C08"),
 ], "IC6")
 r = table_head(ws, r, ["", "Summary", "Value"])
@@ -1940,6 +1928,171 @@ r = checklist(ws, r, [
     ("Documentation: events/conditions, evaluation of management's assessment, judgements on MU & disclosures, reporting decision", "ISA 570R; ISA 230", "Yes", "This sheet"),
 ], "GC6")
 
+# ---------------- DEFICIENCIES 265 ----------------
+ws = S["Deficiencies_265"]
+r = sheet_header(ws, "DEFICIENCIES IN INTERNAL CONTROL - ISA 265", "5",
+                 "Determine whether deficiencies in internal control exist, evaluate whether they are significant individually or in combination, and communicate them appropriately and on a timely basis to TCWG and management.",
+                 "ISA 265 paras 5-11 & A1-A30; ISA 315 (Revised 2019); ISA 330.17; ISA 260; ISA 230")
+for k in range(ci("M"), ci("AA") + 1): ws.column_dimensions[gl(k)].width = 12
+widths(ws, {"B": 40, "C": 12, "D": 16, "E": 13, "F": 14, "G": 11, "S": 34, "T": 34})
+
+r = section(ws, r, "DF1", "Definitions & evaluation framework", "ISA 265.6, 8 & A5-A11")
+defs_ = [("Deficiency in internal control (265.6(a))", "A control is designed, implemented or operated so that it cannot prevent, or detect and correct, misstatements on a timely basis; OR a control necessary to do so is missing."),
+         ("Significant deficiency (265.6(b))", "A deficiency or combination of deficiencies that, in the auditor's professional judgement, is of sufficient importance to merit the attention of TCWG."),
+         ("Evaluation (265.8, A6)", "Consider: likelihood of leading to material misstatement; susceptibility of the asset/liability to loss or fraud; subjectivity & complexity; amounts exposed; volume of activity; importance of the control; cause & frequency of exceptions; interaction with other deficiencies."),
+         ("Indicators of significant deficiency (A7)", "Ineffective control environment (e.g. fraud by management, significant transactions with related parties not appropriately scrutinised); absence of risk assessment process where expected; ineffective response to significant risks; "
+          "misstatements detected by the auditor not prevented/detected by IC; restatement for error/fraud; management's failure to remediate previously communicated significant deficiencies.")]
+for lab, txt_ in defs_:
+    cell(ws, f"B{r}", lab).font = font(9, True); cell(ws, f"C{r}", txt_); ws.merge_cells(f"C{r}:L{r}"); ws.row_dimensions[r].height = 36; r += 1
+note(ws, r, "Scoring used in DF2: Likelihood that the deficiency leads to a material misstatement (1 remote, 2 reasonably possible, 3 probable) x Magnitude of potential misstatement (1 clearly below PM, 2 approaching PM, 3 could exceed OM). "
+            "Classification: SIGNIFICANT if an A7 indicator is present, OR score >= 6 with no effective compensating control. Other deficiencies scoring >= 3 are 'of sufficient importance' to communicate to management (265.10(b)).")
+r += 2
+
+r = section(ws, r, "DF2", "Deficiency register - identification & evaluation", "ISA 265.7-8")
+heads = ["Ref", "Deficiency", "Source WP", "COSO component", "Type", "Process / area", "Linked risk / misst.", "Likelihood (1-3)",
+         "Magnitude (1-3)", "Score", "Compensating control effective?", "A7 indicator present?", "Repeat from PY?", "Combination group",
+         "Classification (265.8)", "Communicate to", "Form", "Potential effect on FS", "Recommendation", "Date communicated", "Timeliness",
+         "Mgmt response", "Owner", "Remediation due", "Status", "Letter rank", "Letter key"]
+r = table_head(ws, r, heads)
+dfs = [("No formal entity risk assessment process", "IC1", "Risk assessment", "Design", "Entity level", "R02", 2, 2, "No", "No", "No", "Governance",
+        "Business & fraud risks may not be identified and addressed in a timely manner", "Board to hold an annual documented risk workshop and maintain a risk register", None, "Agreed - 2026 workshop", "CEO", D(2026, 6, 30), "In progress"),
+       ("ERP user access reviews not performed in Q2 & Q3 2025 (ITGC)", "IC3 / IC4 C06", "Control activities", "Operating", "IT", "R02", 3, 3, "No", "No", "No", "IT & access",
+        "Unauthorised access could permit unapproved journals or master-data changes, undermining automated controls and system reports", "Perform and evidence quarterly access reviews; remove leavers within 24 hours; restrict IT admin posting rights", D(2026, 3, 20), "Agreed", "IT Manager", D(2026, 3, 31), "In progress"),
+       ("Three-way match overridden without approval during system outage (1 of 30)", "IC4 C03", "Control activities", "Operating", "Purchases", "R06", 2, 2, "Yes", "No", "No", "IT & access",
+        "Payments for goods not received or at incorrect prices", "Require CFO approval for any manual override; log outages", D(2026, 3, 20), "Agreed", "AP Supervisor", D(2026, 4, 30), "Open"),
+       ("No documented NRV / slow-moving inventory policy; ageing review not performed (C10)", "IC2 C10 / SUAD M02", "Control activities", "Design", "Inventory", "R03 / M02", 3, 3, "No", "Yes", "Yes", "Inventory",
+        "Inventory overstated; PY and CY NRV under-provisions (21,000 / 38,000)", "Adopt NRV policy; monthly ageing report reviewed by CFO with documented provisioning", D(2026, 3, 20), "Agreed", "CFO", D(2026, 4, 30), "Open"),
+       ("Accrual checklist not updated for new contracts", "SUAD M03", "Control activities", "Operating", "Financial close", "R06 / M03", 2, 2, "Yes", "No", "No", "Financial close",
+        "Expenses & liabilities understated at period end", "Update checklist monthly from contract register", D(2026, 3, 20), "Agreed", "Chief Accountant", D(2026, 3, 31), "Closed"),
+       ("Revenue cut-off: dispatch notes not matched to invoices at year end", "SUAD M01", "Control activities", "Design", "Revenue", "R01 / M01", 3, 3, "No", "Yes", "No", "Revenue",
+        "Revenue and receivables overstated (M01 45,000 detected by auditor, not by entity)", "System lock: invoice date = GDN date; YE cut-off review by Financial Controller", D(2026, 3, 20), "Agreed", "CFO", D(2026, 3, 31), "In progress"),
+       ("Inadequate segregation: cash receipting & receivables posting (C12)", "IC2 C12", "Control activities", "Design", "Revenue", "R05", 2, 2, "Yes", "No", "No", "Revenue",
+        "Receipts could be misappropriated and concealed (lapping)", "Separate duties or monthly independent review of customer statements", None, "", "CFO", D(2026, 6, 30), "Open"),
+       ("Branch petty cash custody & counts", "FR5.1 / SUAD M06", "Control activities", "Operating", "Cash", "R10 / M06", 1, 1, "No", "No", "No", "Cash",
+        "Small cash losses", "Surprise monthly counts by branch manager", None, "", "Branch Mgr", D(2026, 4, 30), "Open"),
+       ("Related party register incomplete; director loan not identified for disclosure", "FR5.3 / SUAD M08", "Control environment", "Design", "Disclosures", "R09 / M08", 2, 3, "No", "Yes", "No", "Governance",
+        "Related party disclosures (IAS 24) incomplete - material by nature", "Annual RP declarations by directors; Board approval of all RP transactions", D(2026, 3, 20), "Under discussion", "Board", D(2026, 3, 31), "Open"),
+       ("No audit committee; limited Board oversight of financial reporting", "IC1 principle 2", "Control environment", "Design", "Entity level", "R02", 2, 2, "No", "No", "No", "Governance",
+        "Reduced oversight of management override & financial reporting", "Consider audit committee or finance sub-committee of the Board", None, "", "Board", D(2026, 12, 31), "Open")]
+d0 = r
+for i, row in enumerate(dfs, 1):
+    (dsc, src, comp, typ, proc, lnk, L_, M_, cmp_, a7, rep_, grp, eff, rec, dcom, resp, own, due, stt) = row
+    cell(ws, f"A{r}", f"CD{i:02d}", center=True); cell(ws, f"B{r}", dsc, is_input=True); cell(ws, f"C{r}", src, center=True)
+    cell(ws, f"D{r}", comp, is_input=True, center=True); cell(ws, f"E{r}", typ, is_input=True, center=True)
+    cell(ws, f"F{r}", proc, is_input=True, center=True); cell(ws, f"G{r}", lnk, center=True)
+    cell(ws, f"H{r}", L_, "0", True, center=True); cell(ws, f"I{r}", M_, "0", True, center=True)
+    cell(ws, f"J{r}", f"=H{r}*I{r}", "0", center=True)
+    cell(ws, f"K{r}", cmp_, is_input=True, center=True); cell(ws, f"L{r}", a7, is_input=True, center=True); cell(ws, f"M{r}", rep_, is_input=True, center=True)
+    cell(ws, f"N{r}", grp, is_input=True, center=True)
+    cell(ws, f"O{r}", f'=IF(OR(L{r}="Yes",AND(J{r}>=6,K{r}<>"Yes")),"Significant deficiency",IF(J{r}>=3,"Other deficiency - sufficient importance","Other deficiency - minor"))', center=True)
+    cell(ws, f"P{r}", f'=IF(O{r}="Significant deficiency","TCWG & management",IF(O{r}="Other deficiency - sufficient importance","Management","Management (oral)"))', center=True)
+    cell(ws, f"Q{r}", f'=IF(O{r}="Significant deficiency","Written - 265.9 & 10(a)",IF(O{r}="Other deficiency - sufficient importance","Written or oral - 265.10(b)","Oral"))', center=True)
+    cell(ws, f"R{r}", eff, is_input=True); cell(ws, f"S{r}", rec, is_input=True)
+    cell(ws, f"T{r}", dcom, DATE, True, center=True)
+    cell(ws, f"U{r}", f'=IF(T{r}="",IF(O{r}="Significant deficiency",IF(Set_AsOf>=Set_RptDate-7,"DUE - before report date","Pending"),"Pending"),IF(T{r}<=Set_RptDate,"Timely","LATE - after report date"))', center=True)
+    cell(ws, f"V{r}", resp, is_input=True); cell(ws, f"W{r}", own, is_input=True, center=True)
+    cell(ws, f"X{r}", due, DATE, True, center=True); cell(ws, f"Y{r}", stt, is_input=True, center=True)
+    cell(ws, f"Z{r}", f'=IF(O{r}="Other deficiency - minor","",COUNTIF($O${d0}:O{r},O{r}))', "0", center=True)
+    cell(ws, f"AA{r}", f'=IF(Z{r}="","",O{r}&"|"&Z{r})', center=True)
+    ws.row_dimensions[r].height = 42; r += 1
+d1 = r - 1
+for col in "KLM": dv(ws, f"{col}{d0}:{col}{d1}", "YesNo")
+dv(ws, f"Y{d0}:Y{d1}", "IssueStatus"); dv(ws, f"E{d0}:E{d1}", "DefType")
+dname("CD_ID", f"Deficiencies_265!$A${d0}:$A${d1}"); dname("CD_Class", f"Deficiencies_265!$O${d0}:$O${d1}")
+dname("CD_Group", f"Deficiencies_265!$N${d0}:$N${d1}"); dname("CD_Score", f"Deficiencies_265!$J${d0}:$J${d1}")
+dname("CD_Date", f"Deficiencies_265!$T${d0}:$T${d1}"); dname("CD_Status", f"Deficiencies_265!$Y${d0}:$Y${d1}")
+dname("CD_Rank", f"Deficiencies_265!$Z${d0}:$Z${d1}"); dname("CD_Key", f"Deficiencies_265!$AA${d0}:$AA${d1}"); dname("CD_Timely", f"Deficiencies_265!$U${d0}:$U${d1}")
+dname("CD_Desc", f"Deficiencies_265!$B${d0}:$B${d1}"); dname("CD_Eff", f"Deficiencies_265!$R${d0}:$R${d1}"); dname("CD_Rec", f"Deficiencies_265!$S${d0}:$S${d1}")
+ws.conditional_formatting.add(f"O{d0}:O{d1}", CellIsRule(operator="equal", formula=['"Significant deficiency"'], fill=fill("FFCDD2"), font=Font(name=F, bold=True, color="B71C1C")))
+ws.conditional_formatting.add(f"O{d0}:O{d1}", CellIsRule(operator="equal", formula=['"Other deficiency - sufficient importance"'], fill=fill("FFE0B2")))
+ws.conditional_formatting.add(f"U{d0}:U{d1}", FormulaRule(formula=[f'OR(LEFT($U{d0},3)="DUE",LEFT($U{d0},4)="LATE")'], fill=fill("FFCDD2")))
+ws.conditional_formatting.add(f"Y{d0}:Y{d1}", CellIsRule(operator="equal", formula=['"Closed"'], fill=fill("C8E6C9")))
+ws.conditional_formatting.add(f"L{d0}:M{d1}", CellIsRule(operator="equal", formula=['"Yes"'], fill=fill("FFE0B2")))
+note(ws, r, "Sources consolidated: COSO assessment (IC1), design & implementation (IC2), ITGCs (IC3), tests of operating effectiveness (IC4), misstatements not prevented/detected by the entity (SUAD), fraud matters (FR5) and prior-year points (DF6). "
+            "Classification is a starting point - override with documented professional judgement where appropriate.", "Z")
+r += 2
+
+r = section(ws, r, "DF3", "Evaluation in combination - deficiencies affecting the same area or assertion", "ISA 265.8 & A6(h)")
+r = table_head(ws, r, ["#", "Combination group", "Deficiencies", "Significant included", "Combined score", "Conclusion", "", "", "", "Auditor's judgement / rationale"])
+ws.merge_cells(f"F{r-1}:I{r-1}"); ws.merge_cells(f"J{r-1}:L{r-1}")
+for i, (g, why) in enumerate([("Governance", "Control environment weaknesses interact - Board oversight, risk assessment and RP identification"),
+                              ("IT & access", "C03 automated control depends on effective access controls (C06)"),
+                              ("Revenue", "Cut-off design gap and segregation weakness both affect revenue/receivables"),
+                              ("Inventory", "Single deficiency - assessed individually"),
+                              ("Financial close", "Single deficiency - remediated"), ("Cash", "Single minor deficiency")], 1):
+    cell(ws, f"A{r}", i, center=True); cell(ws, f"B{r}", g)
+    cell(ws, f"C{r}", f"=COUNTIF(CD_Group,B{r})", "0", center=True)
+    cell(ws, f"D{r}", f'=COUNTIFS(CD_Group,B{r},CD_Class,"Significant deficiency")', "0", center=True)
+    cell(ws, f"E{r}", f"=SUMIF(CD_Group,B{r},CD_Score)", "0", center=True)
+    cell(ws, f"F{r}", f'=IF(D{r}>0,"Contains significant deficiency - communicate combined effect",IF(AND(C{r}>1,E{r}>=8),"Combination may be a SIGNIFICANT deficiency - document judgement","Not significant in combination"))')
+    ws.merge_cells(f"F{r}:I{r}"); cell(ws, f"J{r}", why, is_input=True); ws.merge_cells(f"J{r}:L{r}")
+    ws.row_dimensions[r].height = 28; r += 1
+r += 1
+
+r = section(ws, r, "DF4", "Communication requirements & tracking", "ISA 265.9-11 & A12-A30")
+r = checklist(ws, r, [
+    ("Significant deficiencies communicated IN WRITING to TCWG on a timely basis (before the report date)", "ISA 265.9; A12-A14", "Yes", "Letter dated 20-Mar-26 (DF5)"),
+    ("Significant deficiencies communicated in writing to management at an appropriate level (unless inappropriate, e.g. management integrity in question)", "ISA 265.10(a); A19-A20", "Yes", "CEO & CFO copied"),
+    ("Other deficiencies of sufficient importance communicated to management (unless already communicated by others)", "ISA 265.10(b); A21-A26", "Yes", "Management letter section 2 / oral for minor items"),
+    ("Written communication includes description of deficiencies and explanation of their potential effects", "ISA 265.11(a)", "Yes", "Columns R-S of DF2"),
+    ("Communication explains: purpose of audit was to express an opinion on the FS", "ISA 265.11(b)(i)", "Yes", "Letter para 2"),
+    ("...the audit included consideration of IC relevant to FS preparation to design procedures, not to express an opinion on IC effectiveness", "ISA 265.11(b)(ii)", "Yes", "Letter para 2"),
+    ("...matters reported are limited to deficiencies identified during the audit and concluded to be of sufficient importance", "ISA 265.11(b)(iii)", "Yes", "Letter para 2"),
+    ("Previously communicated significant deficiencies not yet remediated are communicated again (or referred to)", "ISA 265.A28-A29", "Yes", "CD04 repeat - DF6"),
+    ("Communication of significant deficiencies recorded in TCWG log (F1) and documented in the audit file", "ISA 260; ISA 230", "Yes", "F1 item 6"),
+], "DF4")
+t0 = r
+tsum = [("Deficiencies identified", "=COUNTA(CD_ID)"), ("Significant deficiencies", '=COUNTIF(CD_Class,"Significant deficiency")'),
+        ("Other - sufficient importance", '=COUNTIF(CD_Class,"Other deficiency - sufficient importance")'), ("Other - minor", '=COUNTIF(CD_Class,"Other deficiency - minor")'),
+        ("Significant deficiencies communicated in writing", '=COUNTIFS(CD_Class,"Significant deficiency",CD_Date,">0")'),
+        ("Communications late / due", '=COUNTIF(CD_Timely,"LATE*")+COUNTIF(CD_Timely,"DUE*")'), ("Remediated (closed)", '=COUNTIF(CD_Status,"Closed")')]
+r = table_head(ws, r, ["", "Summary", "Count"])
+for lab, f_ in tsum:
+    cell(ws, f"B{r}", lab); cell(ws, f"C{r}", f_, "0", center=True); r += 1
+dname("CD_N", f"Deficiencies_265!$C${t0+1}"); dname("CD_SigComm", f"Deficiencies_265!$C${t0+5}")
+dname("CD_Closed", f"Deficiencies_265!$C${t0+7}")
+r += 1
+
+r = section(ws, r, "DF5", "Draft written communication to TCWG & management (auto-generated)", "ISA 265.9-11 | illustrative")
+L0 = r
+letter = ['="To: The Board of Directors, "&Set_Client',
+          '="Communication of deficiencies in internal control identified during the audit of the financial statements for the year ended "&TEXT(Set_FYE,"dd mmmm yyyy")',
+          '="The purpose of our audit was to express an opinion on the financial statements. Our audit included consideration of internal control relevant to the preparation of the financial statements in order to design audit procedures that are appropriate in the circumstances, but not for the purpose of expressing an opinion on the effectiveness of internal control. '
+          'The matters reported are limited to those deficiencies that we identified during the audit and that we have concluded are of sufficient importance to merit being reported to you."',
+          '="1. SIGNIFICANT DEFICIENCIES IN INTERNAL CONTROL (ISA 265.9)"']
+for t in letter:
+    c = put(ws, f"B{r}", t, font(9, t.startswith('="1.')), "F1F8E9", al=WRAP); ws.merge_cells(f"B{r}:L{r}")
+    ws.row_dimensions[r].height = 48 if len(t) > 200 else 18; r += 1
+def letter_items(r, cls, n):
+    for k in range(1, n + 1):
+        m = f'MATCH("{cls}|{k}",CD_Key,0)'
+        f_ = f'=IFERROR("1.{k} "&INDEX(CD_Desc,{m})&". Potential effect: "&INDEX(CD_Eff,{m})&". Recommendation: "&INDEX(CD_Rec,{m})&".","")'
+        if cls != "Significant deficiency": f_ = f_.replace('"1.', '"2.')
+        put(ws, f"B{r}", f_, font(9), "F1F8E9", al=WRAP); ws.merge_cells(f"B{r}:L{r}"); ws.row_dimensions[r].height = 30; r += 1
+    return r
+r = letter_items(r, "Significant deficiency", 6)
+put(ws, f"B{r}", '="2. OTHER DEFICIENCIES OF SUFFICIENT IMPORTANCE (ISA 265.10(b))"', font(9, True), "F1F8E9"); ws.merge_cells(f"B{r}:L{r}"); r += 1
+r = letter_items(r, "Other deficiency - sufficient importance", 6)
+for t in ['="We would be pleased to discuss these matters with you. Management\'s responses are set out in the attached appendix."', '="[Audit firm]   |   Engagement partner: "&Set_EP&"   |   Date: ____________"']:
+    put(ws, f"B{r}", t, font(9), "F1F8E9", al=WRAP); ws.merge_cells(f"B{r}:L{r}"); ws.row_dimensions[r].height = 18; r += 1
+note(ws, r, "Letter items fill automatically from DF2 in register order. Blank lines mean fewer items than slots. Edit the final wording before issue; minor deficiencies may be communicated orally.", "L", 14)
+r += 2
+
+r = section(ws, r, "DF6", "Follow-up of prior-year deficiencies (management letter FY2024)", "ISA 265.A28-A29 | ISA 315R.A6")
+r = table_head(ws, r, ["#", "Prior-year deficiency", "PY classification", "Management's PY response", "", "CY status", "Evidence", "", "Action", "", "CY ref"])
+ws.merge_cells(f"D{r-1}:E{r-1}"); ws.merge_cells(f"G{r-1}:H{r-1}"); ws.merge_cells(f"I{r-1}:J{r-1}")
+py_ = [("NRV / slow-moving inventory not reviewed", "Significant deficiency", "Policy to be adopted by Jun-25", "Not remediated", "C10 D&I deficient; M02", "CD04"),
+       ("Bank reconciliations not reviewed timely", "Other deficiency", "Review sign-off introduced", "Remediated", "C02 tested effective", "-"),
+       ("Payroll changes not authorised", "Other deficiency", "HR approval implemented", "Remediated", "C04 tested effective", "-"),
+       ("Weak password parameters in ERP", "Other deficiency", "Parameters updated Mar-25", "Partially remediated", "IC3 access domain still deficient", "CD02")]
+for i, (d_, cls, resp, stt, ev_, ref) in enumerate(py_, 1):
+    cell(ws, f"A{r}", i, center=True); cell(ws, f"B{r}", d_); cell(ws, f"C{r}", cls, center=True)
+    cell(ws, f"D{r}", resp, is_input=True); ws.merge_cells(f"D{r}:E{r}"); cell(ws, f"F{r}", stt, is_input=True, center=True)
+    cell(ws, f"G{r}", ev_, is_input=True); ws.merge_cells(f"G{r}:H{r}")
+    cell(ws, f"I{r}", f'=IF(F{r}="Remediated","Closed - no further communication",IF(C{r}="Significant deficiency","Re-communicate in writing; A7 indicator (failure to remediate)","Re-communicate to management"))')
+    ws.merge_cells(f"I{r}:J{r}"); cell(ws, f"K{r}", ref, center=True); ws.row_dimensions[r].height = 28; r += 1
+ws.freeze_panes = "C8"
+
 # ---------------- WP INDEX ----------------
 wpi = S["WP_Index"]
 widths(wpi, {"A": 7, "B": 13, "C": 46, "D": 30, "E": 14, "F": 11, "G": 14, "H": 11, "I": 13, "J": 9, "K": 9, "L": 9, "M": 12})
@@ -2020,7 +2173,13 @@ wps = [
  ("IC5", "Execution", "Attribute testing detail - C01", "ISA 330.10", "Reviewed", 6, 6),
  ("IC6", "Execution", "Evaluation of deviations", "ISA 330.16-17; ISA 265", "Prepared", 3, 3),
  ("E1", "Findings", "Summary of misstatements", "ISA 450", "Prepared", 5, 6),
- ("E2", "Findings", "Control deficiencies evaluation", "ISA 265", "Prepared", 4, 4),
+ ("E2", "Findings", "Control deficiencies summary", "ISA 265", "Prepared", 1, 1),
+ ("DF1", "Findings", "ISA 265 definitions & evaluation framework", "ISA 265.6, 8; A5-A11", "Closed", 1, 1),
+ ("DF2", "Findings", "Deficiency register & evaluation", "ISA 265.7-8", "Reviewed", 5, 6),
+ ("DF3", "Findings", "Evaluation in combination", "ISA 265.8; A6", "Reviewed", 1, 1),
+ ("DF4", "Findings", "Communication requirements & tracking", "ISA 265.9-11", "Prepared", 1, 1),
+ ("DF5", "Findings", "Written communication to TCWG & management", "ISA 265.9-11", "Prepared", 2, 2),
+ ("DF6", "Findings", "Follow-up of prior-year deficiencies", "ISA 265.A28-A29", "Reviewed", 1, 1),
  ("E3", "Findings", "Issue log & remediation tracker", "ISA 230; ISQM 1.42", "In progress", 4, 3),
  ("E4", "Findings", "Management letter", "ISA 265.9-11", "In progress", 5, 3),
  ("SUAD1", "Findings", "SUAD - all current-year misstatements", "ISA 450.5-8", "Prepared", 4, 5),
@@ -2168,7 +2327,7 @@ stds = [("ISQM 1", "Quality Management for Firms that Perform Audits or Reviews"
         ("ISA 240 (Revised)", "Auditor's Responsibilities Relating to Fraud in an Audit of FS (issued Jul-2025; effective periods beginning on/after 15-Dec-2026)", "Planning / Execution / Oversight", "B5, FR1-FR7, D6"),
         ("ISA 250 (Revised)", "Consideration of Laws and Regulations", "Planning", "B6"),
         ("ISA 260 (Revised)", "Communication with Those Charged with Governance", "Strategy / Oversight", "A7, F1"),
-        ("ISA 265", "Communicating Deficiencies in Internal Control", "Findings", "E2, E4, IC6"),
+        ("ISA 265", "Communicating Deficiencies in Internal Control to TCWG and Management", "Findings", "E2, E4, IC6, DF1-DF6"),
         ("ISA 300", "Planning an Audit of Financial Statements", "Strategy / Planning", "A6, B10"),
         ("ISA 315 (Revised 2019)", "Identifying and Assessing the Risks of Material Misstatement", "Planning", "B1, B2, B4, RA1-RA6, IC1-IC3"),
         ("ISA 320", "Materiality in Planning and Performing an Audit", "Planning", "B3"),
@@ -2224,7 +2383,7 @@ boxes = {
     "Oversight": ("L33", ["TCWG interaction", "Quality assurance reviews", "Independence monitoring", "Performance evaluation"],
                   ["TCWG log (F1)", "EQ review (F5)", "Opinion matrix (F7)", "ISQM 1 metrics (F10)"], "L6_Oversight"),
     "Findings": ("G47", ["Issue identification", "Root cause analysis", "Recommendation design", "Remediation tracking"],
-                 ["SUAD - all misstatements (SUAD1-4)", "Deficiencies (E2, IC6)", "Issue log (E3)", "Management letter (E4)"], "L5_Findings"),
+                 ["SUAD - all misstatements (SUAD1-4)", "ISA 265 deficiencies & letter (DF1-DF6)", "Issue log (E3)", "Management letter (E4)"], "L5_Findings"),
 }
 from openpyxl.utils import column_index_from_string as ci, get_column_letter as gl
 for lay, (anchor, focus, ctrls_, sheet) in boxes.items():
@@ -2285,7 +2444,7 @@ for rr in range(6, 60):
     for cc in (2, 3): db.cell(rr, cc).fill = fill(DK)
 navs = [("Overview", "LayersMap"), ("Setup", "Setup"), ("WP Index", "WP_Index"), ("1 Strategy", "L1_Strategy"),
         ("2 Planning", "L2_Planning"), ("   Risk 315R", "Risk_315R"), ("   Fraud 240R", "Fraud_240R"), ("   GC 570R", "GoingConcern_570R"), ("3 Methodology", "L3_Methodology"), ("   Sampling", "Sampling"), ("4 Execution", "L4_Execution"),
-        ("   IC Testing", "IC_Assessment"), ("5 Findings", "L5_Findings"), ("   SUAD", "SUAD"), ("6 Oversight", "L6_Oversight"), ("Standards", "Standards")]
+        ("   IC Testing", "IC_Assessment"), ("5 Findings", "L5_Findings"), ("   Deficiencies 265", "Deficiencies_265"), ("   SUAD", "SUAD"), ("6 Oversight", "L6_Oversight"), ("Standards", "Standards")]
 for k, (lab, sh) in enumerate(navs):
     rr = 7 + k * 3
     c = put(db, f"C{rr}", f'=HYPERLINK("#{sh}!A1","{lab}")', font(10, True, DK if k == 0 else "FFFFFF"),
@@ -2379,7 +2538,7 @@ db.add_chart(c6, "T31")
 B = [("TCWG Comms", "=DD_CommPct", "0%", '="ISA 260 matters done"'),
      ("Controls Effective", "=DD_CtlPct", "0%", '="of controls tested (ISA 330)"'),
      ("Confirmations", "=DD_ConfPct", "0%", '="received (ISA 505)"'),
-     ("Signif. Deficiencies", "=DD_SigDef", "0", '="to TCWG in writing (ISA 265)"'),
+     ("Signif. Deficiencies", "=DD_SigDef", "0", '="of "&CD_N&" | "&CD_SigComm&" in writing (ISA 265)"'),
      ("Days to Report", "=DD_DaysToReport", "0", '="EQR: "&DD_EQR'),
      ("Proposed Opinion", "=Opinion", "@", '="Quality KPIs green: "&DD_QAGreen')]
 for k, t in enumerate(B):
