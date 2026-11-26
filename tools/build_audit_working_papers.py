@@ -32,7 +32,7 @@ names = {}
 def dname(n, ref): names[n] = ref
 
 order = ["Dashboard", "LayersMap", "Setup", "WP_Index", "L1_Strategy", "Acceptance_QM", "Team_Resources", "PBC_List", "L2_Planning",
-         "Risk_315R", "Fraud_240R", "GoingConcern_570R", "L3_Methodology", "Sampling", "L4_Execution", "IC_Assessment", "L5_Findings", "Deficiencies_265", "SUAD", "L6_Oversight", "DashData", "Standards", "Lists"]
+         "Risk_315R", "Assertions", "Fraud_240R", "GoingConcern_570R", "L3_Methodology", "Sampling", "L4_Execution", "IC_Assessment", "L5_Findings", "Deficiencies_265", "SUAD", "L6_Oversight", "AI_Agents", "DashData", "Standards", "Lists"]
 ws0 = wb.active; ws0.title = order[0]
 S = {order[0]: ws0}
 for n in order[1:]: S[n] = wb.create_sheet(n)
@@ -76,6 +76,7 @@ lists = {
     "CtlType": ["Preventive", "Detective"],
     "DefType": ["Design", "Implementation", "Operating"],
     "NewCont": ["Continuing", "New"],
+    "DataClass": ["Public", "Anonymised", "Confidential"],
     "PBCStatus": ["Not received", "Partially received", "Received", "Accepted", "Re-request"],
 }
 put(L, "A1", "Validation lists (do not edit)", font(11, True))
@@ -1572,7 +1573,7 @@ for i, (dsc, scot, asr_, lvl, frd, irf, L_, M_, sig, subo, cr, resp, wp) in enum
     ws.row_dimensions[r].height = 40; r += 1
 q1 = r - 1
 for col in ("F", "R", "U"): dv(ws, f"{col}{q0}:{col}{q1}", "YesNo")
-dname("Risk_ID", f"Risk_315R!$A${q0}:$A${q1}"); dname("Risk_SCOT", f"Risk_315R!$C${q0}:$C${q1}")
+dname("Risk_ID", f"Risk_315R!$A${q0}:$A${q1}"); dname("Risk_SCOT", f"Risk_315R!$C${q0}:$C${q1}"); dname("Risk_Assert", f"Risk_315R!$D${q0}:$D${q1}")
 dname("Risk_Fraud", f"Risk_315R!$F${q0}:$F${q1}"); dname("Risk_MaxIRF", f"Risk_315R!$M${q0}:$M${q1}")
 dname("Risk_L", f"Risk_315R!$O${q0}:$O${q1}"); dname("Risk_M", f"Risk_315R!$P${q0}:$P${q1}")
 dname("Risk_Spectrum", f"Risk_315R!$S${q0}:$S${q1}"); dname("Risk_Check", f"Risk_315R!$T${q0}:$T${q1}")
@@ -2003,7 +2004,7 @@ d1 = r - 1
 for col in "KLM": dv(ws, f"{col}{d0}:{col}{d1}", "YesNo")
 dv(ws, f"Y{d0}:Y{d1}", "IssueStatus"); dv(ws, f"E{d0}:E{d1}", "DefType")
 dname("CD_ID", f"Deficiencies_265!$A${d0}:$A${d1}"); dname("CD_Class", f"Deficiencies_265!$O${d0}:$O${d1}")
-dname("CD_Group", f"Deficiencies_265!$N${d0}:$N${d1}"); dname("CD_Score", f"Deficiencies_265!$J${d0}:$J${d1}")
+dname("CD_Group", f"Deficiencies_265!$N${d0}:$N${d1}"); dname("CD_Proc", f"Deficiencies_265!$F${d0}:$F${d1}"); dname("CD_Score", f"Deficiencies_265!$J${d0}:$J${d1}")
 dname("CD_Date", f"Deficiencies_265!$T${d0}:$T${d1}"); dname("CD_Status", f"Deficiencies_265!$Y${d0}:$Y${d1}")
 dname("CD_Rank", f"Deficiencies_265!$Z${d0}:$Z${d1}"); dname("CD_Key", f"Deficiencies_265!$AA${d0}:$AA${d1}"); dname("CD_Timely", f"Deficiencies_265!$U${d0}:$U${d1}")
 dname("CD_Desc", f"Deficiencies_265!$B${d0}:$B${d1}"); dname("CD_Eff", f"Deficiencies_265!$R${d0}:$R${d1}"); dname("CD_Rec", f"Deficiencies_265!$S${d0}:$S${d1}")
@@ -2486,6 +2487,249 @@ for a in areas:
 mini_chart(ws, "PBC items by status", _Ref(ws, min_col=2, min_row=s0, max_row=s1), _Ref(ws, min_col=3, min_row=s0 - 1, max_row=s1), f"F{s0}", color="1565C0", w=12, h=6.5)
 ws.freeze_panes = "C8"
 
+# ======================================================================
+# ASSERTIONS & AI AGENTS
+# ======================================================================
+# ---------------- ASSERTIONS ----------------
+ws = S["Assertions"]
+r = sheet_header(ws, "ASSERTIONS AT RISK - FROM CONTROL GAP TO FINANCIAL IMPACT", "2 & 5",
+                 "Identify which financial statement assertion could be misstated, link each control gap to the assertion at risk and its financial impact, and drive specific recommendations.",
+                 "ISA 315 (Revised 2019).12(a) & A190 (assertions); ISA 330.6-7; ISA 265.11(a); ISA 450")
+for k in range(ci("M"), ci("P") + 1): ws.column_dimensions[gl(k)].width = 13
+widths(ws, {"B": 26, "C": 22, "D": 34})
+r = section(ws, r, "AS1", "Assertion framework - what could go wrong?", "ISA 315R.A190")
+r = table_head(ws, r, ["#", "Assertion", "Applies to", "Key question", "", "", "Typical audit procedure", "", "", "", "Direction of test"])
+ws.merge_cells(f"D{r-1}:F{r-1}"); ws.merge_cells(f"G{r-1}:J{r-1}")
+fw = [("Occurrence", "P&L / transactions", "Did the transaction actually happen and pertain to the entity?", "Vouch from ledger to source documents (orders, GDNs, cash)", "Ledger > source"),
+      ("Completeness", "P&L & balance sheet", "Have all transactions / balances / disclosures been recorded?", "Trace from source to ledger; search for unrecorded liabilities; analytics", "Source > ledger"),
+      ("Accuracy", "P&L & balance sheet", "Are amounts and data recorded correctly?", "Recalculate; agree to contracts, price lists, rates", "Both"),
+      ("Cut-off", "P&L / transactions", "Recorded in the correct accounting period?", "Test transactions either side of year end", "Both"),
+      ("Classification", "P&L & balance sheet", "Recorded in the proper accounts / current vs non-current?", "Review account mapping & reclassifications", "Both"),
+      ("Existence", "Balance sheet", "Do the assets, liabilities and equity interests exist?", "Confirmations; physical inspection; count attendance", "Ledger > asset"),
+      ("Rights & obligations", "Balance sheet", "Does the entity hold/control the rights to assets; are liabilities obligations of the entity?", "Inspect title deeds, contracts, loan agreements", "Ledger > documents"),
+      ("Valuation & allocation", "Balance sheet", "Included at appropriate amounts, with valuation adjustments recorded?", "NRV, ECL, impairment testing; estimates (ISA 540R)", "Both"),
+      ("Presentation & disclosure", "P&L & balance sheet", "Appropriately aggregated, described and disclosed per the framework?", "Disclosure checklist; RP & GC disclosures", "FS > framework")]
+for i, (a, ap, q, pr, dirn) in enumerate(fw, 1):
+    cell(ws, f"A{r}", i, center=True); c = cell(ws, f"B{r}", a); c.font = font(9, True)
+    cell(ws, f"C{r}", ap, center=True); cell(ws, f"D{r}", q); ws.merge_cells(f"D{r}:F{r}")
+    cell(ws, f"G{r}", pr); ws.merge_cells(f"G{r}:J{r}"); cell(ws, f"K{r}", dirn, center=True); ws.row_dimensions[r].height = 28; r += 1
+note(ws, r, "ISA 315R groups balance-sheet 'accuracy, valuation and allocation' together; they are shown separately here for teaching. Use the same assertion names in Risk_315R RA3 so the matrix below picks them up.")
+r += 2
+
+r = section(ws, r, "AS2", "Assertion risk matrix - risks of material misstatement by SCOTABD & assertion (from RA3)", "ISA 315R.28-29 | ISA 330.6")
+cols = [("Occurrence / Existence", ["*Occurrence*", "*Existence*"]), ("Completeness", ["*Completeness*"]), ("Accuracy / Valuation", ["*Accuracy*", "*Valuation*"]),
+        ("Cut-off", ["*Cut-off*"]), ("Classification", ["*Classification*"]), ("Rights & obligations", ["*Rights*"]), ("Presentation & disclosure", ["*Presentation*"])]
+r = table_head(ws, r, ["#", "SCOTABD", "Class"] + [c_[0] for c_ in cols] + ["Assertions at risk", "Highest spectrum"])
+HDR2 = r - 1
+x0 = r
+acct_rows = [f"=INDEX(TB_Acct,{i+1})" for i in range(len(tbrows))] + ["Disclosures - related parties", "All (FS level)"]
+for i, a in enumerate(acct_rows, 1):
+    cell(ws, f"A{r}", i, center=True); cell(ws, f"B{r}", a, link=a.startswith("="))
+    cell(ws, f"C{r}", f"=INDEX(TB_Class,{i})" if i <= len(tbrows) else ("Disclosure" if "Disclosures" in a else "Pervasive"), link=i <= len(tbrows), center=True)
+    for j, (nm, pats) in enumerate(cols):
+        col = gl(4 + j)
+        if a == "All (FS level)":
+            f_ = f'=COUNTIFS(Risk_SCOT,$B{r})'
+        else:
+            f_ = "=" + "+".join(f'COUNTIFS(Risk_SCOT,$B{r},Risk_Assert,"{p}")' for p in pats)
+        put(ws, f"{col}{r}", f_ + "" , font(10, True), None, '0;0;""', CEN, BOX)
+    cell(ws, f"K{r}", f'=COUNTIF(D{r}:J{r},">0")', '0;0;"-"', center=True)
+    cell(ws, f"L{r}", f'=IF(COUNTIFS(Risk_SCOT,B{r},Risk_Spectrum,"Significant")>0,"Significant",IF(COUNTIFS(Risk_SCOT,B{r},Risk_Spectrum,"High")>0,"High",IF(COUNTIFS(Risk_SCOT,B{r},Risk_Spectrum,"Elevated")>0,"Elevated",IF(COUNTIFS(Risk_SCOT,B{r},Risk_Spectrum,"Moderate")>0,"Moderate",IF(COUNTIF(Risk_SCOT,B{r})>0,"Low","-")))))', center=True)
+    r += 1
+x1 = r - 1
+ws.conditional_formatting.add(f"D{x0}:J{x1}", CellIsRule(operator="greaterThan", formula=["0"], fill=fill("FFCC80"), font=Font(name=F, bold=True, color="B71C1C")))
+for band, colr in SPEC_COL.items():
+    ws.conditional_formatting.add(f"L{x0}:L{x1}", CellIsRule(operator="equal", formula=[f'"{band}"'], fill=fill(colr), font=Font(name=F, bold=True, color="FFFFFF" if band in ("High", "Significant") else "000000")))
+put(ws, f"B{r}", "Risks per assertion", font(9, True), PALE, bd=BOX)
+for j in range(7):
+    col = gl(4 + j); put(ws, f"{col}{r}", f"=SUM({col}{x0}:{col}{x1})", font(9, True), PALE, "0", CEN, BOX)
+put(ws, f"K{r}", f"=SUM(K{x0}:K{x1})", font(9, True), PALE, "0", CEN, BOX)
+dname("AS_Total", f"Assertions!$K${r}")
+TOTR = r
+r += 2
+# transposed totals for chart
+put(ws, f"N{x0-1}", "Assertion", font(9, True, "FFFFFF"), DK, al=CEN); put(ws, f"O{x0-1}", "Risks", font(9, True, "FFFFFF"), DK, al=CEN)
+for j, (nm, _) in enumerate(cols):
+    put(ws, f"N{x0+j}", nm, font(9), bd=BOX); put(ws, f"O{x0+j}", f"={gl(4+j)}{TOTR}", font(9), nf="0", al=CEN, bd=BOX)
+mini_chart(ws, "Risks of material misstatement by assertion", _Ref(ws, min_col=14, min_row=x0, max_row=x0 + 6), _Ref(ws, min_col=15, min_row=x0 - 1, max_row=x0 + 6),
+           f"N{x0+9}", color="C62828", w=12, h=7)
+
+r = section(ws, r, "AS3", "Process -> Control gap -> Assertion at risk -> Financial impact -> Recommendation", "ISA 265.11(a) | ISA 315R | ISA 450")
+r = table_head(ws, r, ["Ref", "Process", "Control gap (DF2)", "Assertion at risk", "FS line affected", "Financial impact (MNT '000)", "Impact basis",
+                       "Impact vs PM", "Impact rating", "Classification (265)", "Recommendation (DF2)", ""])
+ws.merge_cells(f"K{r-1}:L{r-1}")
+chain = [("All - FS level", "All", 0, "Pervasive - not quantifiable"),
+         ("Occurrence, Accuracy (journals)", "All / journals", 0, "Pervasive - IPE & automated controls"),
+         ("Occurrence, Accuracy", "Trade payables / Cost of sales", 2100, "Exception value in IC4 sample"),
+         ("Valuation & allocation", "Inventory", "=INDEX(MS_Amt,2)", "SUAD M02 (uncorrected)"),
+         ("Completeness", "Accruals", "=INDEX(MS_Amt,3)", "SUAD M03 (corrected)"),
+         ("Cut-off, Occurrence", "Revenue / Trade receivables", "=INDEX(MS_Amt,1)", "SUAD M01 (uncorrected)"),
+         ("Existence", "Trade receivables / Cash", 0, "Potential - no misstatement found"),
+         ("Existence", "Cash", "=INDEX(MS_Amt,6)", "SUAD M06 (trivial)"),
+         ("Presentation & disclosure", "Disclosures - related parties", "=INDEX(MS_Amt,8)", "SUAD M08 (qualitative)"),
+         ("All - FS level", "All", 0, "Pervasive - governance")]
+c0 = r
+for i, (asr_, line, amt, basis) in enumerate(chain, 1):
+    cell(ws, f"A{r}", f"=INDEX(CD_ID,{i})", link=True, center=True)
+    cell(ws, f"B{r}", f"=INDEX(CD_Proc,{i})", link=True, center=True)
+    cell(ws, f"C{r}", f"=INDEX(CD_Desc,{i})", link=True)
+    cell(ws, f"D{r}", asr_, is_input=True, center=True); cell(ws, f"E{r}", line, is_input=True, center=True)
+    cell(ws, f"F{r}", amt, NUM, is_input=not str(amt).startswith("="), link=str(amt).startswith("="))
+    cell(ws, f"G{r}", basis, is_input=True)
+    cell(ws, f"H{r}", f"=IFERROR(F{r}/Mat_PM,0)", PCT, center=True)
+    cell(ws, f"I{r}", f'=IF(F{r}>=Mat_PM,"Material",IF(F{r}>=Mat_CT,"Above CT",IF(F{r}>0,"Trivial",IF(LEFT(G{r},9)="Pervasive","Pervasive / qualitative","Potential"))))', center=True)
+    cell(ws, f"J{r}", f"=INDEX(CD_Class,{i})", link=True, center=True)
+    cell(ws, f"K{r}", f"=INDEX(CD_Rec,{i})", link=True); ws.merge_cells(f"K{r}:L{r}")
+    ws.row_dimensions[r].height = 40; r += 1
+c1 = r - 1
+for k, v in (("Material", "FFCDD2"), ("Above CT", "FFE0B2"), ("Pervasive / qualitative", "E1BEE7")):
+    ws.conditional_formatting.add(f"I{c0}:I{c1}", CellIsRule(operator="equal", formula=[f'"{k}"'], fill=fill(v)))
+put(ws, f"B{r}", "Total quantified impact of control gaps", font(9, True), PALE, bd=BOX); ws.merge_cells(f"B{r}:E{r}")
+put(ws, f"F{r}", f"=SUM(F{c0}:F{c1})", font(9, True), PALE, NUM, bd=BOX)
+dname("AS_Impact", f"Assertions!$F${r}"); dname("AS_Quant", f"Assertions!$I${c0}:$I${c1}")
+r += 1
+note(ws, r, "Because effective auditing is about understanding WHAT could be misstated and WHY it matters: every control gap is expressed in terms of the assertion at risk and its potential financial impact before a recommendation is made.", "L", 20)
+
+# ---------------- AI AGENTS ----------------
+ws = S["AI_Agents"]
+r = sheet_header(ws, "AI-ASSISTED AUDIT - PROCEDURES, REVIEW & INSPECTION-READINESS AGENTS", "6",
+                 "Use rule-based 'agents' built into this file (and, where the firm allows, AI tools such as Microsoft Copilot, ChatGPT or Claude) to test, review and inspection-check the working papers - with traceable references, data protection, verification and professional skepticism.",
+                 "ISQM 1 (resources - technological resources; information & communication; monitoring); ISA 220R.29-34 (review); ISA 230 (documentation); ISA 500.7-9 (relevance & reliability); IESBA 114 (confidentiality), 120 (skepticism)")
+for k in range(ci("M"), ci("N") + 1): ws.column_dimensions[gl(k)].width = 14
+widths(ws, {"B": 44, "C": 14, "D": 12, "E": 14})
+
+r = section(ws, r, "AI1", "Responsible AI protocol (complete before using any AI tool on this engagement)", "ISQM 1 | IESBA 114 & 120 | ISA 230 | ISA 500")
+r = checklist(ws, r, [
+    ("Only firm-approved AI tools / enterprise tenants used (Copilot, ChatGPT Enterprise, Claude for Work - per firm policy)", "ISQM 1 - technological resources", "Yes", "Firm AI policy v2.1"),
+    ("No confidential client data entered into non-approved tools; data anonymised or synthetic where required", "IESBA 114 (confidentiality)", "Yes", "Client name & IDs replaced with codes"),
+    ("AI output treated as a draft - never as audit evidence by itself; relevance & reliability evaluated", "ISA 500.7-9", "Yes", ""),
+    ("Every AI-assisted output verified by a qualified team member and traced to source documents / WP references", "ISA 220R.30-31; ISA 230.9", "Yes", "Reviewer column in AI5"),
+    ("Professional skepticism applied - challenge AI conclusions, look for contradictory evidence and hallucinated references", "ISA 200.15; IESBA 120", "Yes", ""),
+    ("AI use documented: tool, purpose, prompt, data class, verification, WP ref (AI5 log)", "ISA 230.8", "Yes", ""),
+    ("Agents (prompts) shared & reused across teams only via firm's approved library (AI6)", "ISQM 1 - intellectual resources", "Yes", ""),
+], "AI1")
+
+r = section(ws, r, "AI2", "Audit Procedures Agent - automated exception tests across the file", "ISA 330 | ISA 500 | ISA 530")
+r = table_head(ws, r, ["#", "Automated test", "Exceptions", "Threshold", "Result", "Source WP", "Next step for the auditor", "", "", "", "Link"])
+ws.merge_cells(f"G{r-1}:J{r-1}")
+apa = [("Lead schedule movements > PM and > 10% needing explanation", '=COUNTIF(L4_Execution!K:K,"Explain")', 0, "D1", "Document explanations & corroborate", "L4_Execution"),
+       ("Trial balance out of balance", "=IF(ABS(SUM(TB_CY))>0.5,1,0)", 0, "D1", "Reconcile TB to GL", "L4_Execution"),
+       ("MUS sample misstatements (receivables)", '=COUNTIF(Rec_Mis,"<>0")', 0, "S4-S5", "Investigate cause; project; record in SUAD", "Sampling"),
+       ("Controls not operating effectively", '=COUNTIF(ToE_Result,"Not effective")', 0, "IC4", "Withdraw reliance; extend substantive (ISA 330.17)", "IC_Assessment"),
+       ("Journal entry exceptions", "=JE_Exc", 0, "FR4", "Obtain support; evaluate fraud indicators", "Fraud_240R"),
+       ("Confirmation differences / non-responses", '=COUNTIF(Conf_Status,"Received - reconciled")+COUNTIF(Conf_Status,"Not received*")+COUNTIF(Conf_Status,"Outstanding")', 0, "D4", "Reconcile differences; alternative procedures", "L4_Execution"),
+       ("Analytical procedures outside threshold", '=COUNTIF(L3_Methodology!I:I,"Investigate")', 0, "C3", "Obtain & corroborate explanations (ISA 520.7)", "L3_Methodology"),
+       ("PBC items overdue (information not yet obtained)", "=PBC_Overdue", 0, "PBC1", "Escalate; consider scope limitation", "PBC_List")]
+a0 = r
+for i, (t, f_, th, src, nxt, sh) in enumerate(apa, 1):
+    cell(ws, f"A{r}", i, center=True); cell(ws, f"B{r}", t); cell(ws, f"C{r}", f_, "0", center=True); cell(ws, f"D{r}", th, "0", True, center=True)
+    cell(ws, f"E{r}", f'=IF(C{r}<=D{r},"Clear","Exceptions ("&C{r}&")")', center=True); cell(ws, f"F{r}", src, center=True)
+    cell(ws, f"G{r}", nxt); ws.merge_cells(f"G{r}:J{r}")
+    c = cell(ws, f"K{r}", f'=HYPERLINK("#{sh}!A1","Open >")', center=True); c.font = Font(name=F, size=9, color="1565C0", underline="single"); r += 1
+ws.conditional_formatting.add(f"E{a0}:E{r-1}", FormulaRule(formula=[f'LEFT($E{a0},10)="Exceptions"'], fill=fill("FFE0B2")))
+ws.conditional_formatting.add(f"E{a0}:E{r-1}", CellIsRule(operator="equal", formula=['"Clear"'], fill=fill("C8E6C9")))
+dname("AI_ProcExc", f"AI_Agents!$E${a0}:$E${r-1}")
+r += 1
+
+r = section(ws, r, "AI3", "Manager / Partner Review Agent - automated review points", "ISA 220R.30-34 | ISA 230.9")
+r = table_head(ws, r, ["#", "Review check", "Issues found", "Severity", "Result", "Standard", "What the reviewer should do", "", "", "", "Link"])
+ws.merge_cells(f"G{r-1}:J{r-1}")
+rva = [("Prepared/reviewed WPs without preparer sign-off", '=SUMPRODUCT((WP_Status<>"Not started")*(WP_Status<>"In progress")*(WP_Prep=""))', "High", "ISA 230.9(a)", "Obtain preparer sign-off & date", "WP_Index"),
+       ("Reviewed/closed WPs without reviewer sign-off", '=SUMPRODUCT(((WP_Status="Reviewed")+(WP_Status="Closed"))*(WP_Rev=""))', "High", "ISA 230.9(c)", "Evidence review with name & date", "WP_Index"),
+       ("Risk assessments needing justification (RA3 consistency check)", '=COUNTIF(Risk_Check,"<>OK")', "Medium", "ISA 315R.31-32", "Document rationale or revise", "Risk_315R"),
+       ("Fraud risks not assessed as significant", '=COUNTIFS(Risk_Fraud,"Yes",Risk_Spectrum,"<>Significant")', "High", "ISA 240R", "Treat as significant risk", "Risk_315R"),
+       ("Uncorrected misstatements above PM (aggregate)", "=IF(ABS(MS_Agg)>=Mat_PM,1,0)", "High", "ISA 450.8-11", "Request correction; reassess", "SUAD"),
+       ("Significant deficiencies not communicated in writing", '=COUNTIF(CD_Class,"Significant deficiency")-CD_SigComm', "High", "ISA 265.9", "Issue written communication to TCWG", "Deficiencies_265"),
+       ("Fraud matters involving management not yet reported to TCWG", '=COUNTIFS(Fraud_Mgmt,"Yes",Fraud_TCWG,"")', "High", "ISA 240R", "Communicate on a timely basis", "Fraud_240R"),
+       ("Open high-severity issues", "=DD_OpenHigh", "Medium", "ISQM 1.42", "Resolve or escalate before sign-off", "L5_Findings"),
+       ("Independence declarations outstanding", "=DD_IndTot-DD_IndRecv", "High", "IESBA 400; ISA 220R.17", "Obtain before further work", "L1_Strategy"),
+       ("TCWG communications pending", '=COUNTIF(Comm_Status,"Pending")', "Medium", "ISA 260", "Schedule completion meeting", "L6_Oversight"),
+       ("EQ review not completed", '=IF(OR(DD_EQR="Reviewed",DD_EQR="Closed"),0,1)', "High", "ISQM 2; ISA 220R.36", "Complete before report is dated", "L6_Oversight"),
+       ("Going concern assessment < 12 months from FS approval", "=IF(GC_Months<12,1,0)", "High", "ISA 570R", "Request extension", "GoingConcern_570R"),
+       ("MUS upper misstatement limit exceeds tolerable", "=IF(Rec_UMLpct>1,1,0)", "Medium", "ISA 530.14", "Extend testing / adjust", "Sampling"),
+       ("Team members over-allocated", "=TR_Over", "Low", "ISA 220R.25", "Rebalance schedule", "Team_Resources"),
+       ("PBC items overdue", "=PBC_Overdue", "Medium", "ISA 210.6(b)(iii)", "Escalate to CFO / TCWG", "PBC_List")]
+v0 = r
+for i, (t, f_, sev, std_, act, sh) in enumerate(rva, 1):
+    cell(ws, f"A{r}", i, center=True); cell(ws, f"B{r}", t); cell(ws, f"C{r}", f_, "0", center=True)
+    cell(ws, f"D{r}", sev, is_input=True, center=True); cell(ws, f"E{r}", f'=IF(C{r}=0,"Pass","Flag ("&C{r}&")")', center=True)
+    cell(ws, f"F{r}", std_, center=True); cell(ws, f"G{r}", act); ws.merge_cells(f"G{r}:J{r}")
+    c = cell(ws, f"K{r}", f'=HYPERLINK("#{sh}!A1","Open >")', center=True); c.font = Font(name=F, size=9, color="1565C0", underline="single"); r += 1
+v1 = r - 1
+dv(ws, f"D{v0}:D{v1}", "Severity")
+ws.conditional_formatting.add(f"E{v0}:E{v1}", FormulaRule(formula=[f'AND(LEFT($E{v0},4)="Flag",$D{v0}="High")'], fill=fill("FFCDD2"), font=Font(name=F, bold=True, color="B71C1C")))
+ws.conditional_formatting.add(f"E{v0}:E{v1}", FormulaRule(formula=[f'LEFT($E{v0},4)="Flag"'], fill=fill("FFE0B2")))
+ws.conditional_formatting.add(f"E{v0}:E{v1}", CellIsRule(operator="equal", formula=['"Pass"'], fill=fill("C8E6C9")))
+put(ws, f"B{r}", "Review flags open (high)", font(9, True), PALE, bd=BOX)
+put(ws, f"C{r}", f'=COUNTIF(E{v0}:E{v1},"Flag*")', font(10, True, DK), PALE, "0", CEN, BOX)
+put(ws, f"D{r}", f'=COUNTIFS(E{v0}:E{v1},"Flag*",D{v0}:D{v1},"High")', font(10, True, "B71C1C"), PALE, "0", CEN, BOX)
+dname("AI_Flags", f"AI_Agents!$C${r}"); dname("AI_FlagsHigh", f"AI_Agents!$D${r}"); dname("AI_Checks", f"AI_Agents!$A${v1}")
+r += 2
+
+r = section(ws, r, "AI4", "Audit Inspection Readiness Agent - simulated inspection review", "ISQM 1.35-47 (monitoring) | regulator inspection themes")
+r = table_head(ws, r, ["#", "Inspection theme", "Weight", "Score (0-100%)", "Weighted", "Standard", "Likely inspection finding if < 100%", "", "", "", "Link"])
+ws.merge_cells(f"G{r-1}:J{r-1}")
+ins = [("Documentation & sign-offs complete", 3, '=1-IFERROR(C' + str(v0) + '/COUNTIFS(WP_Status,"<>Not started",WP_Status,"<>In progress"),0)', "ISA 230", "Unsigned / undated working papers", "WP_Index"),
+       ("Risk assessment documented & consistent (IRFs, spectrum)", 3, "=1-IFERROR(COUNTIF(Risk_Check,\"<>OK\")/COUNTA(Risk_ID),0)", "ISA 315R", "Insufficient rationale for risk assessments", "Risk_315R"),
+       ("Fraud risks & responses (incl. JE testing)", 3, f'=IF(AND(C{v0+3}=0,JE_Exc<=JE_Tested),IF(C{v0+6}=0,1,0.5),0)', "ISA 240R", "Fraud procedures / communications not evidenced", "Fraud_240R"),
+       ("Controls reliance supported by testing", 2, "=DD_CtlPct", "ISA 330.8-17", "Reliance on controls without sufficient testing", "IC_Assessment"),
+       ("Misstatements evaluated & communicated", 2, f"=IF(C{v0+4}=0,1,0.6)", "ISA 450", "Aggregate uncorrected misstatements near materiality", "SUAD"),
+       ("Deficiencies communicated (ISA 265)", 2, '=IFERROR(CD_SigComm/COUNTIF(CD_Class,"Significant deficiency"),1)', "ISA 265", "Significant deficiencies not communicated in writing", "Deficiencies_265"),
+       ("Going concern evaluation (12-month period)", 2, "=IF(GC_Months>=12,1,0)", "ISA 570R", "Assessment period too short", "GoingConcern_570R"),
+       ("Communication with TCWG", 2, "=DD_CommPct", "ISA 260", "Required communications not made", "L6_Oversight"),
+       ("Independence confirmations", 2, "=DD_IndPct", "IESBA 400", "Missing independence confirmations", "L1_Strategy"),
+       ("Engagement quality review", 3, f"=IF(C{v0+10}=0,1,0)", "ISQM 2", "EQR not completed before report date", "L6_Oversight"),
+       ("Audit evidence obtained (PBC / IPE)", 1, "=PBC_PctRec", "ISA 500.9", "IPE not tested; evidence outstanding", "PBC_List")]
+n0 = r
+for i, (t, w, f_, std_, fnd, sh) in enumerate(ins, 1):
+    cell(ws, f"A{r}", i, center=True); cell(ws, f"B{r}", t); cell(ws, f"C{r}", w, "0", True, center=True)
+    cell(ws, f"D{r}", f_, "0%", center=True); cell(ws, f"E{r}", f"=C{r}*D{r}", "0.0", center=True); cell(ws, f"F{r}", std_, center=True)
+    cell(ws, f"G{r}", f'=IF(D{r}>=0.999,"-","{fnd}")'); ws.merge_cells(f"G{r}:J{r}")
+    c = cell(ws, f"K{r}", f'=HYPERLINK("#{sh}!A1","Open >")', center=True); c.font = Font(name=F, size=9, color="1565C0", underline="single"); r += 1
+n1 = r - 1
+ws.conditional_formatting.add(f"D{n0}:D{n1}", CellIsRule(operator="lessThan", formula=["0.75"], fill=fill("FFCDD2")))
+ws.conditional_formatting.add(f"D{n0}:D{n1}", CellIsRule(operator="between", formula=["0.75", "0.999"], fill=fill("FFE0B2")))
+ws.conditional_formatting.add(f"D{n0}:D{n1}", CellIsRule(operator="greaterThanOrEqual", formula=["0.999"], fill=fill("C8E6C9")))
+put(ws, f"B{r}", "INSPECTION READINESS SCORE", font(9, True), PALE, bd=BOX)
+put(ws, f"D{r}", f"=IFERROR(SUM(E{n0}:E{n1})/SUM(C{n0}:C{n1}),0)", font(12, True, DK), PALE, "0%", CEN, BOX)
+put(ws, f"E{r}", f'=IF(D{r}>=0.9,"Inspection ready",IF(D{r}>=0.75,"Minor findings likely - remediate before sign-off","Significant findings likely - do not sign"))', font(9, True, DK), PALE, bd=BOX)
+ws.merge_cells(f"E{r}:J{r}")
+dname("AI_Ready", f"AI_Agents!$D${r}"); dname("AI_Rating", f"AI_Agents!$E${r}")
+r += 2
+
+r = section(ws, r, "AI5", "AI use log - traceability & verification", "ISA 230.8 | ISQM 1 | IESBA 114")
+r = table_head(ws, r, ["#", "Purpose / agent", "Date", "Team member", "AI tool", "Data classification", "Approved tool?", "Data anonymised?", "Verified by", "Verification method", "WP ref", "Status"])
+logs = [("Audit Procedures Agent - summarise exceptions in JE listing", D(2026, 2, 12), "T. Enkhjin", "Microsoft Copilot (tenant)", "Confidential", "Yes", "Yes", "S. Oyunaa", "Re-performed 20 items to source", "FR4"),
+        ("Draft ISA 265 letter wording from DF2 register", D(2026, 3, 18), "S. Oyunaa", "Claude for Work", "Anonymised", "Yes", "Yes", "B. Bat-Erdene", "Compared to DF2 & ISA 265.11", "DF5"),
+        ("Review Agent - check WP index for missing sign-offs", D(2026, 3, 19), "S. Oyunaa", "Workbook rules (AI3)", "Confidential", "Yes", "N/A", "B. Bat-Erdene", "Spot-check 10 WPs", "AI3"),
+        ("Summarise IFRS 16 lease contracts", D(2026, 2, 5), "M. Saruul", "ChatGPT Enterprise", "Confidential", "Yes", "No", "", "", "D3"),
+        ("Inspection readiness pre-check", D(2026, 3, 20), "S. Oyunaa", "Workbook rules (AI4)", "Confidential", "Yes", "N/A", "B. Bat-Erdene", "Reviewed results", "AI4")]
+g0 = r
+for i, (pur, d_, who, tool, cls, app, anon, ver, meth, wp) in enumerate(logs, 1):
+    cell(ws, f"A{r}", i, center=True); cell(ws, f"B{r}", pur, is_input=True); cell(ws, f"C{r}", d_, DATE, True, center=True)
+    for col, v in zip("DEFGHIJ", (who, tool, cls, app, anon, ver, meth)): cell(ws, f"{col}{r}", v, is_input=True, center=True)
+    cell(ws, f"K{r}", wp, center=True)
+    cell(ws, f"L{r}", f'=IF(G{r}<>"Yes","NON-COMPLIANT - unapproved tool",IF(AND(F{r}="Confidential",H{r}="No"),"NON-COMPLIANT - confidential data not anonymised",IF(I{r}="","Pending verification","Compliant")))', center=True)
+    ws.row_dimensions[r].height = 28; r += 1
+dv(ws, f"F{g0}:F{r-1}", "DataClass"); dv(ws, f"G{g0}:H{r-1}", "YesNo")
+ws.conditional_formatting.add(f"L{g0}:L{r-1}", FormulaRule(formula=[f'LEFT($L{g0},3)="NON"'], fill=fill("FFCDD2"), font=Font(name=F, bold=True, color="B71C1C")))
+ws.conditional_formatting.add(f"L{g0}:L{r-1}", CellIsRule(operator="equal", formula=['"Compliant"'], fill=fill("C8E6C9")))
+dname("AI_LogStatus", f"AI_Agents!$L${g0}:$L${r-1}")
+note(ws, r, "Entry 4 shows a typical breach: confidential lease data entered without anonymisation and no verification - report under firm policy and re-perform the work without AI.", "L", 14)
+r += 2
+
+r = section(ws, r, "AI6", "Agent prompt library (reusable across teams; no client identifiers)", "ISQM 1 - intellectual & technological resources")
+r = table_head(ws, r, ["#", "Agent", "Prompt template (paste into firm-approved Copilot / ChatGPT / Claude)", "", "", "", "", "", "", "Human verification required"])
+ws.merge_cells(f"C{r-1}:I{r-1}"); ws.merge_cells(f"J{r-1}:L{r-1}")
+prompts = [("Audit Procedures Agent", "You are an audit senior applying ISA 330/500. Using the attached anonymised listing [population], test each item against [attributes]. List exceptions with item ID, attribute failed and amount. Cite the source row for every exception. Do not infer missing data - flag it.", "Re-perform a sample of exceptions & clears to source documents; record in IC5/S4."),
+           ("Manager / Partner Review Agent", "Act as an engagement manager reviewing working paper [WP ref] under ISA 220 (Revised) and ISA 230. Identify: missing sign-offs, unsupported conclusions, inconsistencies with the risk assessment [RA3 ref], and missing cross-references. Output a review-notes table: WP ref, issue, ISA ref, required action.", "Reviewer confirms each point against the WP before raising; clears notes in E3."),
+           ("Audit Inspection Readiness Agent", "Simulate an audit regulator inspection of this engagement file index [WP_Index export]. For each theme (ISA 230, 315R, 240R, 330, 450, 265, 570R, 260, ISQM 2, independence) state whether documentation appears sufficient, likely findings, and evidence a reviewer should look for.", "Partner evaluates results; AI4 score remains the documented assessment."),
+           ("Assertion & impact coach", "For the control gap [description] in process [process], identify the financial statement assertion(s) at risk, the FS line(s) affected, how a misstatement could arise, an estimate method for financial impact, and a specific SMART recommendation.", "Auditor quantifies impact from SUAD / sample data in AS3; never accept AI figures without source.")]
+for i, (ag, pr, ver) in enumerate(prompts, 1):
+    cell(ws, f"A{r}", i, center=True); cell(ws, f"B{r}", ag).font = font(9, True)
+    cell(ws, f"C{r}", pr, is_input=True); ws.merge_cells(f"C{r}:I{r}"); cell(ws, f"J{r}", ver); ws.merge_cells(f"J{r}:L{r}")
+    ws.row_dimensions[r].height = 58; r += 1
+
 # ---------------- WP INDEX ----------------
 wpi = S["WP_Index"]
 widths(wpi, {"A": 7, "B": 13, "C": 46, "D": 30, "E": 14, "F": 11, "G": 14, "H": 11, "I": 13, "J": 9, "K": 9, "L": 9, "M": 12})
@@ -2534,6 +2778,9 @@ wps = [
  ("RA4", "Planning", "Inherent risk heat map", "ISA 315R.31", "Reviewed", 1, 1),
  ("RA5", "Planning", "Financial-statement-level risks", "ISA 315R.30; ISA 330.5", "Reviewed", 2, 2),
  ("RA6", "Planning", "Stand-back & documentation", "ISA 315R.35-38", "Prepared", 2, 2),
+ ("AS1", "Planning", "Assertion framework", "ISA 315R.A190", "Closed", 0.5, 0.5),
+ ("AS2", "Planning", "Assertion risk matrix by SCOTABD", "ISA 315R.28-29", "Reviewed", 1, 1),
+ ("AS3", "Findings", "Control gap > assertion > impact > recommendation", "ISA 265.11; ISA 450", "Prepared", 2, 2),
  ("B5", "Planning", "Fraud summary", "ISA 240 (Revised)", "Reviewed", 1, 1),
  ("FR1", "Planning", "Skepticism & engagement team discussion", "ISA 240R", "Reviewed", 2, 2),
  ("FR2", "Planning", "Fraud lens - risk factors & inquiries", "ISA 240R; ISA 315R", "Reviewed", 5, 6),
@@ -2604,7 +2851,13 @@ wps = [
  ("F7", "Oversight", "Forming the opinion", "ISA 700R; 705R; 706R", "Not started", 4, 0),
  ("F8", "Oversight", "Other information", "ISA 720R", "Not started", 2, 0),
  ("F9", "Oversight", "Assembly of final file", "ISA 230.14; ISQM 1.A83", "Not started", 4, 0),
- ("F10", "Oversight", "ISQM 1 monitoring & quality indicators", "ISQM 1.35-47", "In progress", 3, 1)]
+ ("F10", "Oversight", "ISQM 1 monitoring & quality indicators", "ISQM 1.35-47", "In progress", 3, 1),
+ ("AI1", "Oversight", "Responsible AI protocol", "ISQM 1; IESBA 114, 120", "Reviewed", 0.5, 0.5),
+ ("AI2", "Oversight", "Audit Procedures Agent - exception tests", "ISA 330; ISA 500", "Reviewed", 1, 1),
+ ("AI3", "Oversight", "Manager/Partner Review Agent", "ISA 220R.30-34; ISA 230", "In progress", 1, 1),
+ ("AI4", "Oversight", "Inspection Readiness Agent", "ISQM 1.35-47", "In progress", 1, 1),
+ ("AI5", "Oversight", "AI use log & verification", "ISA 230.8", "In progress", 0.5, 0.5),
+ ("AI6", "Oversight", "Agent prompt library", "ISQM 1 resources", "Closed", 0.5, 0.5)]
 preparer = {"Strategy": "S. Oyunaa", "Planning": "S. Oyunaa", "Methodology": "T. Enkhjin", "Execution": "T. Enkhjin",
             "Findings": "S. Oyunaa", "Oversight": "S. Oyunaa"}
 reviewer = {"Strategy": "B. Bat-Erdene", "Planning": "B. Bat-Erdene", "Methodology": "S. Oyunaa", "Execution": "S. Oyunaa",
@@ -2639,7 +2892,7 @@ for k, v in stcol.items():
 wpi.conditional_formatting.add(f"L{w0}:L{w1}", CellIsRule(operator="greaterThan", formula=["0"], font=Font(name=F, color="C62828", bold=True)))
 wpi.freeze_panes = "A6"
 dname("WP_Layer", f"WP_Index!$B${w0}:$B${w1}"); dname("WP_Status", f"WP_Index!$I${w0}:$I${w1}")
-dname("WP_Bud", f"WP_Index!$J${w0}:$J${w1}"); dname("WP_Act", f"WP_Index!$K${w0}:$K${w1}")
+dname("WP_Bud", f"WP_Index!$J${w0}:$J${w1}"); dname("WP_Prep", f"WP_Index!$E${w0}:$E${w1}"); dname("WP_Rev", f"WP_Index!$G${w0}:$G${w1}"); dname("WP_Act", f"WP_Index!$K${w0}:$K${w1}")
 
 # ---------------- DASHDATA ----------------
 dd = S["DashData"]
@@ -2738,7 +2991,7 @@ stds = [("ISQM 1", "Quality Management for Firms that Perform Audits or Reviews"
         ("ISA 260 (Revised)", "Communication with Those Charged with Governance", "Strategy / Oversight", "A7, F1"),
         ("ISA 265", "Communicating Deficiencies in Internal Control to TCWG and Management", "Findings", "E2, E4, IC6, DF1-DF6"),
         ("ISA 300", "Planning an Audit of Financial Statements", "Strategy / Planning", "A6, B10"),
-        ("ISA 315 (Revised 2019)", "Identifying and Assessing the Risks of Material Misstatement", "Planning", "B1, B2, B4, RA1-RA6, IC1-IC3"),
+        ("ISA 315 (Revised 2019)", "Identifying and Assessing the Risks of Material Misstatement", "Planning", "B1, B2, B4, RA1-RA6, AS1-AS3, IC1-IC3"),
         ("ISA 320", "Materiality in Planning and Performing an Audit", "Planning", "B3"),
         ("ISA 330", "Auditor's Responses to Assessed Risks", "Methodology / Execution", "C1, D2, D3, IC4-IC6"),
         ("ISA 402", "Audit Considerations Relating to Service Organizations", "Methodology", "C8"),
@@ -2762,7 +3015,8 @@ stds = [("ISQM 1", "Quality Management for Firms that Perform Audits or Reviews"
         ("ISA 705 (Revised)", "Modifications to the Opinion", "Oversight", "F7"),
         ("ISA 706 (Revised)", "Emphasis of Matter & Other Matter Paragraphs", "Oversight", "F7"),
         ("ISA 710", "Comparative Information", "Execution", "D9"),
-        ("ISA 720 (Revised)", "Auditor's Responsibilities Relating to Other Information", "Oversight", "F8")]
+        ("ISA 720 (Revised)", "Auditor's Responsibilities Relating to Other Information", "Oversight", "F8"),
+        ("ISQM 1 - technological resources / firm AI policy", "Use of AI tools: approved tools, confidentiality, verification, documentation", "Oversight", "AI1-AI6")]
 for i, row in enumerate(stds):
     for j, v in enumerate(row): put(sd, f"{chr(65+j)}{4+i}", v, font(9), PALE if i % 2 else None, bd=BOX, al=WRAP)
 put(sd, f"A{5+len(stds)}", "Paragraph references follow the IAASB Handbook and IESBA Code; verify against the edition adopted locally (e.g. by the Mongolian Institute of Certified Public Accountants).", font(8, i=True, c="616161"))
@@ -2790,7 +3044,7 @@ boxes = {
     "Methodology": ("B33", ["Standard procedures", "Sampling techniques", "Evaluation methods", "Quality standards"],
                     ["Audit programme (C1)", "Population register & sizes (S1)", "Statistical factors (S2-S3)", "MUS evaluation / UML (S5)"], "L3_Methodology"),
     "Oversight": ("L33", ["TCWG interaction", "Quality assurance reviews", "Independence monitoring", "Performance evaluation"],
-                  ["TCWG log (F1)", "EQ review (F5)", "Opinion matrix (F7)", "ISQM 1 metrics (F10)"], "L6_Oversight"),
+                  ["TCWG log (F1)", "EQ review (F5)", "Opinion matrix (F7)", "AI review & inspection readiness (AI1-AI6)"], "L6_Oversight"),
     "Findings": ("G47", ["Issue identification", "Root cause analysis", "Recommendation design", "Remediation tracking"],
                  ["SUAD - all misstatements (SUAD1-4)", "ISA 265 deficiencies & letter (DF1-DF6)", "Issue log (E3)", "Management letter (E4)"], "L5_Findings"),
 }
@@ -2849,11 +3103,11 @@ for cc in range(2, 26): db.cell(4, cc).fill = fill(DK)
 db.row_dimensions[4].height = 5
 
 # Nav panel
-for rr in range(6, 68):
+for rr in range(6, 76):
     for cc in (2, 3): db.cell(rr, cc).fill = fill(DK)
 navs = [("Overview", "LayersMap"), ("Setup", "Setup"), ("WP Index", "WP_Index"), ("1 Strategy", "L1_Strategy"), ("   Acceptance", "Acceptance_QM"), ("   Team", "Team_Resources"), ("   PBC", "PBC_List"),
-        ("2 Planning", "L2_Planning"), ("   Risk 315R", "Risk_315R"), ("   Fraud 240R", "Fraud_240R"), ("   GC 570R", "GoingConcern_570R"), ("3 Methodology", "L3_Methodology"), ("   Sampling", "Sampling"), ("4 Execution", "L4_Execution"),
-        ("   IC Testing", "IC_Assessment"), ("5 Findings", "L5_Findings"), ("   Deficiencies", "Deficiencies_265"), ("   SUAD", "SUAD"), ("6 Oversight", "L6_Oversight"), ("Standards", "Standards")]
+        ("2 Planning", "L2_Planning"), ("   Risk 315R", "Risk_315R"), ("   Assertions", "Assertions"), ("   Fraud 240R", "Fraud_240R"), ("   GC 570R", "GoingConcern_570R"), ("3 Methodology", "L3_Methodology"), ("   Sampling", "Sampling"), ("4 Execution", "L4_Execution"),
+        ("   IC Testing", "IC_Assessment"), ("5 Findings", "L5_Findings"), ("   Deficiencies", "Deficiencies_265"), ("   SUAD", "SUAD"), ("6 Oversight", "L6_Oversight"), ("AI Agents", "AI_Agents"), ("Standards", "Standards")]
 for k, (lab, sh) in enumerate(navs):
     rr = 7 + k * 3
     c = put(db, f"C{rr}", f'=HYPERLINK("#{sh}!A1","{lab}")', font(10, True, DK if k == 0 else "FFFFFF"),
@@ -2981,11 +3235,20 @@ B4 = [("Engagement Risk", "=AC_Rating", "@", '="Acceptance score "&TEXT(AC_Score
 for k, t in enumerate(B4):
     tile(61, 5 + k * 3, 3 if k < 5 else 6, *t, accent="F9A825")
 db["T62"].font = font(8, True, DK)
-put(db, "E66", "=\"Misstatement evaluation: \"&MS_Eval", font(9, True, "B71C1C"), BG); db.merge_cells("E66:Y66")
-put(db, "E67", "All figures update live from the layer working papers. Illustrative data for teaching - replace in Setup & layer sheets.", font(8, i=True, c="757575"), BG)
-db.merge_cells("E67:Y67")
+B5 = [("Review Agent Flags", "=AI_Flags", "0", '=AI_FlagsHigh&" high | "&AI_Checks&" checks (AI3)"'),
+      ("Inspection Readiness", "=AI_Ready", "0%", '="simulated inspection (AI4)"'),
+      ("Assertion Risks", "=AS_Total", "0", '="SCOTABD x assertion cells (AS2)"'),
+      ("Control-Gap Impact", "=AS_Impact", "#,##0", '=COUNTIF(AS_Quant,"Material")&" material | "&COUNTIF(AS_Quant,"Pervasive*")&" pervasive"'),
+      ("AI Uses Logged", "=COUNTA(AI_LogStatus)", "0", '=COUNTIF(AI_LogStatus,"NON*")&" non-compliant (AI5)"'),
+      ("Inspection Readiness Rating (AI4)", "=AI_Rating", "@", '="Responsible AI: approved tools, anonymised data, human verification"')]
+for k, t in enumerate(B5):
+    tile(66, 5 + k * 3, 3 if k < 5 else 6, *t, accent="00838F")
+db["T67"].font = font(8, True, DK)
+put(db, "E71", "=\"Misstatement evaluation: \"&MS_Eval", font(9, True, "B71C1C"), BG); db.merge_cells("E71:Y71")
+put(db, "E72", "All figures update live from the layer working papers. Illustrative data for teaching - replace in Setup & layer sheets.", font(8, i=True, c="757575"), BG)
+db.merge_cells("E72:Y72")
 db.freeze_panes = "A5"
-db.print_area = "A1:Y67"
+db.print_area = "A1:Y72"
 
 # ---------------- defined names ----------------
 for n, ref in names.items():
