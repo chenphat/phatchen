@@ -12,8 +12,9 @@ OUT = "/home/user/phatchen/Audit_Working_Papers_ISA_ISQM_IESBA.xlsx"
 D = dt.date
 
 # ---------- styles ----------
-F = "Arial"
-DK, MD, LT, PALE, BG = "1B5E20", "2E7D32", "43A047", "E8F5E9", "F3F6F3"
+F = "Cambria"  # corporate serif (FUNAN Consulting)
+NAVY, RED, NAVY_DK = "292989", "D93732", "1E1E5C"   # FUNAN Consulting corporate colours
+DK, MD, LT, PALE, BG = NAVY, RED, RED, "ECEDF7", "F5F5FA"
 INP = "FFF9C4"
 def font(sz=10, b=False, c="000000", i=False): return Font(name=F, size=sz, bold=b, color=c, italic=i)
 def fill(c): return PatternFill("solid", start_color=c, end_color=c)
@@ -39,9 +40,9 @@ order = ["Dashboard", "LayersMap", "Audit_Flow", "Setup", "WP_Index",
          "L5_Findings", "SUAD", "Deficiencies_265",
          "L6_Oversight", "AI_Agents",
          "DashData", "Standards", "Lists"]
-LAYERS = [("Strategy", "1B5E20", "Pre-engagement & strategy"), ("Planning", "1565C0", "Planning & risk assessment"),
-          ("Methodology", "6A1B9A", "Response design"), ("Execution", "E65100", "Fieldwork (interim & final)"),
-          ("Findings", "C62828", "Evaluation & remediation"), ("Oversight", "00838F", "Completion & reporting")]
+LAYERS = [("Strategy", "292989", "Pre-engagement & strategy"), ("Planning", "3D4DB7", "Planning & risk assessment"),
+          ("Methodology", "1E1E5C", "Response design"), ("Execution", "D93732", "Fieldwork (interim & final)"),
+          ("Findings", "A3221D", "Evaluation & remediation"), ("Oversight", "E0604F", "Completion & reporting")]
 SHEET_LAYER = {"Acceptance_QM": 1, "L1_Strategy": 1, "Team_Resources": 1, "L2_Planning": 2, "PBC_List": 2, "Risk_315R": 2, "Assertions": 2,
                "Fraud_240R": 2, "GoingConcern_570R": 2, "L3_Methodology": 3, "Sampling": 3, "IC_Assessment": 4, "L4_Execution": 4,
                "L5_Findings": 5, "SUAD": 5, "Deficiencies_265": 5, "L6_Oversight": 6, "AI_Agents": 6}
@@ -52,7 +53,7 @@ for n in order[1:]: S[n] = wb.create_sheet(n)
 for ws in S.values():
     ws.sheet_view.showGridLines = False
 
-tabcol = {"Dashboard": DK, "LayersMap": DK, "Audit_Flow": DK, "Setup": "F9A825", "WP_Index": "F9A825", "DashData": "9E9E9E",
+tabcol = {"Dashboard": DK, "LayersMap": DK, "Audit_Flow": DK, "Setup": "D93732", "WP_Index": "D93732", "DashData": "9E9E9E",
           "Standards": "9E9E9E", "Lists": "9E9E9E"}
 for n, ws in S.items(): ws.sheet_properties.tabColor = tabcol.get(n, LT)
 
@@ -117,7 +118,7 @@ setup = [
     ("Financial reporting framework", "IFRS Accounting Standards", "ISA 210.6(a) acceptability", "Framework"),
     ("Presentation currency / unit", "MNT '000", "All amounts in thousands", "Unit"),
     ("Entity type", "Non-PIE (private company)", "PIE status drives IESBA rotation & fee rules", "EntityType"),
-    ("Audit firm", "[Audit Firm Name]", "", "Firm"),
+    ("Audit firm", "FUNAN Consulting Co., Ltd", "Your Right Partner - www.funanconsultingservice.com", "Firm"),
     ("Engagement partner", "B. Bat-Erdene", "ISA 220 (Revised) - overall responsibility", "EP"),
     ("Engagement manager", "S. Oyunaa", "", "Mgr"),
     ("Engagement quality reviewer", "D. Ganbold", "ISQM 2 - required by firm policy", "EQR"),
@@ -248,7 +249,7 @@ r = table_head(ws, r, ["", "Summary", "Value"])
 for lab, f_ in [("Engagement risk rating", "=AC_Rating"), ("Fatal factors rated high", "=AC_Fatal"), ("Decision", "=AC_Decision"),
                 ("Team resources conclusion", "=TR_Conclusion")]:
     cell(ws, f"B{r}", lab); cell(ws, f"C{r}", f_, link=True); ws.merge_cells(f"C{r}:J{r}"); r += 1
-c = cell(ws, f"B{r}", '=HYPERLINK("#Acceptance_QM!A1","Open acceptance & continuance working paper >")'); c.font = Font(name=F, size=9, color="1565C0", underline="single")
+c = cell(ws, f"B{r}", '=HYPERLINK("#Acceptance_QM!A1","Open acceptance & continuance working paper >")'); c.font = Font(name=F, size=9, color="292989", underline="single")
 r += 2
 
 r = section(ws, r, "A2", "Terms of engagement & preconditions for an audit", "ISA 210")
@@ -412,14 +413,14 @@ r = section(ws, r, "B4", "Risk assessment - summary (full register: Risk_315R RA
 r = table_head(ws, r, ["", "Summary", "Value"])
 for lab, f_ in [('Risks of material misstatement assessed', '=COUNTA(Risk_ID)'), ('FS-level risks', '=COUNTIF(Risk_Level,"FS level")'), ('Significant risks', '=COUNTIF(Risk_Spectrum,"Significant")'), ('High / Elevated', '=COUNTIF(Risk_Spectrum,"High")&" / "&COUNTIF(Risk_Spectrum,"Elevated")'), ('Moderate / Low', '=COUNTIF(Risk_Spectrum,"Moderate")&" / "&COUNTIF(Risk_Spectrum,"Low")'), ('Risks with an inherent risk factor rated 3 (high)', '=COUNTIF(Risk_MaxIRF,3)'), ('Fraud risks', '=COUNTIF(Risk_Fraud,"Yes")'), ('Assessments needing justification (consistency check)', '=COUNTIF(Risk_Check,"<>OK")'), ('Significant SCOTABDs / material-not-significant (stand-back)', '=COUNTIF(SCOT_Class,"Significant*")&" / "&COUNTIF(SCOT_Class,"Material*")')]:
     cell(ws, f"B{r}", lab); cell(ws, f"C{r}", f_, link=True); ws.merge_cells(f"C{r}:J{r}"); r += 1
-c = cell(ws, f"B{r}", '=HYPERLINK("#Risk_315R!A1","Open risk register - inherent risk factors & spectrum >")'); c.font = Font(name=F, size=9, color="1565C0", underline="single")
+c = cell(ws, f"B{r}", '=HYPERLINK("#Risk_315R!A1","Open risk register - inherent risk factors & spectrum >")'); c.font = Font(name=F, size=9, color="292989", underline="single")
 r += 2
 
 r = section(ws, r, "B5", "Fraud - summary (full working paper: Fraud_240R FR1-FR7)", "ISA 240 (Revised)")
 r = table_head(ws, r, ["", "Summary", "Value"])
 for lab, f_ in [('Fraud risk factors present', '=COUNTIF(FRF_Present,"Yes")'), ('Risks of material misstatement due to fraud', '=COUNTIF(Risk_Fraud,"Yes")'), ('Journal entries tested / exceptions', '=JE_Tested&" / "&JE_Exc'), ('Fraud or suspected fraud matters (incl. allegations)', '=COUNTA(Fraud_Status)'), ('Open fraud matters', '=COUNTIF(Fraud_Status,"<>Closed")')]:
     cell(ws, f"B{r}", lab); cell(ws, f"C{r}", f_, link=True); ws.merge_cells(f"C{r}:J{r}"); r += 1
-c = cell(ws, f"B{r}", '=HYPERLINK("#Fraud_240R!A1","Open ISA 240 (Revised) working paper >")'); c.font = Font(name=F, size=9, color="1565C0", underline="single")
+c = cell(ws, f"B{r}", '=HYPERLINK("#Fraud_240R!A1","Open ISA 240 (Revised) working paper >")'); c.font = Font(name=F, size=9, color="292989", underline="single")
 r += 2
 
 r = section(ws, r, "B6", "Laws & regulations", "ISA 250 (Revised)")
@@ -441,7 +442,7 @@ r = section(ws, r, "B8", "Going concern - risk assessment summary (full: GoingCo
 r = table_head(ws, r, ["", "Summary", "Value"])
 for lab, f_ in [('Events or conditions identified', '=GC_EventsN'), ("Months covered by management's assessment from FS approval", '=GC_Months'), ('Reporting outcome', '=GC_Outcome')]:
     cell(ws, f"B{r}", lab); cell(ws, f"C{r}", f_, link=True); ws.merge_cells(f"C{r}:J{r}"); r += 1
-c = cell(ws, f"B{r}", '=HYPERLINK("#GoingConcern_570R!A1","Open ISA 570 (Revised 2024) working paper >")'); c.font = Font(name=F, size=9, color="1565C0", underline="single")
+c = cell(ws, f"B{r}", '=HYPERLINK("#GoingConcern_570R!A1","Open ISA 570 (Revised 2024) working paper >")'); c.font = Font(name=F, size=9, color="292989", underline="single")
 r += 2
 
 r = section(ws, r, "B9", "Opening balances (initial engagements)", "ISA 510")
@@ -516,7 +517,7 @@ for i, row in enumerate(pol, 1):
     ws.row_dimensions[r].height = 28; r += 1
 cell(ws, f"B{r}", "Tolerable misstatement for tests of details"); cell(ws, f"C{r}", "=Mat_PM", NUM, link=True)
 cell(ws, f"B{r+1}", "Receivables MUS sample size (S1.1)"); cell(ws, f"C{r+1}", "=INDEX(Pop_SampleSize,1)", "0", link=True)
-c = cell(ws, f"B{r+2}", '=HYPERLINK("#Sampling!A1","Open Sampling working paper >")'); c.font = Font(name=F, size=9, color="1565C0", underline="single")
+c = cell(ws, f"B{r+2}", '=HYPERLINK("#Sampling!A1","Open Sampling working paper >")'); c.font = Font(name=F, size=9, color="292989", underline="single")
 r += 4
 
 r = section(ws, r, "C3", "Substantive analytical procedures & ratio analysis", "ISA 520.5-7")
@@ -632,7 +633,7 @@ for i, (lab, f_) in enumerate([("Entity-level control environment (IC1)", "=IC_C
                                ("Operating effectively", '=COUNTIF(ToE_Result,"Effective")'), ("Not effective", '=COUNTIF(ToE_Result,"Not effective")'),
                                ("Items tested / deviations", '=SUM(ToE_Tested)&" / "&SUM(ToE_Dev)'), ("Controls relied upon", "=IC_Rely")]):
     cell(ws, f"B{r}", lab); c = cell(ws, f"C{r}", f_, link=True); ws.merge_cells(f"C{r}:J{r}"); r += 1
-c = cell(ws, f"B{r}", '=HYPERLINK("#IC_Assessment!A1","Open internal control assessment & testing >")'); c.font = Font(name=F, size=9, color="1565C0", underline="single")
+c = cell(ws, f"B{r}", '=HYPERLINK("#IC_Assessment!A1","Open internal control assessment & testing >")'); c.font = Font(name=F, size=9, color="292989", underline="single")
 r += 2
 
 r = section(ws, r, "D3", "Substantive tests of details - summary log", "ISA 330.18-23 | ISA 500 | ISA 530.14")
@@ -726,7 +727,7 @@ for i, (lab, f_, nf) in enumerate([("Misstatements logged (all, incl. trivial & 
     cell(ws, f"B{r}", lab); c = cell(ws, f"C{r}", f_, nf, link=True)
     if nf is None: ws.merge_cells(f"C{r}:L{r}"); c.font = font(9, True, MD)
     r += 1
-c = cell(ws, f"B{r}", '=HYPERLINK("#SUAD!A1","Open Summary of Unadjusted Differences >")'); c.font = Font(name=F, size=9, color="1565C0", underline="single")
+c = cell(ws, f"B{r}", '=HYPERLINK("#SUAD!A1","Open Summary of Unadjusted Differences >")'); c.font = Font(name=F, size=9, color="292989", underline="single")
 r += 2
 
 r = section(ws, r, "E2", "Control deficiencies - summary (full ISA 265 working paper: Deficiencies_265)", "ISA 265.7-11")
@@ -736,7 +737,7 @@ for lab, f_ in [("Deficiencies identified", "=CD_N"), ("Significant deficiencies
                 ("Other deficiencies of sufficient importance (management)", '=COUNTIF(CD_Class,"Other deficiency - sufficient importance")'),
                 ("Remediated", "=CD_Closed")]:
     cell(ws, f"B{r}", lab); cell(ws, f"C{r}", f_, "0", link=True, center=True); r += 1
-c = cell(ws, f"B{r}", '=HYPERLINK("#Deficiencies_265!A1","Open ISA 265 deficiencies working paper >")'); c.font = Font(name=F, size=9, color="1565C0", underline="single")
+c = cell(ws, f"B{r}", '=HYPERLINK("#Deficiencies_265!A1","Open ISA 265 deficiencies working paper >")'); c.font = Font(name=F, size=9, color="292989", underline="single")
 r += 2
 
 r = section(ws, r, "E3", "Issue log & remediation tracker", "ISA 230.8-11 | ISQM 1.42")
@@ -783,7 +784,7 @@ ws = S["L6_Oversight"]
 r = sheet_header(ws, "AUDIT OVERSIGHT & COMPLETION LAYER", 6,
                  "Communicate with TCWG, obtain representations, complete engagement quality review, form the opinion and monitor quality (ISQM 1).",
                  "ISA 260; ISA 580; ISA 570 (Revised 2024); ISA 701; ISA 700/705/706; ISA 720; ISA 220 (Revised); ISQM 1; ISQM 2")
-put(ws, f"A{r}", "Completion sequence:  F1 TCWG -> F2 representations -> F3/GC4 going concern -> F4 KAMs -> F7 draft opinion -> AI3/AI4 review & inspection readiness -> F5 EQR -> F6 partner sign-off -> report dated -> F9 file assembly (60 days) -> F10 monitoring", font(8, True, "00838F"), "E0F7FA", al=WRAP)
+put(ws, f"A{r}", "Completion sequence:  F1 TCWG -> F2 representations -> F3/GC4 going concern -> F4 KAMs -> F7 draft opinion -> AI3/AI4 review & inspection readiness -> F5 EQR -> F6 partner sign-off -> report dated -> F9 file assembly (60 days) -> F10 monitoring", font(8, True, "D93732"), "F4F4FB", al=WRAP)
 ws.merge_cells(f"A{r}:L{r}"); ws.row_dimensions[r].height = 26; r += 2
 r = section(ws, r, "F1", "Communications with those charged with governance", "ISA 260 (Revised) | ISA 265")
 r = table_head(ws, r, ["#", "Matter required to be communicated", "Standard ref", "Required?", "Form", "Date", "Status", "Ref"])
@@ -820,7 +821,7 @@ r = section(ws, r, "F3", "Going concern - final conclusion (detail: GoingConcern
 r = table_head(ws, r, ["", "Summary", "Value"])
 for lab, f_ in [('Going concern basis appropriate?', '=GC_Basis'), ('Material uncertainty exists?', '=GC_MU'), ('Close call?', '=GC_Close'), ('Reporting outcome', '=GC_Outcome')]:
     cell(ws, f"B{r}", lab); cell(ws, f"C{r}", f_, link=True); ws.merge_cells(f"C{r}:J{r}"); r += 1
-c = cell(ws, f"B{r}", '=HYPERLINK("#GoingConcern_570R!A1","Open going concern working paper >")'); c.font = Font(name=F, size=9, color="1565C0", underline="single")
+c = cell(ws, f"B{r}", '=HYPERLINK("#GoingConcern_570R!A1","Open going concern working paper >")'); c.font = Font(name=F, size=9, color="292989", underline="single")
 r += 2
 
 r = section(ws, r, "F4", "Key audit matters (if communicated)", "ISA 701")
@@ -1088,7 +1089,7 @@ ws[f"C{cfg0+4}"] = f"=SUM(E{l0}:E{l1})"; ws[f"C{cfg0+5}"] = f'=COUNTIF(F{l0}:F{l
 ws[f"C{cfg0+6}"] = f'=COUNTIF(G{l0}:G{l1},"Yes")'
 ws[f"C{cfg0+7}"] = f'=IFERROR(SUMIFS(C{l0}:C{l1},F{l0}:F{l1},"Yes")/C{cfg0},0)'
 dname("Rec_Hits", f"Sampling!$C${cfg0+4}"); dname("Rec_Items", f"Sampling!$C${cfg0+5}"); dname("Rec_Cov", f"Sampling!$C${cfg0+7}")
-ws.conditional_formatting.add(f"A{l0}:K{l1}", FormulaRule(formula=[f'$F{l0}="Yes"'], fill=fill("E8F5E9")))
+ws.conditional_formatting.add(f"A{l0}:K{l1}", FormulaRule(formula=[f'$F{l0}="Yes"'], fill=fill("E8E9F5")))
 ws.conditional_formatting.add(f"I{l0}:I{l1}", CellIsRule(operator="notEqual", formula=["0"], fill=fill("FFCDD2"), font=Font(name=F, bold=True, color="B71C1C")))
 put(ws, f"B{r}", "Ledger total", font(9, True), PALE, bd=BOX); put(ws, f"C{r}", f"=SUM(C{l0}:C{l1})", font(9, True), PALE, NUM, bd=BOX)
 put(ws, f"H{r}", "Known misst.", font(9, True), PALE, bd=BOX); put(ws, f"I{r}", f"=SUM(I{l0}:I{l1})", font(9, True), PALE, NUM, bd=BOX)
@@ -1943,7 +1944,7 @@ txt = (f'=IF(GC_MU="Yes","Material Uncertainty Related to Going Concern - We dra
        f'Based on the audit evidence obtained, we have not identified a material uncertainty related to events or conditions that, individually or collectively, may cast significant doubt on the Entity\'s ability to continue as a going concern '
        f'for a period of at least twelve months from the date on which the financial statements are authorised for issue."'
        f')&IF(AND(GC_Close="Yes",ISNUMBER(SEARCH("listed",Set_EntityType))),"  [Listed/PTE: describe how we evaluated management\'s assessment, incl. key events or conditions identified.]","")')
-c = put(ws, f"B{r}", txt, font(9, i=True), "F1F8E9", al=WRAP, bd=BOX); ws.merge_cells(f"B{r}:L{r+3}")
+c = put(ws, f"B{r}", txt, font(9, i=True), "F4F4FB", al=WRAP, bd=BOX); ws.merge_cells(f"B{r}:L{r+3}")
 for rr in range(r, r + 4): ws.row_dimensions[rr].height = 22
 r += 5
 note(ws, r, "Under ISA 570 (Revised 2024) every auditor's report includes a going concern section. Illustrative wording only - align with the revised ISA 700/570 illustrative reports and local law.", "L", 14)
@@ -2091,20 +2092,20 @@ letter = ['="To: The Board of Directors, "&Set_Client',
           'The matters reported are limited to those deficiencies that we identified during the audit and that we have concluded are of sufficient importance to merit being reported to you."',
           '="1. SIGNIFICANT DEFICIENCIES IN INTERNAL CONTROL (ISA 265.9)"']
 for t in letter:
-    c = put(ws, f"B{r}", t, font(9, t.startswith('="1.')), "F1F8E9", al=WRAP); ws.merge_cells(f"B{r}:L{r}")
+    c = put(ws, f"B{r}", t, font(9, t.startswith('="1.')), "F4F4FB", al=WRAP); ws.merge_cells(f"B{r}:L{r}")
     ws.row_dimensions[r].height = 48 if len(t) > 200 else 18; r += 1
 def letter_items(r, cls, n):
     for k in range(1, n + 1):
         m = f'MATCH("{cls}|{k}",CD_Key,0)'
         f_ = f'=IFERROR("1.{k} "&INDEX(CD_Desc,{m})&". Potential effect: "&INDEX(CD_Eff,{m})&". Recommendation: "&INDEX(CD_Rec,{m})&".","")'
         if cls != "Significant deficiency": f_ = f_.replace('"1.', '"2.')
-        put(ws, f"B{r}", f_, font(9), "F1F8E9", al=WRAP); ws.merge_cells(f"B{r}:L{r}"); ws.row_dimensions[r].height = 30; r += 1
+        put(ws, f"B{r}", f_, font(9), "F4F4FB", al=WRAP); ws.merge_cells(f"B{r}:L{r}"); ws.row_dimensions[r].height = 30; r += 1
     return r
 r = letter_items(r, "Significant deficiency", 6)
-put(ws, f"B{r}", '="2. OTHER DEFICIENCIES OF SUFFICIENT IMPORTANCE (ISA 265.10(b))"', font(9, True), "F1F8E9"); ws.merge_cells(f"B{r}:L{r}"); r += 1
+put(ws, f"B{r}", '="2. OTHER DEFICIENCIES OF SUFFICIENT IMPORTANCE (ISA 265.10(b))"', font(9, True), "F4F4FB"); ws.merge_cells(f"B{r}:L{r}"); r += 1
 r = letter_items(r, "Other deficiency - sufficient importance", 6)
 for t in ['="We would be pleased to discuss these matters with you. Management\'s responses are set out in the attached appendix."', '="[Audit firm]   |   Engagement partner: "&Set_EP&"   |   Date: ____________"']:
-    put(ws, f"B{r}", t, font(9), "F1F8E9", al=WRAP); ws.merge_cells(f"B{r}:L{r}"); ws.row_dimensions[r].height = 18; r += 1
+    put(ws, f"B{r}", t, font(9), "F4F4FB", al=WRAP); ws.merge_cells(f"B{r}:L{r}"); ws.row_dimensions[r].height = 18; r += 1
 note(ws, r, "Letter items fill automatically from DF2 in register order. Blank lines mean fewer items than slots. Edit the final wording before issue; minor deficiencies may be communicated orally.", "L", 14)
 r += 2
 
@@ -2383,7 +2384,7 @@ put(ws, f"O{r}", "=DD_HrsBud", font(9, True, "008000"), PALE, "0", CEN, BOX)
 put(ws, f"P{r}", f'=IF(ABS(N{r}-O{r})/O{r}<=0.05,"Within 5% of budget","Re-plan schedule vs budget")', font(9, True, MD), PALE, bd=BOX)
 r += 2
 mini_chart(ws, "Peak capacity usage by team member", _Ref(ws, min_col=2, min_row=u0, max_row=u1), _Ref(ws, min_col=15, min_row=u0 - 1, max_row=u1),
-           f"R{cap0}", color="2E7D32", pct=True, w=13, h=7)
+           f"R{cap0}", color="292989", pct=True, w=13, h=7)
 
 r = section(ws, r, "TR5", "Direction, supervision & review plan", "ISA 220R.29-34 | ISA 230.9")
 r = table_head(ws, r, ["#", "Area / layer", "Preparer", "First-level reviewer", "Partner review", "Timing", "", "Review evidence"])
@@ -2509,7 +2510,7 @@ for row in pbc:
 for a in areas:
     cell(ws, f"B{r}", a); cell(ws, f"C{r}", f"=COUNTIF(PBC_Area,B{r})", "0", center=True)
     cell(ws, f"D{r}", f'=COUNTIFS(PBC_Area,B{r},PBC_Status,"<>Accepted",PBC_Status,"<>Received")', "0", center=True); r += 1
-mini_chart(ws, "PBC items by status", _Ref(ws, min_col=2, min_row=s0, max_row=s1), _Ref(ws, min_col=3, min_row=s0 - 1, max_row=s1), f"F{s0}", color="1565C0", w=12, h=6.5)
+mini_chart(ws, "PBC items by status", _Ref(ws, min_col=2, min_row=s0, max_row=s1), _Ref(ws, min_col=3, min_row=s0 - 1, max_row=s1), f"F{s0}", color="292989", w=12, h=6.5)
 ws.freeze_panes = "C8"
 
 # ======================================================================
@@ -2650,7 +2651,7 @@ for i, (t, f_, th, src, nxt, sh) in enumerate(apa, 1):
     cell(ws, f"A{r}", i, center=True); cell(ws, f"B{r}", t); cell(ws, f"C{r}", f_, "0", center=True); cell(ws, f"D{r}", th, "0", True, center=True)
     cell(ws, f"E{r}", f'=IF(C{r}<=D{r},"Clear","Exceptions ("&C{r}&")")', center=True); cell(ws, f"F{r}", src, center=True)
     cell(ws, f"G{r}", nxt); ws.merge_cells(f"G{r}:J{r}")
-    c = cell(ws, f"K{r}", f'=HYPERLINK("#{sh}!A1","Open >")', center=True); c.font = Font(name=F, size=9, color="1565C0", underline="single"); r += 1
+    c = cell(ws, f"K{r}", f'=HYPERLINK("#{sh}!A1","Open >")', center=True); c.font = Font(name=F, size=9, color="292989", underline="single"); r += 1
 ws.conditional_formatting.add(f"E{a0}:E{r-1}", FormulaRule(formula=[f'LEFT($E{a0},10)="Exceptions"'], fill=fill("FFE0B2")))
 ws.conditional_formatting.add(f"E{a0}:E{r-1}", CellIsRule(operator="equal", formula=['"Clear"'], fill=fill("C8E6C9")))
 dname("AI_ProcExc", f"AI_Agents!$E${a0}:$E${r-1}")
@@ -2679,7 +2680,7 @@ for i, (t, f_, sev, std_, act, sh) in enumerate(rva, 1):
     cell(ws, f"A{r}", i, center=True); cell(ws, f"B{r}", t); cell(ws, f"C{r}", f_, "0", center=True)
     cell(ws, f"D{r}", sev, is_input=True, center=True); cell(ws, f"E{r}", f'=IF(C{r}=0,"Pass","Flag ("&C{r}&")")', center=True)
     cell(ws, f"F{r}", std_, center=True); cell(ws, f"G{r}", act); ws.merge_cells(f"G{r}:J{r}")
-    c = cell(ws, f"K{r}", f'=HYPERLINK("#{sh}!A1","Open >")', center=True); c.font = Font(name=F, size=9, color="1565C0", underline="single"); r += 1
+    c = cell(ws, f"K{r}", f'=HYPERLINK("#{sh}!A1","Open >")', center=True); c.font = Font(name=F, size=9, color="292989", underline="single"); r += 1
 v1 = r - 1
 dv(ws, f"D{v0}:D{v1}", "Severity")
 ws.conditional_formatting.add(f"E{v0}:E{v1}", FormulaRule(formula=[f'AND(LEFT($E{v0},4)="Flag",$D{v0}="High")'], fill=fill("FFCDD2"), font=Font(name=F, bold=True, color="B71C1C")))
@@ -2710,7 +2711,7 @@ for i, (t, w, f_, std_, fnd, sh) in enumerate(ins, 1):
     cell(ws, f"A{r}", i, center=True); cell(ws, f"B{r}", t); cell(ws, f"C{r}", w, "0", True, center=True)
     cell(ws, f"D{r}", f_, "0%", center=True); cell(ws, f"E{r}", f"=C{r}*D{r}", "0.0", center=True); cell(ws, f"F{r}", std_, center=True)
     cell(ws, f"G{r}", f'=IF(D{r}>=0.999,"-","{fnd}")'); ws.merge_cells(f"G{r}:J{r}")
-    c = cell(ws, f"K{r}", f'=HYPERLINK("#{sh}!A1","Open >")', center=True); c.font = Font(name=F, size=9, color="1565C0", underline="single"); r += 1
+    c = cell(ws, f"K{r}", f'=HYPERLINK("#{sh}!A1","Open >")', center=True); c.font = Font(name=F, size=9, color="292989", underline="single"); r += 1
 n1 = r - 1
 ws.conditional_formatting.add(f"D{n0}:D{n1}", CellIsRule(operator="lessThan", formula=["0.75"], fill=fill("FFCDD2")))
 ws.conditional_formatting.add(f"D{n0}:D{n1}", CellIsRule(operator="between", formula=["0.75", "0.999"], fill=fill("FFE0B2")))
@@ -2919,7 +2920,7 @@ for ref, lay, title, std, stt, bh, ah in wps:
     cell(wpi, f"L{r}", f"=K{r}-J{r}", '0.0;(0.0);"-"', center=True)
     sh, ar = anchors[ref]
     c = cell(wpi, f"M{r}", f'=HYPERLINK("#{sh}!A{ar}","Open >")', center=True)
-    c.font = Font(name=F, size=9, color="1565C0", underline="single")
+    c.font = Font(name=F, size=9, color="292989", underline="single")
     flow_no += 1
     cell(wpi, f"N{r}", flow_no, "0", center=True)
     c = cell(wpi, f"O{r}", stage_of[ref], center=True); c.fill = fill(LAYERS[pos[ref][0]][1]); c.font = font(9, True, "FFFFFF")
@@ -3045,7 +3046,7 @@ for i, (ln, lc, stg) in enumerate(LAYERS):
     put(af, f"H{r}", f'=COUNTIFS(Gate_Stage,{n},Gate_Result,"Open")', font(9), nf="0", al=CEN, bd=BOX)
     put(af, f"I{r}", f'=IF(H{r}=0,"GATE PASSED",H{r}&" item(s) open")', font(9, True), al=CEN, bd=BOX)
     put(af, f"J{r}", f"=IF(H{r}=0,1,0)", font(9), nf="0", al=CEN, bd=BOX)
-    c = put(af, f"K{r}", f'=HYPERLINK("#{sheets_of[n][0]}!A1","Open >")', Font(name=F, size=9, color="1565C0", underline="single"), al=CEN, bd=BOX)
+    c = put(af, f"K{r}", f'=HYPERLINK("#{sheets_of[n][0]}!A1","Open >")', Font(name=F, size=9, color="292989", underline="single"), al=CEN, bd=BOX)
     af.row_dimensions[r].height = 30; r += 1
 st1 = r - 1
 af.conditional_formatting.add(f"I{st0}:I{st1}", CellIsRule(operator="equal", formula=['"GATE PASSED"'], fill=fill("C8E6C9"), font=Font(name=F, bold=True, color="1B5E20")))
@@ -3101,7 +3102,7 @@ for (n, cond, std_, f_, sh, ev_) in gates:
     put(af, f"B{r}", cond, font(9), bd=BOX, al=WRAP); put(af, f"C{r}", std_, font(8), bd=BOX, al=WRAP)
     put(af, f"D{r}", ev_, font(9, c="616161"), bd=BOX); af.merge_cells(f"D{r}:H{r}")
     put(af, f"I{r}", f'=IF({f_},"Pass","Open")', font(9, True), al=CEN, bd=BOX); af.merge_cells(f"I{r}:J{r}")
-    put(af, f"K{r}", f'=HYPERLINK("#{sh}!A1","Open >")', Font(name=F, size=9, color="1565C0", underline="single"), al=CEN, bd=BOX)
+    put(af, f"K{r}", f'=HYPERLINK("#{sh}!A1","Open >")', Font(name=F, size=9, color="292989", underline="single"), al=CEN, bd=BOX)
     af.row_dimensions[r].height = 26; r += 1
 g1 = r - 1
 dname("Gate_Stage", f"Audit_Flow!$A${g0}:$A${g1}"); dname("Gate_Result", f"Audit_Flow!$I${g0}:$I${g1}")
@@ -3110,7 +3111,7 @@ af.conditional_formatting.add(f"I{g0}:I{g1}", CellIsRule(operator="equal", formu
 put(af, f"B{r+1}", "Gate items read live from the working papers. An 'Open' item in an earlier stage is a documented exception: resolve it or record the rationale before the report is dated.", font(8, i=True, c="616161"), al=WRAP)
 af.merge_cells(f"B{r+1}:K{r+1}"); af.row_dimensions[r + 1].height = 24
 mini_chart(af, "% complete by audit stage", Reference(af, min_col=2, min_row=st0, max_row=st1), Reference(af, min_col=7, min_row=st0 - 1, max_row=st1),
-           "M4", color="1565C0", w=13, h=7.5, pct=True)
+           "M4", color="292989", w=13, h=7.5, pct=True)
 af.freeze_panes = "A5"
 
 # ---------------- STANDARDS ----------------
@@ -3166,14 +3167,16 @@ lm = S["LayersMap"]
 for col in "ABCDEFGHIJKLMNOPQ": lm.column_dimensions[col].width = 9.5
 lm.column_dimensions["A"].width = 2
 for rr in range(1, 63): lm.row_dimensions[rr].height = 15
-put(lm, "B1", "AUDIT LAYERS ACROSS THE ENGAGEMENT", font(16, True, "FFFFFF"), "101010"); lm.merge_cells("B1:Q2")
+if _os.path.exists(LOGO) if "LOGO" in globals() else False:
+    pass
+put(lm, "B1", "AUDIT LAYERS ACROSS THE ENGAGEMENT", font(16, True, "FFFFFF"), "1E1E5C"); lm.merge_cells("B1:Q2")
 lm["B1"].alignment = Alignment(vertical="center", indent=1)
 put(lm, "B3", "=Set_Client&\"  |  FYE \"&TEXT(Set_FYE,\"dd-mmm-yyyy\")&\"  |  Completion % = WPs Reviewed/Closed ÷ total in layer (live from WP_Index)\"",
-    font(9, i=True, c="C5E1A5"), "101010"); lm.merge_cells("B3:Q3")
+    font(9, i=True, c="FBE3E0"), "1E1E5C"); lm.merge_cells("B3:Q3")
 for rr in range(1, 63):
     for col in "BCDEFGHIJKLMNOPQ":
         if not lm[f"{col}{rr}"].fill or lm[f"{col}{rr}"].fill.fgColor.rgb in (None, "00000000"):
-            lm[f"{col}{rr}"].fill = fill("101010")
+            lm[f"{col}{rr}"].fill = fill("1E1E5C")
 boxes = {
     "Strategy": ("G5", ["Audit objective definition", "Scope alignment", "Stakeholder expectations", "Audit direction setting"],
                  ["Acceptance & continuance (AC1-AC7)", "Engagement letter (A2) & independence (A3-A5)", "Team competency & capacity (TR1-TR6)", "Overall strategy (A6) & PBC list"], "L1_Strategy"),
@@ -3193,34 +3196,34 @@ for lay, (anchor, focus, ctrls_, sheet) in boxes.items():
     c0 = ci(anchor.rstrip("0123456789")); r0 = int(anchor[len(anchor.rstrip("0123456789")):])
     cA, cZ = gl(c0), gl(c0 + 5)
     title = str([l[0] for l in LAYERS].index(lay) + 1) + ". " + {"Findings": "Findings & Remediation Layer"}.get(lay, f"Audit {lay} Layer")
-    c = put(lm, f"{cA}{r0}", f'=HYPERLINK("#{sheet}!A1","{title}  >")', font(11, True, "FFFFFF"), "101010", al=CEN)
+    c = put(lm, f"{cA}{r0}", f'=HYPERLINK("#{sheet}!A1","{title}  >")', font(11, True, "FFFFFF"), "1E1E5C", al=CEN)
     lm.merge_cells(f"{cA}{r0}:{cZ}{r0+1}")
-    put(lm, f"{cA}{r0+2}", "Common Focus Areas:", font(9, True, "9CCC65", i=True), "101010")
+    put(lm, f"{cA}{r0+2}", "Common Focus Areas:", font(9, True, "FF9E95", i=True), "1E1E5C")
     for k, t in enumerate(focus):
-        put(lm, f"{cA}{r0+3+k}", "▪ " + t, font(9, c="FFFFFF"), "101010"); lm.merge_cells(f"{cA}{r0+3+k}:{cZ}{r0+3+k}")
-    put(lm, f"{cA}{r0+7}", "Key Controls / WPs:", font(9, True, "9CCC65", i=True), "101010")
+        put(lm, f"{cA}{r0+3+k}", "▪ " + t, font(9, c="FFFFFF"), "1E1E5C"); lm.merge_cells(f"{cA}{r0+3+k}:{cZ}{r0+3+k}")
+    put(lm, f"{cA}{r0+7}", "Key Controls / WPs:", font(9, True, "FF9E95", i=True), "1E1E5C")
     for k, t in enumerate(ctrls_):
-        put(lm, f"{cA}{r0+8+k}", "▪ " + t, font(9, c="FFFFFF"), "101010"); lm.merge_cells(f"{cA}{r0+8+k}:{cZ}{r0+8+k}")
-    put(lm, f"{cA}{r0+12}", "Completion", font(9, True, "9CCC65"), "101010")
-    put(lm, f"{gl(c0+2)}{r0+12}", f"=DD_Pct_{lay}", font(11, True, "B2FF59"), "101010", "0%", CEN)
-    put(lm, f"{gl(c0+3)}{r0+12}", f'=REPT("█",ROUND(DD_Pct_{lay}*10,0))&REPT("░",10-ROUND(DD_Pct_{lay}*10,0))', font(9, c="76FF03"), "101010")
+        put(lm, f"{cA}{r0+8+k}", "▪ " + t, font(9, c="FFFFFF"), "1E1E5C"); lm.merge_cells(f"{cA}{r0+8+k}:{cZ}{r0+8+k}")
+    put(lm, f"{cA}{r0+12}", "Completion", font(9, True, "FF9E95"), "1E1E5C")
+    put(lm, f"{gl(c0+2)}{r0+12}", f"=DD_Pct_{lay}", font(11, True, "FFFFFF"), "1E1E5C", "0%", CEN)
+    put(lm, f"{gl(c0+3)}{r0+12}", f'=REPT("█",ROUND(DD_Pct_{lay}*10,0))&REPT("░",10-ROUND(DD_Pct_{lay}*10,0))', font(9, c="E8483F"), "1E1E5C")
     lm.merge_cells(f"{gl(c0+3)}{r0+12}:{cZ}{r0+12}")
-    sideL = Side(style="medium", color="76FF03")
+    sideL = Side(style="medium", color="E8483F")
     for rr in range(r0, r0 + 13):
         for cc in range(c0, c0 + 6):
             cl = lm.cell(rr, cc)
             cl.border = Border(left=sideL if cc == c0 else None, right=sideL if cc == c0 + 5 else None,
                                top=sideL if rr == r0 else None, bottom=sideL if rr == r0 + 12 else None)
-put(lm, "H26", "AUDIT", font(30, True, "B2FF59"), "101010", al=CEN); lm.merge_cells("H26:K31")
-ring = Side(style="thick", color="76FF03")
+put(lm, "H26", "AUDIT", font(30, True, "FFFFFF"), "1E1E5C", al=CEN); lm.merge_cells("H26:K31")
+ring = Side(style="thick", color="E8483F")
 for rr in range(26, 32):
     for cc in range(ci("H"), ci("K") + 1):
         lm.cell(rr, cc).border = Border(left=ring if cc == ci("H") else None, right=ring if cc == ci("K") else None,
                                         top=ring if rr == 26 else None, bottom=ring if rr == 31 else None)
-put(lm, "H32", '="Overall "&TEXT(DD_PctComplete,"0%")&" complete"', font(10, True, "FFFFFF"), "101010", al=CEN); lm.merge_cells("H32:K32")
-put(lm, "B60", "AUDIT FLOW:  1 Strategy  ►  2 Planning  ►  3 Methodology  ►  4 Execution  ►  5 Findings & Remediation  ►  6 Oversight  (stage gates: Audit_Flow sheet)", font(10, True, "B2FF59"), "101010", al=CEN)
+put(lm, "H32", '="Overall "&TEXT(DD_PctComplete,"0%")&" complete"', font(10, True, "FFFFFF"), "1E1E5C", al=CEN); lm.merge_cells("H32:K32")
+put(lm, "B60", "AUDIT FLOW:  1 Strategy  ►  2 Planning  ►  3 Methodology  ►  4 Execution  ►  5 Findings & Remediation  ►  6 Oversight  (stage gates: Audit_Flow sheet)", font(10, True, "FFFFFF"), "1E1E5C", al=CEN)
 lm.merge_cells("B60:Q60")
-put(lm, "B61", "Click a layer title to open its working papers.  |  ISA · ISQM 1 · ISQM 2 · IESBA Code", font(9, i=True, c="9CCC65"), "101010")
+put(lm, "B61", "Click a layer title to open its working papers.  |  ISA · ISQM 1 · ISQM 2 · IESBA Code", font(9, i=True, c="FF9E95"), "1E1E5C")
 lm.merge_cells("B61:Q61")
 
 # ---------------- DASHBOARD ----------------
@@ -3233,15 +3236,22 @@ for rr in range(1, 80):
 # Banner
 for cc in range(2, 26):
     for rr in (1, 2, 3): db.cell(rr, cc).fill = fill("FFFFFF")
-put(db, "C1", "AW", font(16, True, "FFFFFF"), DK, al=CEN); db.merge_cells("C1:C3")
-put(db, "E1", "AUDIT DASHBOARD", font(20, True, DK), "FFFFFF"); db.merge_cells("E1:L2")
+import os as _os
+from openpyxl.drawing.image import Image as _XLImage
+LOGO = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "assets", "funan_logo.png")
+db.merge_cells("C1:C3")
+if _os.path.exists(LOGO):
+    _im = _XLImage(LOGO); _im.width, _im.height = 66, 64; db.add_image(_im, "C1")
+put(db, "E1", "FUNAN CONSULTING  ·  Audit Dashboard", font(18, True, NAVY), "FFFFFF", al=Alignment(vertical="center")); db.merge_cells("E1:L1")
+put(db, "E2", "Y o u r     R i g h t     P a r t n e r", font(11, True, RED), "FFFFFF", al=Alignment(vertical="center")); db.merge_cells("E2:L2")
+db.row_dimensions[1].height = 26
 put(db, "E3", '="Earliest open gate: "&AF_Gate', font(9, True, "B71C1C"), "FFFFFF"); db.merge_cells("E3:L3")
 for k, (lab, f_, nf) in enumerate([("Client", "=Set_Client", None), ("Year end", "=Set_FYE", "dd mmm yyyy"), ("Status as of", "=Set_AsOf", "dd mmm yyyy")]):
     cA = gl(14 + k * 4); cZ = gl(14 + k * 4 + 3)
     put(db, f"{cA}1", lab, font(8, True, "616161"), "FFFFFF"); db.merge_cells(f"{cA}1:{cZ}1")
     put(db, f"{cA}2", f_, font(10, True, DK), "FFFFFF", nf, Alignment(horizontal="left", vertical="center"), GBOX)
     db.merge_cells(f"{cA}2:{cZ}3")
-for cc in range(2, 26): db.cell(4, cc).fill = fill(DK)
+for cc in range(2, 26): db.cell(4, cc).fill = fill(RED)
 db.row_dimensions[4].height = 5
 
 # Nav panel
@@ -3257,7 +3267,7 @@ navs = [("Overview", "LayersMap", None), ("Audit Flow", "Audit_Flow", None), ("S
         ("6 Oversight", "L6_Oversight", 6), ("   AI Agents", "AI_Agents", 0), ("Standards", "Standards", None)]
 for k, (lab, sh, lv) in enumerate(navs):
     rr = 7 + k * 3
-    bg = "C5E1A5" if k == 0 else (LAYERS[lv - 1][1] if lv else DK)
+    bg = "FBE3E0" if k == 0 else (LAYERS[lv - 1][1] if lv else DK)
     c = put(db, f"C{rr}", f'=HYPERLINK("#{sh}!A1","{lab}")', font(10 if lv != 0 else 9, lv != 0, DK if k == 0 else "FFFFFF"),
             bg, al=Alignment(horizontal="left", vertical="center", indent=1))
     db.merge_cells(f"C{rr}:C{rr+1}")
@@ -3282,8 +3292,8 @@ T2 = [("Open Findings", "=DD_OpenIssues", "0", '="▼ "&DD_OpenHigh&" high | "&D
       ("Uncorrected Misstatements", "=ABS(MS_Agg)", "#,##0", '=TEXT(MS_UncorrPct,"0%")&" of OM - dual method (SUAD)"'),
       ("Hours: Actual vs Budget", "=DD_HrsPct", "0%", '=TEXT(DD_HrsAct,"#,##0")&" / "&TEXT(DD_HrsBud,"#,##0")&" hrs"'),
       ("Independence (IESBA)", '=DD_IndRecv&" / "&DD_IndTot', "@", '=DD_IndThreat&" member(s) need follow-up"')]
-for k, t in enumerate(T1): tile(6, 5 + k * 5, 4, *t, accent=[LT, LT, "1565C0", "C62828"][k])
-for k, t in enumerate(T2): tile(11, 5 + k * 5, 4, *t, accent=["EF6C00", "C62828", "F9A825", LT][k])
+for k, t in enumerate(T1): tile(6, 5 + k * 5, 4, *t, accent=[DK, MD, DK, MD][k])
+for k, t in enumerate(T2): tile(11, 5 + k * 5, 4, *t, accent=[MD, DK, MD, DK][k])
 # Proposed opinion tile (wide)
 
 # Chart data anchors
@@ -3332,7 +3342,7 @@ for idx, col in enumerate(pts):
 db.add_chart(c3, "T16")
 # 4 Budget vs Actual
 c4 = bar_chart("Budget vs Actual Hours by Layer", Reference(dd, min_col=1, min_row=4, max_row=9),
-               Reference(dd, min_col=9, max_col=10, min_row=3, max_row=9), colors=["A5D6A7", DK], w=13, h=7)
+               Reference(dd, min_col=9, max_col=10, min_row=3, max_row=9), colors=["A9ABDB", DK], w=13, h=7)
 db.add_chart(c4, "E31")
 # 5 Misstatements vs materiality
 c5 = bar_chart("Misstatements vs Materiality", Reference(dd, min_col=1, min_row=27, max_row=30),
@@ -3353,7 +3363,7 @@ B = [("TCWG Comms", "=DD_CommPct", "0%", '="ISA 260 matters done"'),
      ("Days to Report", "=DD_DaysToReport", "0", '="EQR: "&DD_EQR'),
      ("Proposed Opinion", "=Opinion", "@", '="Quality KPIs green: "&DD_QAGreen')]
 for k, t in enumerate(B):
-    tile(46, 5 + k * 3 + (0 if k < 5 else 0), 3 if k < 5 else 6, *t, accent=LT)
+    tile(46, 5 + k * 3 + (0 if k < 5 else 0), 3 if k < 5 else 6, *t, accent=DK)
 db["T47"].font = font(11, True, DK)
 B2 = [("D&I Effective", "=DD_DIpct", "0%", '=IC_DIeff&" of "&IC_RCMn&" controls (IC2)"'),
       ("ITGC Status", "=DD_ITGC", "@", '="4 domains assessed (IC3)"'),
@@ -3363,7 +3373,7 @@ B2 = [("D&I Effective", "=DD_DIpct", "0%", '=IC_DIeff&" of "&IC_RCMn&" controls 
       ("Misstatements Logged (SUAD)", '=COUNT(MS_Amt)&" logged | "&COUNTIF(MS_Corr,"Yes")&" corrected"', "@",
        '="Rollover "&TEXT(ABS(MS_Roll),"#,##0")&" | Iron curtain "&TEXT(ABS(MS_Iron),"#,##0")')]
 for k, t in enumerate(B2):
-    tile(51, 5 + k * 3, 3 if k < 5 else 6, *t, accent="1565C0")
+    tile(51, 5 + k * 3, 3 if k < 5 else 6, *t, accent=MD)
 db["T52"].font = font(12, True, DK)
 B3 = [("Risks with IRF = 3", "=DD_HighIRF", "0", '="of "&DD_TotalRisks&" | "&DD_RiskFlags&" to justify"'),
       ("Significant SCOTABDs", "=DD_SigSCOT", "0", '=DD_MatNotSig&" material, not significant"'),
@@ -3372,7 +3382,7 @@ B3 = [("Risks with IRF = 3", "=DD_HighIRF", "0", '="of "&DD_TotalRisks&" | "&DD_
       ("GC Period (months)", "=GC_Months", "0", '="from FS approval (570R)"'),
       ("Going Concern Conclusion (570R)", "=GC_Outcome", "@", '="Close call: "&GC_Close&" | events/conditions: "&GC_EventsN')]
 for k, t in enumerate(B3):
-    tile(56, 5 + k * 3, 3 if k < 5 else 6, *t, accent="6A1B9A")
+    tile(56, 5 + k * 3, 3 if k < 5 else 6, *t, accent=DK)
 db["T57"].font = font(9, True, DK)
 B4 = [("Engagement Risk", "=AC_Rating", "@", '="Acceptance score "&TEXT(AC_ScorePct,"0%")&" (AC2)"'),
       ("Acceptance Decision", '=IF(LEFT(AC_Decision,6)="ACCEPT","Accepted","Decline")', "@", '="Approved before EL (AC7)"'),
@@ -3381,7 +3391,7 @@ B4 = [("Engagement Risk", "=AC_Rating", "@", '="Acceptance score "&TEXT(AC_Score
       ("PBC Received", "=PBC_PctRec", "0%", '=PBC_Overdue&" overdue | on-time "&TEXT(PBC_OnTime,"0%")'),
       ("Resources Conclusion (TR6)", "=TR_Conclusion", "@", '="Partner involvement "&TEXT(TR_PartnerPct,"0%")&" of actual hours"')]
 for k, t in enumerate(B4):
-    tile(61, 5 + k * 3, 3 if k < 5 else 6, *t, accent="F9A825")
+    tile(61, 5 + k * 3, 3 if k < 5 else 6, *t, accent=MD)
 db["T62"].font = font(8, True, DK)
 B5 = [("Review Agent Flags", "=AI_Flags", "0", '=AI_FlagsHigh&" high | "&AI_Checks&" checks (AI3)"'),
       ("Inspection Readiness", "=AI_Ready", "0%", '="simulated inspection (AI4)"'),
@@ -3390,7 +3400,7 @@ B5 = [("Review Agent Flags", "=AI_Flags", "0", '=AI_FlagsHigh&" high | "&AI_Chec
       ("AI Uses Logged", "=COUNTA(AI_LogStatus)", "0", '=COUNTIF(AI_LogStatus,"NON*")&" non-compliant (AI5)"'),
       ("Inspection Readiness Rating (AI4)", "=AI_Rating", "@", '="Responsible AI: approved tools, anonymised data, human verification"')]
 for k, t in enumerate(B5):
-    tile(66, 5 + k * 3, 3 if k < 5 else 6, *t, accent="00838F")
+    tile(66, 5 + k * 3, 3 if k < 5 else 6, *t, accent=DK)
 db["T67"].font = font(8, True, DK)
 put(db, "E71", "=\"Misstatement evaluation: \"&MS_Eval", font(9, True, "B71C1C"), BG); db.merge_cells("E71:Y71")
 put(db, "E72", "All figures update live from the layer working papers. Illustrative data for teaching - replace in Setup & layer sheets.", font(8, i=True, c="757575"), BG)
@@ -3408,6 +3418,17 @@ for ws in S.values():
     ws.sheet_properties.pageSetUpPr.fitToPage = True
 S["LayersMap"].page_setup.fitToHeight = 1
 S["Dashboard"].page_setup.fitToHeight = 1
+import os as _os2
+from openpyxl.drawing.image import Image as _XLI2
+_logo = _os2.path.join(_os2.path.dirname(_os2.path.abspath(__file__)), "assets", "funan_logo.png")
+if _os2.path.exists(_logo):
+    _m = _XLI2(_logo); _m.width, _m.height = 40, 39; S["LayersMap"].add_image(_m, "P1")
+for _ws in S.values():
+    _ws.oddFooter.left.text = "FUNAN Consulting Co., Ltd  |  Your Right Partner"
+    _ws.oddFooter.left.font = "Cambria,Bold"; _ws.oddFooter.left.color = "292989"
+    _ws.oddFooter.center.text = "&A"
+    _ws.oddFooter.right.text = "Page &P of &N"
+    _ws.oddHeader.right.text = "www.funanconsultingservice.com"; _ws.oddHeader.right.color = "D93732"
 wb.active = 0
 wb.save(OUT)
 print("saved", OUT, len(names), "names")
