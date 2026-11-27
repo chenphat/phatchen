@@ -38,14 +38,14 @@ order = ["Dashboard", "LayersMap", "Audit_Flow", "Setup", "WP_Index",
          "L3_Methodology", "Sampling",
          "IC_Assessment", "L4_Execution",
          "L5_Findings", "SUAD", "Deficiencies_265",
-         "L6_Oversight", "AI_Agents",
+         "Evidence_Map", "L6_Oversight", "AI_Agents",
          "DashData", "Standards", "Lists"]
 LAYERS = [("Strategy", "292989", "Pre-engagement & strategy"), ("Planning", "3D4DB7", "Planning & risk assessment"),
           ("Methodology", "1E1E5C", "Response design"), ("Execution", "D93732", "Fieldwork (interim & final)"),
           ("Findings", "A3221D", "Evaluation & remediation"), ("Oversight", "E0604F", "Completion & reporting")]
 SHEET_LAYER = {"Acceptance_QM": 1, "L1_Strategy": 1, "Team_Resources": 1, "L2_Planning": 2, "PBC_List": 2, "Risk_315R": 2, "Assertions": 2,
                "Fraud_240R": 2, "GoingConcern_570R": 2, "L3_Methodology": 3, "Sampling": 3, "IC_Assessment": 4, "L4_Execution": 4,
-               "L5_Findings": 5, "SUAD": 5, "Deficiencies_265": 5, "L6_Oversight": 6, "AI_Agents": 6}
+               "L5_Findings": 5, "SUAD": 5, "Deficiencies_265": 5, "Evidence_Map": 6, "L6_Oversight": 6, "AI_Agents": 6}
 FLOW = [n for n in order if n in SHEET_LAYER]
 ws0 = wb.active; ws0.title = order[0]
 S = {order[0]: ws0}
@@ -90,6 +90,7 @@ lists = {
     "CtlType": ["Preventive", "Detective"],
     "DefType": ["Design", "Implementation", "Operating"],
     "NewCont": ["Continuing", "New"],
+    "Persuasive": ["Low", "Medium", "High"],
     "DataClass": ["Public", "Anonymised", "Confidential"],
     "PBCStatus": ["Not received", "Partially received", "Received", "Accepted", "Re-request"],
 }
@@ -860,7 +861,7 @@ r = table_head(ws, r, ["", "Decision factor", "Answer", "Basis"])
 ws.merge_cells(f"D{r-1}:J{r-1}")
 o0 = r
 opin = [("Uncorrected misstatements material? (SUAD dual aggregate)", '=IF(ABS(MS_Agg)>=Mat_OM,"Yes","No")', "ISA 450.11 / 705.6(a)", False),
-        ("Inability to obtain sufficient appropriate evidence (scope limitation)?", "No", "ISA 705.6(b)", True),
+        ("Inability to obtain sufficient appropriate evidence (scope limitation)? (EV5)", "=EV_Scope", "ISA 705.6(b); ISA 330.26", False),
         ("If modified - effects pervasive?", "No", "ISA 705.A5", True),
         ("Material uncertainty related to going concern? (GC4)", "=GC_MU", "ISA 570 (Revised 2024)", False),
         ("Emphasis of matter required?", "No", "ISA 706.8", True),
@@ -2756,6 +2757,116 @@ for i, (ag, pr, ver) in enumerate(prompts, 1):
     cell(ws, f"C{r}", pr, is_input=True); ws.merge_cells(f"C{r}:I{r}"); cell(ws, f"J{r}", ver); ws.merge_cells(f"J{r}:L{r}")
     ws.row_dimensions[r].height = 58; r += 1
 
+# ---------------- EVIDENCE MAP (Report <- Evidence <- Working papers) ----------------
+ws = S["Evidence_Map"]
+r = sheet_header(ws, "EVIDENCE MAP - FROM WORKING PAPERS TO THE AUDIT OPINION", "6",
+                 "Show, for every significant area, that sufficient appropriate audit evidence answers 'Is it real? Is it complete? Does it make sense?', where it is documented, and how it supports the opinion.",
+                 "ISA 500.6-9 & A31 (sufficient appropriate evidence); ISA 330.25-26 (evaluating sufficiency); ISA 230.8-11 (documentation); ISA 700.11 (forming the opinion); ISA 705.7(b) (scope limitation)")
+for k in range(ci("M"), ci("P") + 1): ws.column_dimensions[gl(k)].width = 13
+widths(ws, {"B": 22, "C": 15, "D": 26, "E": 26, "F": 26, "G": 20})
+
+r = section(ws, r, "EV1", "The chain: audit report <- audit evidence <- working papers", "ISA 200.5; ISA 500; ISA 230")
+chain = [("AUDIT REPORT - the auditor's voice", "Independent opinion on whether the FS give a true and fair view; may add KAMs, Emphasis of Matter, Going Concern section.", "L6_Oversight F7 | GoingConcern_570R GC5", "ISA 700R, 701, 705R, 706R, 570R"),
+         ("AUDIT EVIDENCE - the foundation", "Sufficient (quantity) and appropriate (relevance & reliability). Answers: Is it real? (existence/occurrence)  Is it complete? (completeness)  Does it make sense? (accuracy, valuation, analytics).", "EV2 matrix below", "ISA 500.6-9; ISA 330.26"),
+         ("WORKING PAPERS - the memory vault", "Record what was checked, how it was checked, the results, and why it matters - so an experienced auditor can retrace every step without guesswork.", "WP_Index (113 WPs) | EV4", "ISA 230.8-11; ISQM 1.31(f)")]
+for i, (a, b, c_, d_) in enumerate(chain):
+    lc = [NAVY, RED, NAVY_DK][i]
+    put(ws, f"A{r}", ["▲", "▲", "●"][i], font(14, True, "FFFFFF"), lc, al=CEN, bd=BOX)
+    put(ws, f"B{r}", a, font(10, True, "FFFFFF"), lc, al=WRAP, bd=BOX); ws.merge_cells(f"B{r}:C{r}")
+    cell(ws, f"D{r}", b); ws.merge_cells(f"D{r}:H{r}"); cell(ws, f"I{r}", c_); ws.merge_cells(f"I{r}:J{r}"); cell(ws, f"K{r}", d_); ws.merge_cells(f"K{r}:L{r}")
+    ws.row_dimensions[r].height = 44; r += 1
+note(ws, r, "Read bottom-up: working papers hold the evidence; evidence answers the three questions for each assertion; the evaluation of that evidence (EV5) is the basis for the opinion. Read top-down for review: every word of the opinion must trace to evidence on file.")
+r += 2
+
+r = section(ws, r, "EV2", "Evidence matrix by significant area - the three questions", "ISA 500 | ISA 330.26 | ISA 315R")
+heads = ["#", "Area", "TB account (link)", "Is it REAL? (existence / occurrence)", "Is it COMPLETE? (completeness)", "Does it MAKE SENSE? (accuracy, valuation, analytics)",
+         "Evidence types", "Main source", "Persuasiveness obtained", "Required (from RMM)", "Evidence outstanding?", "Conclusion", "Misstatements found (gross)", "WP refs"]
+r = table_head(ws, r, heads)
+areas = [("Revenue", "Revenue", "Vouched MUS sample to orders, GDNs & cash (D3)", "Cut-off 10 days either side; credit notes post-YE (D3)", "Gross margin & monthly trend analytics (C3)", "Inspection, Analytical, Recalculation", "External / auditor-generated", "High", "No", "D3, C3, FR4"),
+         ("Trade receivables", "Trade receivables", "Positive confirmations - MUS selection (S4, D4)", "Aged listing agreed to GL; after-date cash", "ECL matrix recomputed (C4); receivable days", "Confirmation, Recalculation, Inspection", "External", "High", "No", "S4, S5, D4"),
+         ("Inventory", "Inventory", "Count attendance & test counts (D5)", "Cut-off GRN/GDN at count; sheet-to-floor", "NRV vs post-YE prices; independent range (C4)", "Observation, Inspection, Recalculation", "Auditor-direct", "High", "No", "D5, D3, C4"),
+         ("Property, plant & equipment (incl. ROU)", "Property, plant & equipment", "Physical inspection of additions; title docs", "Repairs ledger scan for capital items", "Depreciation proof-in-total; IFRS 16 model recompute", "Inspection, Recalculation, Analytical", "Auditor-generated", "Medium", "No", "D3, S1.3"),
+         ("Trade payables & accruals", "Accruals", "Supplier statement reconciliations", "Search for unrecorded liabilities - post-YE payments (S1.5)", "Payable days; accrual expectation", "Inspection, Confirmation, Analytical", "External", "High", "No", "D3, S1.5"),
+         ("Borrowings", "Borrowings", "Bank confirmation (D4)", "Bank confirmation lists all facilities", "Interest proof; covenant recalculation (GC3)", "Confirmation, Recalculation", "External", "High", "No", "D4, GC3"),
+         ("Cash", "Cash", "Bank confirmations", "Confirmation of all accounts; reconciliations", "Reconciling items cleared post-YE", "Confirmation, Inspection", "External", "High", "No", "D4"),
+         ("Expenses & payroll", "Administrative expenses", "Vouching sample; payroll to bureau reports", "Expense accrual & cut-off tests", "Payroll proof-in-total; expense analytics", "Inspection, Analytical, Reperformance", "Internal (tested IPE)", "Medium", "No", "C8, D3"),
+         ("Journals & management override (FS level)", "", "JE criteria testing to support (FR4)", "JE population reconciled to TB", "Retrospective estimates review; unusual transactions", "Inspection, Inquiry, Reperformance", "Internal (tested IPE)", "High", "No", "FR4, D6"),
+         ("Related parties & disclosures", "", "RP declarations; loan agreement", "Ledger & minutes scan for unidentified RPs", "Disclosure checklist vs IAS 24", "Inspection, Inquiry", "Internal / management", "Medium", "Yes", "B7, FR5"),
+         ("Litigation, subsequent events & going concern", "", "Legal letter from external counsel (D7)", "Minutes & post-YE accounts to report date (D8)", "Cash-flow forecast & stress test (GC3)", "Confirmation, Inquiry, Analytical", "External / management", "Medium", "Yes", "D7, D8, GC3")]
+e0 = r
+for i, (area, acct, real, comp, sense, types, src, pers, outst, wp) in enumerate(areas, 1):
+    cell(ws, f"A{r}", i, center=True); c = cell(ws, f"B{r}", area); c.font = font(9, True)
+    cell(ws, f"C{r}", acct, is_input=True)
+    for col, v in zip("DEF", (real, comp, sense)): cell(ws, f"{col}{r}", v, is_input=True)
+    cell(ws, f"G{r}", types, is_input=True); cell(ws, f"H{r}", src, is_input=True, center=True)
+    cell(ws, f"I{r}", pers, is_input=True, center=True)
+    scot = f'IF(C{r}="",IF(LEFT(B{r},8)="Journals","All (FS level)",IF(LEFT(B{r},7)="Related","Disclosures - related parties","")),C{r})'
+    cell(ws, f"J{r}", f'=IF(COUNTIFS(Risk_SCOT,{scot},Risk_Spectrum,"Significant")+COUNTIFS(Risk_SCOT,{scot},Risk_Spectrum,"High")>0,"High",'
+                      f'IF(COUNTIFS(Risk_SCOT,{scot},Risk_Spectrum,"Elevated")+COUNTIFS(Risk_SCOT,{scot},Risk_Spectrum,"Moderate")>0,"Medium","Low"))', center=True)
+    cell(ws, f"K{r}", outst, is_input=True, center=True)
+    cell(ws, f"L{r}", f'=IF(K{r}="Yes","Pending - evidence outstanding",IF(MATCH(I{r},{{"Low","Medium","High"}},0)>=MATCH(J{r},{{"Low","Medium","High"}},0),"Sufficient & appropriate","INSUFFICIENT - obtain more persuasive evidence"))', center=True)
+    cell(ws, f"M{r}", f'=IF(C{r}="","-",SUMIFS(MS_Amt,MS_Dr,C{r})+SUMIFS(MS_Amt,MS_Cr,C{r})-SUMIFS(MS_Amt,MS_Dr,C{r},MS_Cr,C{r}))', NUM)
+    cell(ws, f"N{r}", wp, center=True)
+    ws.row_dimensions[r].height = 46; r += 1
+e1 = r - 1
+dv(ws, f"I{e0}:I{e1}", "Persuasive"); dv(ws, f"K{e0}:K{e1}", "YesNo")
+dname("EV_Concl", f"Evidence_Map!$L${e0}:$L${e1}")
+ws.conditional_formatting.add(f"L{e0}:L{e1}", CellIsRule(operator="equal", formula=['"Sufficient & appropriate"'], fill=fill("C8E6C9"), font=Font(name=F, bold=True, color="1B5E20")))
+ws.conditional_formatting.add(f"L{e0}:L{e1}", FormulaRule(formula=[f'LEFT($L{e0},7)="Pending"'], fill=fill("FFE0B2")))
+ws.conditional_formatting.add(f"L{e0}:L{e1}", FormulaRule(formula=[f'LEFT($L{e0},12)="INSUFFICIENT"'], fill=fill("FFCDD2"), font=Font(name=F, bold=True, color="B71C1C")))
+note(ws, r, "Required persuasiveness is driven by the assessed risk (Risk_315R): the higher the risk of material misstatement, the more persuasive the evidence needed (ISA 330.7(b)). "
+            "Persuasiveness obtained is the auditor's judgement on the combined evidence (type, source, coverage).", "N")
+r += 2
+
+r = section(ws, r, "EV3", "Reliability of audit evidence - the hierarchy", "ISA 500.A31-A33")
+r = table_head(ws, r, ["#", "More reliable", "", "", "Less reliable", "", "", "Example in this file"])
+ws.merge_cells(f"B{r-1}:D{r-1}"); ws.merge_cells(f"E{r-1}:G{r-1}"); ws.merge_cells(f"H{r-1}:L{r-1}")
+for i, (a, b, ex) in enumerate([("Obtained from independent sources outside the entity", "Generated internally by the entity", "Bank & customer confirmations (D4) vs aged listing"),
+                               ("Internally generated when related controls are effective", "Internal, with controls ineffective", "JE listing - ITGC access deficient, so IPE tested substantively"),
+                               ("Obtained directly by the auditor (observation, recalculation)", "Obtained indirectly or by inference (inquiry)", "Count attendance (D5) vs management inquiry"),
+                               ("Documentary form (paper, electronic)", "Oral representation", "Loan agreement vs CFO explanation"),
+                               ("Original documents", "Photocopies, scans, faxes", "Original title deeds for PPE additions")], 1):
+    cell(ws, f"A{r}", i, center=True); cell(ws, f"B{r}", a); ws.merge_cells(f"B{r}:D{r}"); cell(ws, f"E{r}", b); ws.merge_cells(f"E{r}:G{r}")
+    cell(ws, f"H{r}", ex); ws.merge_cells(f"H{r}:L{r}"); ws.row_dimensions[r].height = 26; r += 1
+r += 1
+
+r = section(ws, r, "EV4", "Working-paper quality standard (memory vault) & tick-mark legend", "ISA 230.8-11 & A2-A3")
+r = checklist(ws, r, [
+    ("An experienced auditor with no previous connection can understand the nature, timing & extent of procedures performed", "ISA 230.8(a)", "Yes", "Objective & procedure stated on every WP header"),
+    ("Results of procedures and the audit evidence obtained are recorded", "ISA 230.8(b)", "Yes", "Exceptions logged; links to SUAD"),
+    ("Significant matters, conclusions reached and significant professional judgements documented", "ISA 230.8(c)", "Yes", "Conclusion row on each checklist"),
+    ("Identifying characteristics of specific items tested recorded (e.g. invoice no., customer ID)", "ISA 230.9(a)", "Yes", "IC5, S4 item references"),
+    ("Who performed the work and when; who reviewed it, when and the extent of review", "ISA 230.9(b)-(c)", "Yes", "Sign-off block on every sheet; WP_Index"),
+    ("Discussions of significant matters with management/TCWG documented (what, when, with whom)", "ISA 230.10", "Yes", "FR2 inquiries; F1 TCWG log"),
+    ("Inconsistencies with final conclusions documented and resolved", "ISA 230.11", "Yes", "Review notes cleared via E3"),
+    ("Cross-references traceable between WPs, lead schedule and FS (hyperlinks)", "ISA 230.A3", "Yes", "Open > links; WP refs in EV2"),
+], "EV4")
+r = table_head(ws, r, ["", "Tick-mark", "Meaning"]); ws.merge_cells(f"C{r-1}:H{r-1}")
+for tm, mean in [("✓", "Agreed to source document (vouched / traced)"), ("Σ", "Footed / cast and agreed"), ("C", "Confirmed with third party - agreed"),
+                 ("R", "Recalculated without exception"), ("O", "Physically observed / inspected"), ("TB", "Agreed to trial balance / lead schedule"),
+                 ("PY", "Agreed to prior-year audited figures"), ("X", "Exception - see note and SUAD / issue log")]:
+    c = cell(ws, f"B{r}", tm, center=True); c.font = font(11, True, RED); cell(ws, f"C{r}", mean); ws.merge_cells(f"C{r}:H{r}"); r += 1
+r += 1
+
+r = section(ws, r, "EV5", "Overall evaluation of evidence - bridge to the opinion", "ISA 330.25-26 | ISA 700.11 | ISA 705.7")
+v0 = r
+ev = [("Areas assessed", "=COUNTA(EV_Concl)", "0"),
+      ("Sufficient & appropriate", '=COUNTIF(EV_Concl,"Sufficient*")', "0"),
+      ("Pending - evidence outstanding", '=COUNTIF(EV_Concl,"Pending*")', "0"),
+      ("Insufficient", '=COUNTIF(EV_Concl,"INSUFFICIENT*")', "0"),
+      ("Working papers documented (prepared / reviewed / closed)", '=COUNTIF(WP_Status,"Prepared")+COUNTIF(WP_Status,"Reviewed")+COUNTIF(WP_Status,"Closed")&" of "&COUNTA(WP_Status)', None),
+      ("Uncorrected misstatements (SUAD evaluation)", "=MS_Eval", None),
+      ("SCOPE LIMITATION? (feeds opinion F7)", f'=IF(C{v0+3}>0,"Yes","No")', None),
+      ("CONCLUSION", f'=IF(C{v0+3}>0,"Insufficient evidence in "&C{v0+3}&" area(s) - extend procedures; if unobtainable consider qualified / disclaimer (ISA 705.7(b))",'
+                     f'IF(C{v0+2}>0,"Evidence outstanding in "&C{v0+2}&" area(s) - obtain before dating the report (ISA 700.49)","Sufficient appropriate evidence obtained - basis for the opinion"))', None)]
+for i, (lab, f_, nf) in enumerate(ev):
+    b = cell(ws, f"B{r}", lab); c = cell(ws, f"C{r}", f_, nf, center=(nf is not None))
+    if lab.isupper() or lab.startswith("SCOPE"): b.font = font(9, True); c.font = font(10, True, NAVY); b.fill = fill(PALE); c.fill = fill(PALE)
+    if nf is None: ws.merge_cells(f"C{r}:L{r}")
+    r += 1
+dname("EV_Insuff", f"Evidence_Map!$C${v0+3}"); dname("EV_Pending", f"Evidence_Map!$C${v0+2}"); dname("EV_Scope", f"Evidence_Map!$C${v0+6}")
+dname("EV_Conclusion", f"Evidence_Map!$C${v0+7}")
+
 # ---------------- WP INDEX ----------------
 wpi = S["WP_Index"]
 widths(wpi, {"A": 7, "B": 13, "C": 46, "D": 30, "E": 14, "F": 11, "G": 14, "H": 11, "I": 13, "J": 9, "K": 9, "L": 9, "M": 12, "N": 8, "O": 28})
@@ -2868,6 +2979,11 @@ wps = [
  ("SUAD2", "Findings", "SUAD - prior-period reversal effects", "ISA 450.11(b)", "Prepared", 1, 1),
  ("SUAD3", "Findings", "SUAD - evaluation (rollover / iron curtain)", "ISA 450.10-12", "In progress", 2, 1),
  ("SUAD4", "Findings", "SUAD - by FS line item", "ISA 450.A16", "Prepared", 1, 1),
+ ("EV1", "Oversight", "Report - evidence - working papers chain", "ISA 200; ISA 500; ISA 230", "Closed", 0.5, 0.5),
+ ("EV2", "Oversight", "Evidence matrix - real / complete / makes sense", "ISA 500.6-9; ISA 330.26", "Prepared", 3, 3),
+ ("EV3", "Oversight", "Reliability hierarchy of evidence", "ISA 500.A31", "Closed", 0.5, 0.5),
+ ("EV4", "Oversight", "Working-paper quality & tick-marks", "ISA 230.8-11", "Reviewed", 1, 1),
+ ("EV5", "Oversight", "Overall evaluation - bridge to opinion", "ISA 330.25-26; ISA 700.11", "In progress", 1, 0.5),
  ("F1", "Oversight", "Communications with TCWG", "ISA 260; ISA 265", "In progress", 6, 3),
  ("F2", "Oversight", "Written representations", "ISA 580", "Not started", 2, 0),
  ("F3", "Oversight", "Going concern - final conclusion", "ISA 570 (Revised 2024)", "Prepared", 1, 1),
@@ -2899,7 +3015,7 @@ FLOW_REFS = [
  ["C1", "C2", "S1", "S2", "S3", "C3", "C4", "C5", "C6", "C7", "C8"],
  ["IC4", "IC5", "IC6", "D1", "D2", "S4", "D4", "S5", "D3", "D5", "D6", "FR4", "FR5", "D7", "D8", "D9", "PBC3"],
  ["E1", "SUAD1", "SUAD2", "SUAD3", "SUAD4", "AS3", "E2", "DF1", "DF2", "DF3", "DF4", "DF5", "DF6", "E3", "E4"],
- ["F1", "FR6", "F2", "F3", "GC4", "GC5", "GC6", "F4", "FR7", "F8", "F7", "AI1", "AI2", "AI3", "AI4", "AI5", "AI6", "F5", "F6", "F9", "F10"]]
+ ["EV1", "EV2", "EV3", "EV4", "EV5", "F1", "FR6", "F2", "F3", "GC4", "GC5", "GC6", "F4", "FR7", "F8", "F7", "AI1", "AI2", "AI3", "AI4", "AI5", "AI6", "F5", "F6", "F9", "F10"]]
 pos = {ref: (si, k) for si, grp in enumerate(FLOW_REFS) for k, ref in enumerate(grp)}
 missing = [w[0] for w in wps if w[0] not in pos]
 assert not missing, missing
@@ -3089,6 +3205,7 @@ gates = [
  (5, "Significant deficiencies communicated in writing", "ISA 265.9", 'CD_SigComm=COUNTIF(CD_Class,"Significant deficiency")', "Deficiencies_265", "DF4"),
  (5, "Fraud / suspected fraud matters closed", "ISA 240R", "DD_FraudOpen=0", "Fraud_240R", "FR5"),
  (5, "Stage 5 working papers reviewed", "ISA 220R.30", all_rev(5), "WP_Index", "WP_Index stage 5"),
+ (6, "All areas supported by sufficient appropriate evidence", "ISA 330.26; ISA 700.11", "AND(EV_Insuff=0,EV_Pending=0)", "Evidence_Map", "EV2 / EV5"),
  (6, "Communications with TCWG complete", "ISA 260", "DD_CommPct>=1", "L6_Oversight", "F1"),
  (6, "Written representations obtained", "ISA 580", 'OR(INDEX(WP_Status,MATCH("F2",WP_Ref,0))="Reviewed",INDEX(WP_Status,MATCH("F2",WP_Ref,0))="Closed")', "L6_Oversight", "F2"),
  (6, "No high-severity review flags (Review Agent)", "ISA 220R.30-34", "AI_FlagsHigh=0", "AI_Agents", "AI3"),
@@ -3137,7 +3254,7 @@ stds = [("ISQM 1", "Quality Management for Firms that Perform Audits or Reviews"
         ("ISA 330", "Auditor's Responses to Assessed Risks", "Methodology / Execution", "C1, D2, D3, IC4-IC6"),
         ("ISA 402", "Audit Considerations Relating to Service Organizations", "Methodology", "C8"),
         ("ISA 450", "Evaluation of Misstatements Identified during the Audit", "Findings", "E1, SUAD1-SUAD4"),
-        ("ISA 500", "Audit Evidence (incl. 500.9 information produced by the entity)", "Execution", "D1, D3, PBC1-PBC3"),
+        ("ISA 500", "Audit Evidence (incl. 500.9 information produced by the entity)", "Execution / Oversight", "D1, D3, PBC1-PBC3, EV1-EV5"),
         ("ISA 501", "Audit Evidence - Specific Considerations", "Execution", "D5, D7"),
         ("ISA 505", "External Confirmations", "Execution", "D4"),
         ("ISA 510", "Initial Audit Engagements - Opening Balances", "Planning", "B9"),
@@ -3187,7 +3304,7 @@ boxes = {
     "Methodology": ("B33", ["Standard procedures", "Sampling techniques", "Evaluation methods", "Quality standards"],
                     ["Audit programme (C1)", "Population register & sizes (S1)", "Statistical factors (S2-S3)", "MUS evaluation / UML (S5)"], "L3_Methodology"),
     "Oversight": ("L33", ["TCWG interaction", "Quality assurance reviews", "Independence monitoring", "Performance evaluation"],
-                  ["TCWG log (F1)", "EQ review (F5)", "Opinion matrix (F7)", "AI review & inspection readiness (AI1-AI6)"], "L6_Oversight"),
+                  ["TCWG log (F1)", "EQ review (F5)", "Evidence map & opinion (EV1-EV5, F7)", "AI review & inspection readiness (AI1-AI6)"], "L6_Oversight"),
     "Findings": ("G47", ["Issue identification", "Root cause analysis", "Recommendation design", "Remediation tracking"],
                  ["SUAD - all misstatements (SUAD1-4)", "ISA 265 deficiencies & letter (DF1-DF6)", "Issue log (E3)", "Management letter (E4)"], "L5_Findings"),
 }
@@ -3264,7 +3381,7 @@ navs = [("Overview", "LayersMap", None), ("Audit Flow", "Audit_Flow", None), ("S
         ("3 Methodology", "L3_Methodology", 3), ("   Sampling", "Sampling", 0),
         ("4 Execution", "L4_Execution", 4), ("   IC Testing", "IC_Assessment", 0),
         ("5 Findings", "L5_Findings", 5), ("   SUAD", "SUAD", 0), ("   Deficiencies", "Deficiencies_265", 0),
-        ("6 Oversight", "L6_Oversight", 6), ("   AI Agents", "AI_Agents", 0), ("Standards", "Standards", None)]
+        ("6 Oversight", "L6_Oversight", 6), ("   Evidence", "Evidence_Map", 0), ("   AI Agents", "AI_Agents", 0), ("Standards", "Standards", None)]
 for k, (lab, sh, lv) in enumerate(navs):
     rr = 7 + k * 3
     bg = "FBE3E0" if k == 0 else (LAYERS[lv - 1][1] if lv else DK)
