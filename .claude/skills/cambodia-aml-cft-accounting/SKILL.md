@@ -17,7 +17,7 @@ python .claude/skills/cambodia-aml-cft-accounting/scripts/build_workbook.py OUTP
 python <xlsx-skill>/scripts/recalc.py OUTPUT.xlsx 60   # must report status: success, 0 errors
 ```
 
-## Workbook map (14 sheets)
+## Workbook map (15 sheets)
 
 | Sheet | Step | Purpose |
 |---|---|---|
@@ -31,6 +31,7 @@ python <xlsx-skill>/scripts/recalc.py OUTPUT.xlsx 60   # must report status: suc
 | CRA_Clients | 6 | Client-level weighted scoring, PEP/sanctions overrides, CDD level, review dates |
 | Action_Plan | 4 | Actions for Medium-High/High residual and out-of-appetite risks; overdue tracking |
 | Case_XingTianDy | - | Fictional OFAC-linked client case: KYC, 50% rule look-through, screening log, decision log, discussion Q&A |
+| Case_PPHotel | - | Fictional hotel client: PEP-family BO, revenue reasonableness test, accept with EDD |
 | Traceability | 6 | Risk -> CRA -> policy -> monitoring -> training -> MI |
 | Red_Flags | - | 25 Cambodia accounting/audit red flags with responses |
 | Triggers_Versions | - | Version log and trigger register |

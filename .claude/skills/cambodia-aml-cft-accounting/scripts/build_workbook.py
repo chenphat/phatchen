@@ -676,6 +676,8 @@ examples = [
     ("CL-003", "Example: NGO (LANGO registered)", "NPO", "Medium", "Low", "Medium", "Low", "Low", "Medium", "Yes", "No"),
     ("CL-004", "CASE (fictional): Xing Tian Dy / Golden Tide Development Co., Ltd.", "Company", "High", "High", "High",
      "High", "High", "High", "No", "Yes"),
+    ("CL-005", "CASE (fictional): Phnom Penh Hotel Co., Ltd.", "Company", "High", "Medium", "Low", "Medium", "Low",
+     "Medium", "Yes", "No"),
 ]
 CRA_N = 60
 for i in range(CRA_N):
@@ -688,11 +690,14 @@ for i in range(CRA_N):
             cr[f"O{r}"].value = "=DATE(2026,11,20)"
             inp(cr, f"R{r}", "OFAC 50% rule: corporate shareholder blocked; client is its director. Declined; STR filed. "
                              "See Case_XingTianDy sheet.")
+        if examples[i][0] == "CL-005":
+            cr[f"O{r}"].value = "=DATE(2026,11,20)"
+            inp(cr, f"R{r}", "PEP family member is 25% BO -> High. EDD done; gaming advice declined. See Case_PPHotel sheet.")
     else:
         for col in "ABCDEFGHIJK":
             inp(cr, f"{col}{r}")
         inp(cr, f"O{r}", None, fmt="dd-mmm-yyyy")
-    if i >= len(examples) or examples[i][0] != "CL-004":
+    if i >= len(examples) or examples[i][0] not in ("CL-004", "CL-005"):
         inp(cr, f"R{r}")
     sc_parts = "+".join(
         f'{"DEFGHI"[j]}$3*MATCH({"DEFGHI"[j]}{r},{{"Low","Medium","High"}},0)' for j in range(6))
@@ -1222,6 +1227,263 @@ for q, a in [
     cs.merge_cells(f"C{r}:G{r}")
     cs.row_dimensions[r].height = 32
 
+# ============================================================ Case 2: hotel
+ch = sheet("Case_PPHotel", {"A": 5, "B": 32, "C": 20, "D": 16, "E": 16, "F": 16, "G": 42}, tab="00B050")
+title(ch, "Sample client case: Phnom Penh Hotel - cash-intensive hospitality client with PEP link (accept with EDD)",
+      "FICTIONAL CASE FOR TEACHING. The company, people, figures and events are invented and do not describe any real hotel "
+      "of a similar name. Contrast with Case_XingTianDy: here the outcome is ACCEPT WITH CONDITIONS, not prohibit.")
+ch["A2"].font = Font(name=F, size=9, bold=True, color="C00000")
+
+
+def kv(ws, rows, start):
+    rr = start
+    for k, v in rows:
+        put(ws, f"B{rr}", k, font=f_bold, fill=fill_grey)
+        put(ws, f"C{rr}", v)
+        ws.merge_cells(f"C{rr}:G{rr}")
+        ws.row_dimensions[rr].height = 30 if len(str(v)) > 90 else 16
+        rr += 1
+    return rr
+
+
+r = 4
+section(ch, f"A{r}", "A. Client profile (KYC at onboarding, 10-Nov-2026)", f"G{r}")
+r = kv(ch, [
+    ("Client", "Phnom Penh Hotel Co., Ltd. (fictional) - 4-star, 120 rooms, Daun Penh district, Phnom Penh"),
+    ("MOC registration / tax ID", "000XXXXX / K00X-XXXXXXXXX (fictional); Ministry of Tourism hotel licence (fictional no.)"),
+    ("Activities", "Rooms, restaurant, KTV bar, event & wedding hall. PLANNED: electronic gaming lounge for foreign guests."),
+    ("Years trading", "Since 2009; family-owned; ~140 staff"),
+    ("Contact", "Mr. CHEA Sovann, Managing Director and founder (fictional)"),
+    ("Banking", "Two local commercial banks; card acquiring + KHQR; large daily USD cash takings"),
+    ("Previous accountant", "Small local firm; resigned 2026 'for capacity reasons' - clearance letter requested"),
+    ("How onboarded", "Face-to-face meetings at the hotel; original IDs and MOC extract sighted; referral from an existing client"),
+], r + 1)
+
+r += 1
+section(ch, f"A{r}", "B. Ownership and beneficial owners", f"G{r}")
+r += 1
+put(ch, f"B{r}", "BO threshold used by the firm", font=f_bold)
+inp(ch, f"C{r}", 0.25, fmt="0%")
+ch[f"D{r}"] = "Firm policy input - verify against current Cambodian BO rules."
+ch[f"D{r}"].font = f_note
+BOT = f"$C${r}"
+r += 1
+header(ch, r, ["Shareholder", "% held", "BO?", "PEP?", "Screening", "Notes"], col=2)
+r += 1
+own_first = r
+for n, p, pep, scr, note in [
+        ("Mr. CHEA Sovann (Cambodian)", 0.60, "No", "Clear", "Founder; wealth from hotel and family rice-trading business since 1990s."),
+        ("Mrs. LIM Sreymom (Cambodian)", 0.25, "Yes - family member",
+         "PEP match (true)", "Spouse of a deputy provincial governor (fictional). Invested USD 1.2m in 2022 renovation."),
+        ("Mekong Leisure Investment Pte Ltd (Singapore)", 0.15, "No", "Clear",
+         "100% owned by Mr. TAN Wei Ming (Singapore); registry extract obtained.")]:
+    put(ch, f"B{r}", n)
+    inp(ch, f"C{r}", p, fmt="0%")
+    put(ch, f"D{r}", f'=IF(C{r}>={BOT},"Yes","Below threshold")', align=center)
+    inp(ch, f"E{r}", pep)
+    inp(ch, f"F{r}", scr)
+    put(ch, f"G{r}", note)
+    ch.row_dimensions[r].height = 30
+    r += 1
+put(ch, f"B{r}", "Total", font=f_bold)
+put(ch, f"C{r}", f"=SUM(C{own_first}:C{r-1})", fmt="0%", font=f_bold)
+put(ch, f"D{r}", f'=IF(ABS(C{r}-1)<0.0001,"Check OK","Does not add to 100%")', font=f_bold)
+r += 1
+ch[f"B{r}"] = ("Lesson: Mrs. LIM is exactly at the 25% threshold AND a PEP family member - she is a beneficial owner and "
+               "triggers EDD: source of wealth for the USD 1.2m, senior-management approval, enhanced ongoing monitoring.")
+ch[f"B{r}"].font = f_note
+ch[f"B{r}"].alignment = wrap
+ch.merge_cells(f"B{r}:G{r}")
+ch.row_dimensions[r].height = 30
+
+r += 2
+section(ch, f"A{r}", "C. Services requested", f"G{r}")
+r += 1
+header(ch, r, ["Service", "Fee (USD)", "Decision", "", "", "Reason"], col=2)
+r += 1
+sv1 = r
+for s, fee, dec, why in [
+        ("Statutory audit FY2026 (CIFRS)", 22000, "Accept", "Core service; EDD completed."),
+        ("Monthly tax compliance (GDT) incl. accommodation tax & VAT", 8400, "Accept", "Normal for sector."),
+        ("Payroll for ~140 staff incl. NSSF", 6000, "Accept", "Reconcile to NSSF records monthly."),
+        ("Feasibility & licence advice for electronic gaming lounge", 12000, "Decline for now",
+         "Gaming is a high-risk sector; accept only after the operator holds a valid licence from the commercial-gaming "
+         "regulator and a separate new-service risk assessment (BRA N01/K12) is approved.")]:
+    put(ch, f"B{r}", s)
+    inp(ch, f"C{r}", fee, fmt="#,##0")
+    inp(ch, f"D{r}", dec)
+    ch.merge_cells(f"D{r}:F{r}")
+    put(ch, f"G{r}", why)
+    ch.row_dimensions[r].height = 42 if len(why) > 80 else 20
+    r += 1
+put(ch, f"B{r}", "Fees accepted", font=f_bold)
+put(ch, f"C{r}", f'=SUMIF(D{sv1}:D{r-1},"Accept",C{sv1}:C{r-1})', fmt="#,##0", font=f_bold)
+
+r += 2
+section(ch, f"A{r}", "D. Revenue reasonableness test - can the hotel's takings be real? (hotels are a classic way to "
+        "mix illicit cash with genuine income)", f"G{r}")
+r += 1
+header(ch, r, ["Input / calculation", "Value", "", "", "", "Source / note"], col=2)
+inputs = [
+    ("Rooms available", 120, "0", "Hotel licence / site visit"),
+    ("Days in year", 365, "0", "FY2026"),
+    ("Reported occupancy", 0.72, "0%", "Client PMS report"),
+    ("Market occupancy benchmark (Phnom Penh, 4-star)", 0.58, "0%", "ASSUMPTION - source from Ministry of Tourism / STR data"),
+    ("Reported average daily rate (USD)", 68, "#,##0", "Client PMS report"),
+    ("Reported room revenue (USD)", 2650000, "#,##0", "Draft trial balance"),
+    ("Tolerance before investigation", 0.10, "0%", "Firm audit policy"),
+    ("Cash share of total takings", 0.46, "0%", "Bank deposit analysis"),
+    ("Peer cash share", 0.20, "0%", "ASSUMPTION - peer clients / sector data"),
+]
+ref = {}
+for lab, v, fmt, src in inputs:
+    r += 1
+    put(ch, f"B{r}", lab)
+    inp(ch, f"C{r}", v, fmt=fmt)
+    put(ch, f"G{r}", src, font=f_note if "ASSUMPTION" in src else f_base)
+    ref[lab] = f"C{r}"
+calcs = [
+    ("Expected room revenue (rooms x days x occupancy x ADR)",
+     f'={ref["Rooms available"]}*{ref["Days in year"]}*{ref["Reported occupancy"]}*{ref["Reported average daily rate (USD)"]}',
+     "#,##0"),
+    ("Variance: reported vs expected", None, "0.0%"),
+    ("Occupancy vs market (percentage points)", f'={ref["Reported occupancy"]}-{ref["Market occupancy benchmark (Phnom Penh, 4-star)"]}', "0.0%"),
+    ("Cash share vs peers (percentage points)", f'={ref["Cash share of total takings"]}-{ref["Peer cash share"]}', "0.0%"),
+]
+for lab, f, fmt in calcs:
+    r += 1
+    put(ch, f"B{r}", lab, font=f_bold)
+    if lab.startswith("Variance"):
+        f = f'=IFERROR({ref["Reported room revenue (USD)"]}/C{r-1}-1,0)'
+    put(ch, f"C{r}", f, fmt=fmt, font=f_bold)
+    ref[lab] = f"C{r}"
+r += 1
+put(ch, f"B{r}", "Initial result", font=f_bold)
+put(ch, f"C{r}", f'=IF(ABS({ref["Variance: reported vs expected"]})>{ref["Tolerance before investigation"]},'
+                 f'"INVESTIGATE - outside tolerance","Within tolerance")',
+    font=Font(name=F, size=10, bold=True, color="C00000"))
+ch.merge_cells(f"C{r}:G{r}")
+r += 2
+put(ch, f"B{r}", "Investigation: income found misclassified", font=f_bold)
+put(ch, f"C{r}", None)
+r += 1
+put(ch, f"B{r}", "Event-hall income booked as room revenue")
+inp(ch, f"C{r}", 410000, fmt="#,##0")
+put(ch, f"G{r}", "Supported by 37 signed event contracts and bank receipts (sampled 12, no exceptions).")
+recl = f"C{r}"
+r += 1
+put(ch, f"B{r}", "Adjusted room revenue", font=f_bold)
+put(ch, f"C{r}", f'={ref["Reported room revenue (USD)"]}-{recl}', fmt="#,##0", font=f_bold)
+adj = f"C{r}"
+r += 1
+put(ch, f"B{r}", "Adjusted variance", font=f_bold)
+put(ch, f"C{r}", f'=IFERROR({adj}/{ref["Expected room revenue (rooms x days x occupancy x ADR)"]}-1,0)', fmt="0.0%", font=f_bold)
+adjv = f"C{r}"
+r += 1
+put(ch, f"B{r}", "Final result", font=f_bold)
+put(ch, f"C{r}", f'=IF(ABS({adjv})>{ref["Tolerance before investigation"]},"UNEXPLAINED - escalate to MLRO / consider STR",'
+                 f'"Explained - no suspicion; keep under monitoring (occupancy and cash share still above market)")',
+    font=f_bold)
+ch.merge_cells(f"C{r}:G{r}")
+ch.row_dimensions[r].height = 30
+r += 1
+ch[f"B{r}"] = ("Lesson for students: a red flag starts an enquiry - it is not automatically an STR. Document the test, the "
+               "explanation and the evidence. If the reclassification had not been supported, the unexplained excess revenue "
+               "would be a classic indicator of cash being laundered through hotel takings.")
+ch[f"B{r}"].font = f_note
+ch[f"B{r}"].alignment = wrap
+ch.merge_cells(f"B{r}:G{r}")
+ch.row_dimensions[r].height = 40
+
+r += 2
+section(ch, f"A{r}", "E. Screening log", f"G{r}")
+r += 1
+header(ch, r, ["Name screened", "List / source", "Result", "", "", "Resolution"], col=2)
+for n, l, res, why in [
+        ("Phnom Penh Hotel Co., Ltd.", "UN / Cambodian / OFAC / UK / EU", "No match", "-"),
+        ("CHEA Sovann", "Sanctions + PEP + adverse media", "No match", "-"),
+        ("LIM Sreymom", "PEP database", "TRUE MATCH - PEP family", "Confirmed by marriage certificate and public appointment record."),
+        ("TAN Wei Ming / Mekong Leisure", "Sanctions + adverse media", "No match", "Singapore registry extract obtained."),
+        ("Previous accountant", "Professional clearance", "Received", "No professional reasons for non-acceptance disclosed.")]:
+    r += 1
+    put(ch, f"B{r}", n)
+    put(ch, f"C{r}", l)
+    put(ch, f"D{r}", res)
+    ch.merge_cells(f"D{r}:F{r}")
+    put(ch, f"G{r}", why)
+
+r += 2
+section(ch, f"A{r}", "F. Customer risk assessment result (live from CRA_Clients row CL-005)", f"G{r}")
+m2 = 'MATCH("CL-005",CRA_Clients!$A$9:$A$68,0)'
+for lab, col, fmt in [("Weighted score (before PEP override)", "L", "0.00"), ("CRA rating", "M", None),
+                      ("CDD level", "N", None), ("Next review", "P", "dd-mmm-yyyy")]:
+    r += 1
+    put(ch, f"B{r}", lab, font=f_bold, fill=fill_grey)
+    put(ch, f"C{r}", f"=IFERROR(INDEX(CRA_Clients!${col}$9:${col}$68,{m2}),\"\")", font=f_link, fmt=fmt)
+    ch.merge_cells(f"C{r}:G{r}")
+r += 1
+ch[f"B{r}"] = ("Note: the factor score alone gives Medium; the PEP override lifts the client to High. That is why the "
+               "PEP rule sits outside the weighted average.")
+ch[f"B{r}"].font = f_note
+ch.merge_cells(f"B{r}:G{r}")
+
+r += 2
+section(ch, f"A{r}", "G. Risk factors and mitigants", f"G{r}")
+r += 1
+header(ch, r, ["Risk factor", "Mitigant / condition of acceptance", "", "", "", "BRA link"], col=2)
+for a, b, c in [
+        ("Cash-intensive takings (46% cash)", "Monthly cash-to-PMS reconciliation; bank deposit analytics in audit", "C04, T02"),
+        ("PEP family member as 25% BO", "Source-of-wealth evidence for USD 1.2m; partner + senior approval; annual review", "C03"),
+        ("KTV bar and event hall (cash, third-party payers)", "Test event contracts; no fee payment by third parties", "C04, T01"),
+        ("Planned gaming lounge", "Advisory declined until licensed; new-service assessment; re-rate client if lounge opens", "C01, N01"),
+        ("Foreign 15% shareholder", "Registry extract + BO declaration; screen annually", "G01"),
+        ("Previous accountant resigned", "Professional clearance obtained; no issues disclosed", "-")]:
+    r += 1
+    put(ch, f"B{r}", a)
+    put(ch, f"C{r}", b)
+    ch.merge_cells(f"C{r}:F{r}")
+    put(ch, f"G{r}", c)
+    ch.row_dimensions[r].height = 30
+
+r += 2
+section(ch, f"A{r}", "H. Decision and action log", f"G{r}")
+r += 1
+header(ch, r, ["Date", "Step", "Who", "", "", "Detail"], col=2)
+for d, s, w, det in [
+        ("=DATE(2026,11,10)", "Onboarding meeting & ID sighting", "Engagement manager", "Originals sighted; site visit to hotel."),
+        ("=DATE(2026,11,11)", "Screening", "Client service", "PEP true match on Mrs. LIM; all other names clear."),
+        ("=DATE(2026,11,14)", "EDD: source of wealth", "MLRO", "Bank statements and 2022 loan agreement explain the USD 1.2m - accepted."),
+        ("=DATE(2026,11,18)", "Revenue reasonableness test", "Audit senior", "Variance 23.6% -> investigated -> explained by misclassified event income."),
+        ("=DATE(2026,11,20)", "Approval", "Managing Partner", "Accept audit, tax, payroll as HIGH risk with EDD; decline gaming advisory."),
+        ("=DATE(2027,5,31)", "Interim monitoring check", "MLRO", "Re-run cash-share and occupancy test on 6-month figures."),
+        ("=DATE(2027,11,20)", "Annual EDD review", "MLRO", "Re-screen; refresh PEP status; reassess if gaming lounge opens.")]:
+    r += 1
+    inp(ch, f"B{r}", d, fmt="dd-mmm-yyyy")
+    put(ch, f"C{r}", s)
+    put(ch, f"D{r}", w)
+    ch.merge_cells(f"D{r}:F{r}")
+    put(ch, f"G{r}", det)
+    ch.row_dimensions[r].height = 30
+
+r += 2
+section(ch, f"A{r}", "I. Discussion questions for students (model answers)", f"G{r}")
+r += 1
+header(ch, r, ["Question", "Model answer", "", "", "", ""], col=2)
+ch.merge_cells(f"C{r}:G{r}")
+for q, a in [
+    ("1. Why is the client High risk although the factor score is Medium?", "PEP family member is a beneficial owner (25%): firm policy overrides to High and requires EDD + senior approval."),
+    ("2. Does a PEP link mean we must refuse?", "No. PEP status requires enhanced measures, not refusal. Refuse only if source of wealth cannot be explained or the risk is outside appetite."),
+    ("3. What did the revenue test show and was an STR needed?", "Reported room revenue was 23.6% above expected. After reclassifying documented event income the gap fell to ~4.5% - explained, so no suspicion and no STR."),
+    ("4. When would you file an STR here?", "If the excess revenue stayed unexplained, cash deposits did not match PMS records, or the source of the USD 1.2m was doubtful."),
+    ("5. Why decline the gaming-lounge advice?", "Gaming is a high-risk new activity; licence status unknown; the firm's new-service assessment (K12) must come first."),
+    ("6. Compare with Case_XingTianDy.", "Xing: blocked ownership via nominee = prohibited + STR. Hotel: transparent ownership, explained red flags = accept with EDD and monitoring."),
+]:
+    r += 1
+    put(ch, f"B{r}", q, font=f_bold)
+    put(ch, f"C{r}", a)
+    ch.merge_cells(f"C{r}:G{r}")
+    ch.row_dimensions[r].height = 32
+
 # ==================================================================== Cover
 cv = wb.create_sheet("Cover", 0)
 cv.sheet_view.showGridLines = False
@@ -1341,7 +1603,7 @@ cv.row_dimensions[r].height = 30
 
 # sheet order
 order = ["Cover", "Scales", "BRA_Register", "TFS_TF_PF", "Risk_Appetite", "Heat_Map", "Control_Tests",
-         "CRA_Clients", "Case_XingTianDy", "Action_Plan", "Traceability", "Red_Flags", "Triggers_Versions", "Evidence_Checklist"]
+         "CRA_Clients", "Case_XingTianDy", "Case_PPHotel", "Action_Plan", "Traceability", "Red_Flags", "Triggers_Versions", "Evidence_Checklist"]
 wb._sheets = [wb[n] for n in order]
 for ws in wb.worksheets:
     ws.page_setup.orientation = "landscape"
